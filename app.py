@@ -31,10 +31,6 @@ def index():
 
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def user_login():
-    return render_template('user_login.html')
-
 
 
 

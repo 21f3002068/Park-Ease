@@ -8,7 +8,32 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 admin_bp= Blueprint('admin', __name__)
 
-@admin_bp.route('/admin_login', methods=['GET', 'POST'])
+admin_username = "admin"
+admin_password = "admin"
+
+admin_password = generate_password_hash("admin")
+
+def check_admin_credentials(username, password):
+    return username == admin_username and check_password_hash(admin_password, password)
+
+@admin_bp.route('/login', methods=['GET', 'POST'])
 def admin_login():
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if check_admin_credentials(username, password):
+            session['admin_logged_in'] = True
+            flash('Welcome, Admin!', 'success')
+            return redirect(url_for('admin.admin_dashboard'))
+        else:
+            flash('Invalid credentials. Please try again.', 'error')
+            return redirect(url_for('admin.admin_login'))
+
     return render_template('admin/admin_login.html')
 
+
+@admin_bp.route('/admin_dashboard', methods=['GET', 'POST'])
+def admin_dashboard():
+    return render_template('admin/dashboard.html')

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/user/user_login.css') }}">
+    <title>Login</title>
+</head>
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flash-messages">
+        {% for category, message in messages %}
+        <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    
+    <form action="{{ url_for('user.user_login') }}" method="post" class="login-form">
+        <h2>Login</h2>
+        <div class="username">
+            <label for="username">Email or Username</label>
+            <input type="text" class="form-control" id="username" name="username_or_email" placeholder="Enter your Username or Email">
+        </div>
+        <div class="password">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password">
+        </div>
+        <div class="remember-forget">
+            <label class="control control--checkbox">
+                <input type="checkbox" />
+                <span class="control__indicator"></span>
+                <span>Remember me</span>
+            </label>
+            <a href="#" class="forgot-pass">Forgot Password?</a>
+        </div>
+        <div class="login-other">
+            <input type="submit" value="Log In" class="btn">
+        </div>
+    </form>
+
+    <div class="carousel-container">
+        <h2>Welcome to ParkEase</h2>
+        <p>Don't have an account?</p>
+        <a href="{{ url_for('user.user_signup') }}" class="signup-btn">Sign Up here!</a>
+        <img src="static/assets/pexels-pavel-danilyuk-8438927.jpg" alt="Sign Up Image">
+        <a href="{{ url_for('admin.admin_login') }}" class="signup-btn">I am admin! Let meee innnn</a>
+
+    </div>
+
+</body>
+</html>

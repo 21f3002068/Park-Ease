@@ -52,3 +52,35 @@ def user_signup():
         return redirect(url_for('user_login'))
         
     return render_template('user/user_signup.html')
+
+
+
+
+@user_bp.route('/login', methods=['GET', 'POST'])
+def user_login():
+    if request.method == 'POST':
+        username_or_email = request.form.get('username_or_email')
+        password = request.form.get('password')
+
+        # Try fetching by email or username
+        user = User.query.filter(
+            (User.email == username_or_email) | (User.username == username_or_email)
+        ).first()
+
+        if user and check_password_hash(user.password, password):
+            # Store user info in session or however you manage auth
+            session['user_id'] = user.id
+            session['user_name'] = user.username
+            flash('Logged in successfully!', 'success')
+            return redirect(url_for('user.dashboard'))  # Redirect to user dashboard or homepage
+        else:
+            flash('Invalid credentials. Please try again.', 'error')
+            return render_template('user/user_login.html')
+
+    return render_template('user/user_login.html')
+
+
+@user_bp.route('/user_dashboard', methods=['GET', 'POST'])
+def dashboard():
+    return render_template('user/dashboard.html')
+
