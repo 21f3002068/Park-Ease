@@ -49,7 +49,7 @@ def user_signup():
         db.session.commit()
 
         flash('Account created successfully! You can now log in.', 'success')
-        return redirect(url_for('user_login'))
+        return redirect(url_for('user.user_login'))
         
     return render_template('user/user_signup.html')
 
@@ -69,9 +69,8 @@ def user_login():
 
         if user and check_password_hash(user.password, password):
             # Store user info in session or however you manage auth
-            session['user_id'] = user.id
-            session['user_name'] = user.username
-            flash('Logged in successfully!', 'success')
+            login_user(user)
+            # flash('Logged in successfully!', 'success')
             return redirect(url_for('user.dashboard'))  # Redirect to user dashboard or homepage
         else:
             flash('Invalid credentials. Please try again.', 'error')
@@ -84,3 +83,28 @@ def user_login():
 def dashboard():
     return render_template('user/dashboard.html')
 
+
+
+
+@user_bp.route('/search', methods=['GET', 'POST'])
+def search():
+    return render_template('user/search.html')
+
+
+
+@user_bp.route('/bookings', methods=['GET', 'POST'])
+def bookings():
+    return render_template('user/bookings.html')
+
+
+
+
+@user_bp.route('/stats', methods=['GET','POST'])
+def statistics():
+    return render_template('user/statistics.html')
+
+
+
+@user_bp.route('/profile', methods=['GET', 'POST'])
+def profile():
+    return render_template('user/profile.html')

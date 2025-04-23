@@ -1,0 +1,26 @@
+{% extends 'admin/adash_base.html' %}
+
+
+{% block title %} Summary Statistics {% endblock %}
+
+
+{% block body %}
+{% block content %}
+
+<div>
+    <h1> Smart Insights</h1>
+    <li>
+        <ol>Peak Parking Hours (based on historical data)</ol>
+        <ol>Most Popular Parking Lots</ol>
+        <ol>Frequent Parkers – top 5 users by parking frequency</ol>
+        <ol>Heatmap of Occupancy (if location data is involved)</ol>
+    
+    </li>
+    <li>Occupancy Trend Over Time</li>
+    <li>User Signups per Day/Week</li>
+    <li>Spots Occupied vs Released bar chart</li>
+    <li>Pie chart of Spot Distribution across lots</li>
+</div>
+
+{% endblock %}
+{% endblock %}

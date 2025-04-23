@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/style/admin/adash_base.css') }}">
+    {% block custom_styles %}
+    {% endblock%}
+    <title>
+
+        {% block title %}
+        {% endblock %}
+
+    </title>
+</head>
+
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flash-messages">
+        {% for category, message in messages %}
+        <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    {% block navigation %}
+    <div class="control-panel">
+
+        <ul>
+            <li>
+                <a href="#" class="company-name">
+                    <img src="{{ url_for('static', filename='/style/images/HomeEase logo.png') }}"
+                        class="company-logo-img" alt="">
+                    <span class="title">ParkEase</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{url_for('admin.admin_dashboard')}}" class="dashboard-option">
+                    <span class="icon"><ion-icon name="tv-outline"></ion-icon></span>
+                    <span class="title">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{url_for('admin.admin_users')}}" class="requests-option">
+                    <span class="icon"><ion-icon name="people-outline"></ion-icon></span>
+                    <span class="title">Users</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{url_for('admin.activity_log')}}" class="settings-option">
+                    <span class="icon"><ion-icon name="hammer-outline"></ion-icon></span>
+                    <span class="title">Activity Log</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{url_for('admin.statistics')}}" class="settings-option">
+                    <span class="icon"><ion-icon name="hammer-outline"></ion-icon></span>
+                    <span class="title">Stats</span>
+                </a>
+            </li>
+            <li>
+                <a href="#Settings" class="settings-option">
+                    <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
+                    <span class="title">Settings</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                    <span class="title">Log out</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    {% endblock %}
+
+
+
+    <div class="main">
+
+        {% block topbar %}
+        <div class="topbar">
+            <div class="toggle">
+                <ion-icon name="menu-outline"></ion-icon>
+            </div>
+            <div class="search">
+                <form method="GET" action="{{ url_for('admin.admin_search') }}">
+                    <label for="search-input">
+                        <input type="text" id="search-input" name="query" placeholder="Search all..." required>
+                        <ion-icon name="search-outline"></ion-icon>
+                    </label>
+                    <button type="submit" style="display: none;">Search</button>
+                </form>
+            </div>
+
+
+        </div>
+        {% endblock %}
+
+        {% block cards %}
+        <div class="cardBox">
+            <div class="card">
+                <div>
+                    <div class="numbers">+ {{ total_users }}</div>
+                    <div class="cardName">Active Users</div>
+                </div>
+                <div class="iconBx">
+                    <ion-icon name="people-outline"></ion-icon>
+                </div>
+            </div>
+            <div class="card">
+                <div>
+                    <div class="numbers">1,504</div>
+                    <div class="cardName">Total Parking Lots</div>
+                </div>
+                <div class="iconBx">
+                    <ion-icon name="eye-outline"></ion-icon>
+                </div>
+            </div>
+            <div class="card">
+                <div>
+                    <div class="numbers">+ {{ active_services }}</div>
+                    <div class="cardName">Total Parking Spots (available/occupied)</div>
+                </div>
+                <div class="iconBx">
+                    <ion-icon name="hammer-outline"></ion-icon>
+                </div>
+            </div>
+            <div class="card">
+                <div>
+                    <div class="numbers">+ {{ booking_count }}</div>
+                    <div class="cardName">Spot Utilization Rate</div>
+                </div>
+                <div class="iconBx">
+                    <ion-icon name="bookmarks-outline"></ion-icon>
+                </div>
+            </div>
+            <div class="card">
+                <div>
+                    <div class="numbers">+ {{successful_services}}</div>
+                    <div class="cardName">Vehicles Parked Today</div>
+                </div>
+                <div class="iconBx">
+                    <img src="{{url_for('static', filename='/icons/handshake_26dp_434343.svg')}}" alt="">
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+
+
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="{{ url_for('static', filename='/js/adash_base.js') }}"></script>
+
+
+
+    <script>
+
+        // let list = document.querySelectorAll('.control-panel li');
+        // function activeLink(){
+        //     list.forEach((item) =>
+        // item.classList.remove('hovered'));
+        // this.classList.add('hovered')
+        // }
+        // list.forEach((item) =>
+        // item.addEventListener('mouseover', activeLink));
+
+        // let list = document.querySelectorAll('.control-panel li');
+
+        // function activeLink() {
+        //     list.forEach((item) => 
+        // item.classList.remove('clicked'));
+        // this.classList.add('clicked');
+        // }
+
+        // list.forEach((item) => 
+        // item.addEventListener('click', activeLink));
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const links = document.querySelectorAll('.control-panel a');
+
+            // Check if there's an active link stored in localStorage
+            const activeLink = localStorage.getItem('activeLink');
+
+            // Loop through each link and set the active class if it matches the stored activeLink
+            links.forEach(link => {
+                if (link.getAttribute('href') === activeLink) {
+                    link.classList.add('active');
+                }
+
+                // Add click event listener
+                link.addEventListener('click', function (event) {
+                    // Remove the active class from all links
+                    links.forEach(link => link.classList.remove('active'));
+
+                    // Add the active class to the clicked link
+                    this.classList.add('active');
+
+                    // Store the clicked link's href in localStorage
+                    localStorage.setItem('activeLink', this.getAttribute('href'));
+                });
+            });
+        });
+
+
+
+
+
+
+
+
+
+
+
+        let toggle = document.querySelector('.toggle');
+        let controlPanel = document.querySelector('.control-panel');
+        let mainSection = document.querySelector('.main');
+
+        toggle.onclick = function () {
+            controlPanel.classList.toggle('active');
+            mainSection.classList.toggle('active');
+        }
+    </script>
+
+
+</body>
+
+</html>

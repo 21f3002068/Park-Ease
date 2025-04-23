@@ -5,7 +5,7 @@ from flask_login import UserMixin
 db = SQLAlchemy()
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
 
     # Core Credentials
@@ -21,6 +21,9 @@ class User(db.Model):
     address = db.Column(db.String(200), nullable=False)
     pin = db.Column(db.String(10), nullable=False)
 
+    registration_date = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+    
     def __repr__(self):
         return f'<User {self.username}>'
 

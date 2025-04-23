@@ -37,3 +37,27 @@ def admin_login():
 @admin_bp.route('/admin_dashboard', methods=['GET', 'POST'])
 def admin_dashboard():
     return render_template('admin/dashboard.html')
+
+
+@admin_bp.route('/users', methods=['GET', 'POST'])
+def admin_users():
+    users = User.query.all()
+    return render_template('admin/users.html', users=users)
+
+
+
+@admin_bp.route('/search', methods=['GET', 'POST'])
+def admin_search():
+    return render_template('admin/search.html')
+
+
+@admin_bp.route('/activity_log', methods=['GET', 'POST'])
+def activity_log():
+    return render_template('admin/activity_log.html')
+
+
+
+@admin_bp.route('/statistics', methods=['GET', 'POST'])
+def statistics():
+    return render_template('admin/statistics.html')
+

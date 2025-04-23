@@ -1,0 +1,599 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+:root{
+    --blue: #287bff;
+    --white: #fff;
+    --grey: #f5f5f5;
+    --black1: #222;
+    --black2: #999;
+}
+
+
+
+body{
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.control-panel {
+    width: 193px; 
+    height: 100%; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background-color: var(--blue );
+    border-left: 5px solid var(--blue);
+    transition: 0.5s; 
+    position: fixed;
+    overflow: hidden;  
+}
+
+.control-panel.active {
+    width: 70px;
+
+}
+
+.company-container {
+    display: flex;
+    margin-left: 0px;
+}
+
+/* Styling for the company logo */
+.company-logo-div {
+    padding-top: 2px;
+    margin-top: 0px;
+    margin-left: -6px;
+}
+
+.company-logo-img {
+    width: 50px; 
+    height: 50px;
+    border-radius: 50%;
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+.website-title {
+    font-size: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    margin-bottom: 20px;
+    margin-left: 5px;
+    margin-top: 2px;
+    padding: 12px;
+    padding-left: 5px;
+    padding-top: 10px;
+    display: block;
+}
+
+
+
+
+.web-title-link{
+    text-decoration: none;
+    color: #b2d3e2;
+
+}
+
+
+
+
+
+/* .control-panel ul{
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 80%;
+    bottom: 10px;
+}
+
+
+.control-panel ul li{
+    position: relative;
+    width: 130%;
+    list-style: none;
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+}
+
+.control-panel ul li:hover,
+.control-panel ul li.clicked{
+    background-color: var(--white);
+}
+.control-panel ul li:nth-child(1){
+    margin-bottom: 100px;
+    
+    font-family: Arial, Helvetica, sans-serif;
+    margin-top: 0;
+    top: 0;
+    pointer-events: none;
+}
+.control-panel ul li:nth-child(6){
+    margin-top: 150px;
+}
+
+.control-panel ul li a{
+    position: relative;
+    display: block;
+    width: 100%; 
+    display: flex;
+    text-decoration: none;
+    color: var(--grey);
+} 
+
+
+.control-panel ul li:hover a,
+.control-panel ul li.clicked a{
+    color: var(--blue);
+}
+
+
+
+.control-panel ul li a .icon
+{
+    position: relative;
+    display: block;
+    min-width: 60px;
+    height: 60px;
+    line-height: 70px;
+    text-align: center;
+    
+}
+
+
+.control-panel ul li a .icon ion-icon{
+    font-size: 1.75rem;
+}
+
+
+.control-panel ul li a .title{
+    position: relative;
+    display: block;
+    padding: 0 10px;
+    height: 60px;
+    line-height: 55px;
+    text-align: start;
+    white-space: nowrap;
+}
+
+
+.control-panel ul li:hover a::before,
+.control-panel ul li.clicked a::before{
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 35px 35px 0 10px var(--white);
+    pointer-events: none;
+}
+
+.control-panel ul li:hover a::after,
+.control-panel ul li.clicked a::after{
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: -50px;
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 35px -35px 0 10px var(--white);
+    pointer-events: none;
+} */
+
+
+.control-panel ul {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 80%;
+    bottom: 10px;
+}
+
+.control-panel ul li {
+    position: relative;
+    width: 130%;
+    list-style: none;
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+}
+
+/* Remove .clicked here and use .active */
+.control-panel ul li:hover,
+.control-panel ul li a.active {
+    background-color: var(--white);
+}
+
+.control-panel ul li:nth-child(1) {
+    margin-bottom: 100px;
+    font-family: Arial, Helvetica, sans-serif;
+    margin-top: 0;
+    top: 0;
+    pointer-events: none;
+}
+
+.control-panel ul li:nth-child(6) {
+    margin-top: 150px;
+}
+
+.control-panel ul li a {
+    position: relative;
+    display: block;
+    width: 100%;
+    display: flex;
+    text-decoration: none;
+    color: var(--grey);
+}
+
+/* Updated: remove .clicked and use .active */
+.control-panel ul li:hover a,
+.control-panel ul li a.active {
+    color: var(--blue);
+    border-top-left-radius: 35px;
+    border-bottom-left-radius: 35px;
+}
+
+.control-panel ul li a .icon {
+    position: relative;
+    display: block;
+    min-width: 60px;
+    height: 60px;
+    line-height: 70px;
+    text-align: center;
+}
+
+.control-panel ul li a .icon ion-icon {
+    font-size: 1.75rem;
+}
+
+.control-panel ul li a .title {
+    position: relative;
+    display: block;
+    padding: 0 10px;
+    height: 60px;
+    line-height: 55px;
+    text-align: start;
+    white-space: nowrap;
+}
+
+/* Updated: remove .clicked and use .active */
+.control-panel ul li:hover a::before,
+.control-panel ul li a.active::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 35px 35px 0 10px var(--white);
+    pointer-events: none;
+}
+
+/* Updated: remove .clicked and use .active */
+.control-panel ul li:hover a::after,
+.control-panel ul li a.active::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: -50px;
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 35px -35px 0 10px var(--white);
+    pointer-events: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Flash message container */
+.flash-messages {
+    position: fixed;
+    top: 20px; 
+    right: 20px;
+    z-index: 1000; /* Ensure it stays on top of other elements */
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    max-width: 90%;
+}
+
+/* General flash message styling */
+.flash {
+    margin: 10px 0;
+    padding: 10px 30px 10px 30px;
+    border-radius: 10px;
+    color: #fff;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0.8;
+}
+
+/* Flash message categories */
+.flash.success {
+    background-color: #4CAF50; /* Green for success */
+}
+
+.flash.error {
+    background-color: #f44336; /* Red for error */
+}
+
+.flash.info {
+    background-color: #2196F3; /* Blue for info */
+}
+
+.flash.warning {
+    background-color: #ff9800; /* Orange for warning */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.main{
+    position: absolute;
+    width: calc(100% - 190px);
+    left: 195px;
+    min-height: 100vh;
+    background: var(--white);
+    transition: 0.5s;
+}
+
+.topbar{
+    width: 100%;
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    
+}
+
+.toggle{
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    cursor: pointer;
+}
+
+
+.search {
+    position: relative;
+    display: flex;
+    justify-content: center; /* Center the search box horizontally */
+    margin: 20px 0px 12px; /* Add vertical margin for spacing */
+}
+
+.search input[type="text"] {
+    width: 300px; /* Full width */
+    max-width: 400px; /* Limit the maximum width */
+    padding: 12px 40px 12px 20px; /* Add padding for text and icon */
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 25px; /* Rounded corners */
+    font-size: 13px; /* Font size for the input */
+    transition: border-color 0.3s; /* Smooth transition for border color */
+}
+
+.search input[type="text"]:focus {
+    border-color: #007bff; /* Change border color on focus */
+    outline: none; /* Remove the default outline */
+}
+
+.search ion-icon {
+    position: absolute; /* Position the icon */
+    right: 20px; /* Position the icon within the input */
+    top: 50%; /* Center the icon vertically */
+    transform: translateY(-50%); /* Adjust for perfect vertical centering */
+    font-size: 20px; /* Icon size */
+    color: #007bff; /* Icon color */
+}
+
+.search button {
+    display: none; /* Hide the button */
+}
+
+
+.notif{
+    position: relative;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    cursor: pointer;
+    margin-right: 40px;
+    color: #004289;
+
+}
+
+.notif a{
+    text-decoration: none;
+    position: relative;
+    display: block;
+    color: var(--blue);   
+}
+.notif a ion-icon{
+    width: 30px;
+    height: 30px;
+}
+
+
+
+.main.active{
+    width: calc(100% - 70px);
+    left: 70px; 
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.cardBox{
+    position: relative;
+    width: 100%;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-gap: 30px;
+}
+
+
+.cardBox .card{
+    position: relative;
+    background: var(--white);
+    padding: 18px;
+    border-radius: 20px;
+    display: flex;
+    /* height: 100%; */
+    justify-content: space-between;
+    box-shadow: 0 7px 25px rgb(0, 0, 0, 0.08);
+    /* border: 2px solid red; */
+}
+
+.cardBox .card .numbers{
+    color: var(--blue);
+    font-weight: 500;
+    font-size: 1.8em;
+    position: relative;
+}
+.cardBox .card .cardName{
+    color: var(--black2);
+    
+    font-size: 1em;
+    margin-top: 5px;
+}
+
+.cardBox .card .iconBx{
+    font-size: 2.5em;
+    color: var(--black2);
+
+}
+
+.cardBox .card:hover{
+    background: var(--blue);
+    transition: 0.6s;
+}
+
+.cardBox .card:hover .iconBx,
+.cardBox .card:hover .numbers,
+.cardBox .card:hover .cardName
+{
+    color: var(--white)
+}
+
+.cardHeader {
+    display: flex;
+    border-bottom: 2px solid rgb(214, 214, 214);
+    justify-content: space-between;
+    padding-bottom: 10px;
+    align-items: flex-start;
+}
+
+.cardHeader h2 {
+    font-weight: 600;
+    color: var(--blue);
+    font-size: larger;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

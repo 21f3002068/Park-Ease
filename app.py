@@ -32,9 +32,19 @@ def index():
 
 
 
+login_manager = LoginManager(app)
+login_manager.login_view = 'user.user_login'
 
+@login_manager.user_loader
+def load_user(user_id):
+    user = User.query.get(user_id)
+    return user
 
-
+@app.route('/logout')
+@login_required  
+def logout():
+    logout_user()  
+    return redirect(url_for('user.user_login'))
 
 
 

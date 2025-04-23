@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block base_styling %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/user/udash_base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/user/dashboard.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sofadi+One&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap"
+        rel="stylesheet">
+    {% endblock %}
+
+    {% block custom_styles %}
+    {% endblock %}
+
+    <title>
+        {% block title %}
+        Document
+        {% endblock %}
+    </title>
+</head>
+
+<body>
+
+    <nav class="user-nav-bar">
+
+        <div class="company-container">
+            <div class="company-logo-div">
+                <a href="#">
+                    <img class="company-logo-img"
+                        src="{{ url_for('static', filename='style/images/HomeEase logo.png') }}" alt="company logo">
+
+                </a>
+            </div>
+            <div class="company-name">
+                <a href="{{ url_for('user.dashboard') }}">
+                    <button class="company-name-btn">ParkEase</button>
+                </a>
+            </div>
+        </div>
+
+        <div class="search-container search">
+            <form action="{{ url_for('user.search') }}" method="GET">
+                <input type="text" class="search-input" name="query" placeholder="Search locations or parkings...">
+                <button class="search-btn" type="submit">
+                    <img src="{{ url_for('static', filename='style/images/search_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg') }}"
+                        alt="Search">
+                </button>
+            </form>
+        </div>
+
+
+    </nav>
+
+    <div class="sidebar">
+        <ul class="nav-links">
+            <li>
+                <a href="{{ url_for('user.dashboard') }}">
+                    <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
+                    <span class="title">Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('user.bookings') }}">
+                    <span class="icon"><ion-icon name="calendar-outline"></ion-icon></span>
+                    <span class="title">My Bookings</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('user.statistics') }}">
+                    <span class="icon"><ion-icon name="bar-chart-outline"></ion-icon></span>
+                    <span class="title">Stats</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('user.profile') }}">
+                    <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
+                    <span class="title">Profile</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                    <span class="title">Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+
+
+    <div class="main-content">
+        {% block body %}
+        {% block content %}
+
+        {% endblock %}
+        {% endblock %}
+    </div>
+    
+
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    
+
+</body>
+
+</html>

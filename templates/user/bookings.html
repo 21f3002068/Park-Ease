@@ -1,0 +1,247 @@
+{% extends '/user/udash_base.html' %}
+
+{% block title %}user Dashboard{% endblock %}
+
+
+{% block custom_styles %}
+<link href="{{ url_for('static', filename='style/user/bookings.css') }}" rel="stylesheet">
+{% endblock %}
+
+
+
+{% block body %}
+
+{% block user_greeting %}
+<div class="user-greeting">
+    {% if current_user %}
+    Hi, {{ current_user.firstname }}!
+    {% else %}
+    Hi, Guest!
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% block content %}
+<div class="user-dashboard">
+
+    <div class="ongoing-services-panel">
+        <h3 class="panel-headings">Booked Parkings</h3>
+        <div class="table-container">
+            <table class="services-table">
+                <thead>
+                    <tr>
+                        <th>B.id</th>
+                        <th>Service</th>
+                        <th>Professional</th>
+                        <th>On Date</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in scheduled_services %}
+                    <tr data-id="{{ booking.id }}">
+                        <td>
+                            <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}">
+                                #bkd{{ loop.index }}
+                            </a>
+                        </td>
+                        <td>{{ booking.service.name }}</td>
+                        <td>{{ booking.professional.first_name }} {{ booking.professional.last_name }}</td>
+                        <td>{{ booking.booking_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ booking.location }}</td>
+                        <td><span class="status {{ booking.status | lower }}">{{ booking.status }}</td>
+                        <td>
+                            {% if booking.status == 'Completed' %}
+                            <a
+                                href="{{ url_for('user.payment', booking_id=booking.id, amount=booking.service.price * booking.quantity) }}">
+                                <button type="submit" class="done-btn">
+                                    PAY
+                                </button>
+                            </a>
+
+
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr class="hidden-details" style="display: none;">
+                        <td colspan="7">
+                            <strong>Details:</strong> Location: {{ booking.location }}, Status: {{ booking.status }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr class="empty">
+                        <td colspan="7">You have no booked services</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="sent-requests-panel">
+        <h3 class="panel-headings">Pending Requests</h3>
+        <div class="table-container">
+            <table class="requests-table">
+                <thead>
+                    <tr>
+                        <th>R.id</th>
+                        <th>Service</th>
+                        <th>Professional</th>
+                        <th>Time Slot</th>
+                        <th>Service Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr data-id="{{ booking.id }}" class="booking-row">
+                        <td>
+                            <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}">
+
+                                #rqd{{ loop.index }}
+                            </a>
+                        </td>
+                        <td>{{ booking.service.name }}</td>
+                        <td>
+                            {% if booking.professional %}
+                            {{ booking.professional.first_name }} {{ booking.professional.last_name }}
+                            {% else %}
+                            No professional assigned
+                            {% endif %}
+                        </td>
+
+                        <td>{{ booking.time_slot }}</td>
+                        <td>{{ booking.booking_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <span class="button-container">
+                                <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}"
+                                    class="more-info-link">
+                                    <img src="{{ url_for('static', filename='/icons/info_26dp_B7B7B7.svg') }}"
+                                        alt="More Info" class="more-booking-info">
+                                </a>
+
+                                <a
+                                    href="{{ url_for('user.cancelRequest', user_id=booking.user.id, service_id=booking.service.id, request_id=booking.id) }}">
+                                    <img src="{{ url_for('static', filename='/icons/cancel_26dp_EA3323.svg') }}" alt=""
+                                        class="cancel-btn">
+                                </a>
+                            </span>
+                        </td>
+                    </tr>
+                    <!-- Hidden row for more details -->
+                    <tr class="hidden-details" style="display: none;">
+                        <td colspan="7">
+                            <strong>Details:</strong> Location: {{ booking.location }}, Status: {{ booking.status }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr class="empty">
+                        <td colspan="7">You have not sent any service requests</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="cancelled-rejected-panel">
+        <h3 class="panel-headings">Cancelled Requests</h3>
+        <div class="table-container">
+            <table class="requests-table cancelled-rejected">
+                <thead>
+                    <tr>
+                        <th>C.id</th>
+                        <th>Service</th>
+                        <th>Professional</th>
+                        <th>Request Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in cancelled_bookings %}
+                    <tr data-id="{{ booking.id }}">
+                        <td>
+                            <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}">
+
+                                #cnd{{ loop.index }}
+                            </a>
+                        </td>
+                        <td>{{ booking.service.name }}</td>
+                        <td>{{ booking.professional.first_name }} {{ booking.professional.last_name }}</td>
+                        <td>{{ booking.booking_date.strftime('%Y-%m-%d') }}</td>
+                        <td><span class="status {{ booking.status | lower }}">{{ booking.status }}</td>
+                        <td>
+                            <a href="{{ url_for('user.cart') }}">
+                                <button type="button" class="rebook-btn">Rebook</button>
+                            </a>
+                        </td>
+
+                    </tr>
+                    {% else %}
+                    <tr class="empty">
+                        <td colspan="5">No services Cancelled or Rejected</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="service-history-panel">
+        <h3 class="panel-headings">Booking History</h3>
+        <div class="table-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>S.id</th>
+                        <th>Service</th>
+                        <th>Professional</th>
+                        <th>D.O.C.</th>
+                        <th>Location</th>
+                        <th>Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in service_history %}
+                    <tr data-id="{{ booking.id }}">
+                        <td>
+                            <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}">
+
+                                #hst{{ loop.index }}
+                            </a>
+                        </td>
+                        <td>{{ booking.service.name }}</td>
+                        <td>{{ booking.professional.first_name }} {{ booking.professional.last_name }}</td>
+                        <td>{{ booking.booking_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ booking.location }}</td>
+                        <td>
+                            {% if booking.review %}
+                            {{ booking.review }}
+
+                            {% else %}
+                            <a href="{{url_for('user.review', booking_id=booking.id)}}">
+                                <button class="review-btn">Review</button>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr class="empty">
+                        <td colspan="4">No services done</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %}
+
+{% endblock %}
