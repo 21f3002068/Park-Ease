@@ -61,3 +61,13 @@ def activity_log():
 def statistics():
     return render_template('admin/statistics.html')
 
+
+
+
+@admin_bp.route('/admin/flag_user_confirmation/', methods=['GET', 'POST'])
+def flag_user_confirmation():
+    return render_template('partials/_flag_user_confirmation.html')
+
+
+
+

@@ -29,8 +29,6 @@
             </thead>
             <tbody>
                 {% for user in users %}
-                <pre>{{ user | pprint }}</pre>
-
                 <tr class="cust-row">
                     <td>
                         {% if user.is_active == False %}

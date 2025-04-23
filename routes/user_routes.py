@@ -44,7 +44,6 @@ def user_signup():
             pin=pin
         )
 
-        # Add to DB
         db.session.add(new_user)
         db.session.commit()
 
@@ -70,7 +69,6 @@ def user_login():
         if user and check_password_hash(user.password, password):
             # Store user info in session or however you manage auth
             login_user(user)
-            # flash('Logged in successfully!', 'success')
             return redirect(url_for('user.dashboard'))  # Redirect to user dashboard or homepage
         else:
             flash('Invalid credentials. Please try again.', 'error')

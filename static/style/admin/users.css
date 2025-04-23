@@ -1,0 +1,128 @@
+.details {
+    position: relative;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    height: 485px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.details .Customers {
+    position: relative;
+    width: 550px;
+    /* display: grid; */
+    background: var(--white);
+    padding: 20px;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08); /* Corrected syntax */
+    border-radius: 20px;
+    min-height: 100px;
+    overflow: auto;
+}
+
+.cardHeader {
+    display: flex;
+    border-bottom: 2px solid rgb(214, 214, 214);
+    justify-content: space-between;
+    padding-bottom: 10px;
+    align-items: flex-start;
+}
+
+.cardHeader h2 {
+    font-weight: 600;
+    color: var(--blue);
+    font-size: larger;
+}
+
+.btn {
+    position: relative;
+    padding: 5px 10px;
+    background: var(--blue);
+    text-decoration: none;
+    color: var(--white);
+    border-radius: 6px;
+}
+
+.details table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.details table thead td {
+    font-weight: 600;
+    font-size: small;
+}
+
+.details .Customers table tr {
+    color: var(--black1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.details .Customers table tr:last-child {
+    border-bottom: none;
+}
+
+.details .Customers table tbody tr{
+    font-size: 12px;
+} 
+.details .Customers table tbody tr:hover{ 
+    /* background: var(--blue);
+    color: var(--white); */
+    border-radius: 5px;
+}
+
+.details .Customers table tbody tr:nth-child(even) td {
+    background-color: #f2f2f2;
+}
+
+.details .Customers table tr td {
+    padding: 10px;
+}
+
+.details .Customers table tr td:last-child {
+    text-align: end;
+}
+
+.details .Customers table tr td:nth-child(2),
+.details .Customers table tr td:nth-child(3),
+.details .Customers table tr td:nth-child(4) {
+    text-align: end;
+}
+
+.flag-btn{
+    margin-left: -200px;
+    width: 50px;
+    display: none;
+    color: rgb(255, 255, 255);
+    border: none;
+    background-color: #d25151;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+tr:hover .flag-btn {
+    display: inline-block;
+}
+
+.unflag-btn{
+    margin-left: -200px;
+    width: 50px;
+    display: none;
+    color: rgb(255, 255, 255);
+    border: none;
+    background-color: #239960;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+tr:hover .unflag-btn {
+    display: inline-block;
+}
+
+
+.cust-row{
+    height: 40px !important;
+}
+
+
