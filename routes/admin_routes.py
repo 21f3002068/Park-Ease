@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from model import *
 import logging
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import extract
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -87,6 +88,16 @@ def admin_dashboard():
 @admin_bp.route('/parking_locations', methods=['GET', 'POST'])
 def locations():
     
+    all_locations = Location.query.all()
+    location_data = []
+
+    for loc in all_locations:
+        lots = ParkingLot.query.filter_by(location_id=loc.id).all()
+        location_data.append({
+            "location": loc,
+            "lots": lots
+        })
+    
     today = datetime.today().date()
     lots = ParkingLot.query.all()
 
@@ -119,13 +130,20 @@ def locations():
     total_parking_lots = ParkingLot.query.count()
     active_parkings = ParkingLot.query.filter_by(is_active=True).count()
     
+    selected_location_id = request.args.get('location_id', type=int)
+    selected_location = Location.query.get(selected_location_id) if selected_location_id else None
+
+    
     return render_template('admin/locations.html',
                            active_users=active_users,
                            parking_lots=parking_lots, 
                            active_parkings=active_parkings, 
                            total_parking_lots=total_parking_lots,
                            utilization_rate=overall_utilization,
-                           vehicles_parked_today=vehicles_parked_today)
+                           vehicles_parked_today=vehicles_parked_today,
+                           location_data=location_data,
+                           selected_location_id=selected_location_id,
+                           selected_location=selected_location)
 
 
 
@@ -259,6 +277,19 @@ def statistics():
         Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())
     ).all()
 
+    usage_trend = []
+    date_labels = []
+
+    for i in range(6, -1, -1):  # Last 7 days
+        day = today - timedelta(days=i)
+        count = Reservation.query.filter(
+            Reservation.parking_timestamp >= datetime.combine(day, datetime.min.time()),
+            Reservation.parking_timestamp <= datetime.combine(day, datetime.max.time())
+        ).count()
+        
+        usage_trend.append(count)
+        date_labels.append(day.strftime('%b %d'))
+        
     for res in reservations_today:
         hour = res.parking_timestamp.hour
         hourly_occupancy[hour] += 1
@@ -279,7 +310,10 @@ def statistics():
                            utilization_rate=overall_utilization,
                            vehicles_parked_today=vehicles_parked_today,
                            available_spots=available_spots,
-                           hourly_occupancy=hourly_occupancy)
+                           hourly_occupancy=hourly_occupancy,
+                           usage_trend=usage_trend,
+                           date_labels=date_labels,
+)
 
 
 
@@ -289,7 +323,14 @@ def add_new_parking():
     if not locations:
         flash("Please add a location before creating a parking lot.", "warning")
         return redirect(url_for('admin.add_location'))
-    return render_template('partials/_add_new_parking.html', locations=locations)
+
+    selected_location_id = request.args.get('location_id', type=int)
+    return render_template(
+        'partials/_add_new_parking.html',
+        locations=locations,
+        selected_location_id=selected_location_id
+    )
+
 
 
 @admin_bp.route('/location/add_new_location', methods=['GET', 'POST'])

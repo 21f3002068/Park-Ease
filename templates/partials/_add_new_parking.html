@@ -64,11 +64,15 @@
                     <!-- Location Select Dropdown -->
                     <div class="form-group">
                         <label for="location_id">Location</label>
-                        <select id="location_id" name="location_id" required>
+                        <select name="location_id" required>
                             {% for location in locations %}
-                            <option value="{{ location.id }}">{{ location.name }}</option>
+                            <option value="{{ location.id }}" {% if selected_location_id and
+                                location.id==selected_location_id %} selected {% endif %}>
+                                {{ location.name }}
+                            </option>
                             {% endfor %}
                         </select>
+
                     </div>
 
                     <!-- Pin Code -->
@@ -85,8 +89,13 @@
 
                     <!-- Number of Spots -->
                     <div class="form-group">
-                        <label for="number_of_spots">Number of Spots</label>
-                        <input type="number" id="number_of_spots" name="number_of_spots" required>
+                        <label for="number_of_spots">No. of Spots
+                            {% if selected_location %}
+                            (Max: {{ selected_location.max_parking_spots }})
+                            {% endif %}
+                        </label>
+                        <input type="number" id="number_of_spots" name="number_of_spots" required {% if
+                            selected_location %} max="{{ selected_location.max_parking_spots }}" {% endif %}>
                     </div>
 
                     <!-- Available From (Time) -->

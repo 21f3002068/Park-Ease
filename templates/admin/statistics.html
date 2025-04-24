@@ -2,16 +2,75 @@
 
 {% block head_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 1rem;
+    }
+
+    .chart-section canvas {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .small-chart {
+        min-width: 300px;
+        max-width: 300px;
+        border: 2px solid red;
+    }
+
+    .medium-chart {
+        min-width: 350px;
+        max-width: 500px;
+    }
+
+    .large-chart {
+        min-width: 500px;
+        max-width: 800px;
+    }
+
+    @media (max-width: 768px) {
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
 {% endblock %}
 
 {% block title %} Summary Statistics {% endblock %}
 
+
+
 {% block body %}
 {% block content %}
 
-<div style="max-width: 400px; margin: auto;">
-    <canvas id="utilizationChart"></canvas>
+<div class="chart-grid">
+    <!-- Utilization Chart -->
+    <div class="chart-section">
+        <canvas id="utilizationChart"></canvas>
+    </div>
+
+    <!-- Lot Utilization Chart -->
+    <div class="chart-section">
+        <canvas id="lotUtilizationChart"></canvas>
+    </div>
+
+    <!-- Peak Usage Chart -->
+    <div class="chart-section">
+        <canvas id="peakUsageChart"></canvas>
+    </div>
+
+    <!-- Usage Trend Chart -->
+    <div class="chart-section">
+        <canvas id="usageTrendChart"></canvas>
+    </div>
 </div>
+
+
 
 <script>
     const ctx = document.getElementById('utilizationChart');
@@ -29,6 +88,8 @@
         options: {
         cutout: '70%',
         responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2,
         plugins: {
             legend: {
                 position: 'bottom',
@@ -54,13 +115,9 @@
 </script>
 
 
-<div style="max-width: 800px; margin: 50px auto;">
-    <canvas id="lotUtilizationChart"></canvas>
-</div>
-
 <script>
-    const lotLabels = {{ parking_lots | map(attribute='prime_location_name') | list | tojson }};
-    const utilizationRates = {{ parking_lots | map(attribute='utilization_rate') | list | tojson }};
+    const lotLabels = {{ parking_lots | map(attribute = 'prime_location_name') | list | tojson }};
+    const utilizationRates = {{ parking_lots | map(attribute = 'utilization_rate') | list | tojson }};
 
     new Chart(document.getElementById('lotUtilizationChart'), {
         type: 'bar',
@@ -75,6 +132,8 @@
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
             plugins: {
                 legend: {
                     display: false
@@ -85,7 +144,7 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return `${context.label}: ${context.raw}%`;
                         }
                     }
@@ -112,9 +171,6 @@
 </script>
 
 
-<div style="max-width: 900px; margin: 50px auto;">
-    <canvas id="peakUsageChart"></canvas>
-</div>
 
 <script>
     const hourlyData = {{ hourly_occupancy | tojson }};
@@ -137,6 +193,8 @@
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
             plugins: {
                 title: {
                     display: true,
@@ -160,6 +218,61 @@
                     title: {
                         display: true,
                         text: 'Hour of the Day'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+
+
+<script>
+    const usageTrend = {{ usage_trend | tojson }};
+    const dateLabels = {{ date_labels | tojson }};
+
+    new Chart(document.getElementById('usageTrendChart'), {
+        type: 'line',
+        data: {
+            labels: dateLabels,
+            datasets: [{
+                label: 'Reservations per Day',
+                data: usageTrend,
+                fill: true,
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                tension: 0.3,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Daily Usage Trends (Past Week)'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => `Reservations: ${context.raw}`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'No. of Reservations'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
                     }
                 }
             }

@@ -1,0 +1,125 @@
+.locations-wrapper{
+    /* border: 2px solid red; */
+    margin: 0px 40px 0px 20px;
+}
+
+.location-section{
+    /* border: 2px solid red; */
+    margin-bottom: 30px;
+
+}
+
+.location-address{
+    /* border: 2px solid red; */
+    margin-bottom: 22px;
+    padding-left: 10px;
+    color: #0057b3d4;
+}
+
+.lot-cards{
+    /* border: 2px solid red; */
+    display: flex;
+    gap: 50px;
+}
+
+
+.lot-card {
+    position: relative; /* Add this line */
+    width: 250px;
+    /* border: 1px solid #2b77f2; */
+    border-radius: 10px;
+    padding: 1rem;
+    background-color: #f5f5f5;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    
+    transition: transform 0.2s ease;
+}
+
+
+.location-header {
+    display: flex;
+    border-bottom: 1px solid #2b77f2;
+    padding: 0px 0px 10px 10px;
+    align-items: center;
+    /* justify-content: space-between; */
+    margin: 0px 0px 10px 0px ;
+}
+
+.add-parking-btn {
+    padding: 0.4rem 0.8rem;
+    background-color: #007bff;
+    color: white;
+    margin-left: 15px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.8rem;
+    transition: background-color 0.2s ease;
+}
+
+.add-parking-btn:hover {
+    background-color: #0056b3;
+}
+
+
+/* Status dot base style */
+.status-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+/* Green for active */
+.status-dot.active {
+    background-color: #28a746c6;
+}
+
+/* Grey for inactive */
+.status-dot.inactive {
+    background-color: #6c757d;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.add-location-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 25px;
+    background-color: var(--blue);
+    color: var(--white);
+    border: none;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none; 
+    z-index: 1000;
+}
+
+.add-location-btn:hover {
+    background-color: #186dd6;
+    transform: scale(1.05);
+}

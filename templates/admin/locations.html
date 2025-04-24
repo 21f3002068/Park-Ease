@@ -3,9 +3,53 @@
 
 {% block title %}Parking Locations{% endblock %}
 
+{% block custom_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='/style/admin/locations.css') }}">
+{% endblock%}
 
 {% block body %}
 {% block content %}
+
+<div class="locations-wrapper">
+    {% for item in location_data %}
+    <div class="location-section">
+        <div class="location-header">
+            <h2>
+                <ion-icon name="business-outline"></ion-icon>
+                {{ item.location.name }}
+            </h2>
+            <a href="{{ url_for('admin.add_new_parking') }}?location_id={{ item.location.id }}" class="add-parking-btn">
+                + Add a Parking
+            </a>
+        </div>
+
+
+        <p class="location-address">
+            <ion-icon name="location-outline"></ion-icon>
+            {{ item.location.address }} | Max Spots: {{ item.location.max_parking_spots }}
+        </p>
+        <div class="lot-cards">
+            {% for lot in item.lots %}
+            <div class="lot-card">
+                <div class="status-dot {% if lot.is_active %}active{% else %}inactive{% endif %}"></div>
+
+                <h3>{{ lot.prime_location_name }}</h3>
+                <p><strong>Pin Code:</strong> {{ lot.pin_code }}</p>
+                <p><strong>Price/hr:</strong> ₹{{ lot.price_per_hour }}</p>
+                <p><strong>Spots:</strong> {{ lot.number_of_spots }}</p>
+                <p><strong>Time:</strong> {{ lot.available_from }} - {{ lot.available_to }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+<a href="{{ url_for('admin.add_location') }}" class="add-location-btn">
+    + Add New Location
+</a>
+
 
 {% endblock %}
 {% endblock %}
