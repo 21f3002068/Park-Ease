@@ -1,0 +1,126 @@
+:root {
+    --blue: #287bff;
+    --white: #fff;
+    --grey: #f5f5f5;
+    --black1: #222;
+    --black2: #999;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* background-color: var(--black1); */
+    color: var(--white);
+    overflow: hidden;
+}
+
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 70vh;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.form-content {
+    background-color: rgba(34, 34, 34, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 35px;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--white);
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+    /* border: 2px solid red; */
+}
+
+.form-group label {
+    flex: 0 0 120px; /* Fixed width for alignment */
+    font-size: 14px;
+    color: var(--white);
+    margin-right: 12px;
+    text-align: right;
+}
+
+.form-group input,
+.form-group select {
+    flex: 1; /* Take remaining space */
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-right: 14px;
+    background-color: #333;
+    color: white;
+    font-size: 14px;
+}
+
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--blue);
+    background-color: #2c2c2c;
+    outline: none;
+}
+
+
+
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+.submit-btn,
+.cancel-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    text-align: center;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.submit-btn {
+    background-color: var(--blue);
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+    background-color: #1a5fd0;
+}
+
+.cancel-btn {
+    background-color: transparent;
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    transition: all 0.3s ease;
+    line-height: normal;
+}
+
+.cancel-btn:hover {
+    background-color: var(--blue);
+    color: var(--white);
+}

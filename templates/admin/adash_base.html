@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='/style/admin/adash_base.css') }}">
+
     {% block custom_styles %}
     {% endblock%}
     <title>
@@ -32,8 +33,9 @@
         <ul>
             <li>
                 <a href="#" class="company-name">
-                    <img src="{{ url_for('static', filename='/style/images/HomeEase logo.png') }}"
-                        class="company-logo-img" alt="">
+                    <img src="{{ url_for('static', filename='/image/company_logo.png') }}" class="company-logo-img"
+                        alt="image">
+
                     <span class="title">ParkEase</span>
                 </a>
             </li>
@@ -51,18 +53,19 @@
             </li>
 
             <li>
-                <a href="{{url_for('admin.activity_log')}}" class="settings-option">
-                    <span class="icon"><ion-icon name="hammer-outline"></ion-icon></span>
+                <a href="{{ url_for('admin.activity_log') }}" class="settings-option">
+                    <span class="icon"><ion-icon name="document-text-outline"></ion-icon></span>
                     <span class="title">Activity Log</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{url_for('admin.statistics')}}" class="settings-option">
-                    <span class="icon"><ion-icon name="hammer-outline"></ion-icon></span>
+                <a href="{{ url_for('admin.statistics') }}" class="settings-option">
+                    <span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span>
                     <span class="title">Stats</span>
                 </a>
             </li>
+
             <li>
                 <a href="#Settings" class="settings-option">
                     <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
@@ -167,71 +170,35 @@
 
     <script>
 
-        // let list = document.querySelectorAll('.control-panel li');
-        // function activeLink(){
-        //     list.forEach((item) =>
-        // item.classList.remove('hovered'));
-        // this.classList.add('hovered')
-        // }
-        // list.forEach((item) =>
-        // item.addEventListener('mouseover', activeLink));
-
-        // let list = document.querySelectorAll('.control-panel li');
-
-        // function activeLink() {
-        //     list.forEach((item) => 
-        // item.classList.remove('clicked'));
-        // this.classList.add('clicked');
-        // }
-
-        // list.forEach((item) => 
-        // item.addEventListener('click', activeLink));
-
-
         document.addEventListener('DOMContentLoaded', function () {
             const links = document.querySelectorAll('.control-panel a');
 
-            // Check if there's an active link stored in localStorage
             const activeLink = localStorage.getItem('activeLink');
 
-            // Loop through each link and set the active class if it matches the stored activeLink
             links.forEach(link => {
                 if (link.getAttribute('href') === activeLink) {
                     link.classList.add('active');
                 }
 
-                // Add click event listener
                 link.addEventListener('click', function (event) {
-                    // Remove the active class from all links
                     links.forEach(link => link.classList.remove('active'));
-
-                    // Add the active class to the clicked link
                     this.classList.add('active');
-
-                    // Store the clicked link's href in localStorage
                     localStorage.setItem('activeLink', this.getAttribute('href'));
                 });
+            });
+
+            // 🟡 Auto-dismiss flash messages
+            const flashMessages = document.querySelectorAll('.flash-messages li');
+            flashMessages.forEach(msg => {
+                setTimeout(() => {
+                    msg.style.opacity = "0";
+                    msg.style.transition = "opacity 0.5s ease";
+                    setTimeout(() => msg.remove(), 500);
+                }, 3000);
             });
         });
 
 
-
-
-
-
-
-
-
-
-
-        let toggle = document.querySelector('.toggle');
-        let controlPanel = document.querySelector('.control-panel');
-        let mainSection = document.querySelector('.main');
-
-        toggle.onclick = function () {
-            controlPanel.classList.toggle('active');
-            mainSection.classList.toggle('active');
-        }
     </script>
 
 

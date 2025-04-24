@@ -1,0 +1,166 @@
+:root {
+    --blue: #287bff;
+    --white: #fff;
+    --grey: #f5f5f5;
+    --black1: #222;
+    --black2: #999;
+    --card-bg: rgba(0, 0, 0, 0.6);
+    --occupied: #e53935;
+    --available: #4caf50;
+}
+
+.parking-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    padding: 24px;
+}
+
+.parking-card {
+    background-color: var(--card-bg);
+    color: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h3 {
+    font-size: 20px;
+    margin: 0;
+}
+
+.three-dots {
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 20px;
+    cursor: pointer;
+    position: relative;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.three-dots {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: white;
+    color: black;
+    min-width: 100px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu a {
+    padding: 10px;
+    display: block;
+    text-decoration: none;
+    color: black;
+    transition: background 0.2s;
+}
+
+
+/* Shared dropdown item style for both <a> and <button> */
+.dropdown-menu a,
+.dropdown-menu .dropdown-item {
+    padding: 10px;
+    display: block;
+    text-decoration: none;
+    color: black;
+    background: white;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    transition: background 0.2s;
+}
+
+/* Hover effect for all dropdown items */
+.dropdown-menu a:hover,
+.dropdown-menu .dropdown-item:hover {
+    background-color: #f1f1f1;
+}
+
+
+
+.dropdown-menu a:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.slot-info {
+    font-size: 14px;
+    margin: 10px 0;
+    color: var(--grey);
+}
+
+.slot-boxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.slot-box {
+    width: 16px;
+    height: 16px;
+    background-color: var(--available);
+    border-radius: 3px;
+}
+
+.slot-box.occupied {
+    background-color: var(--occupied);
+}
+
+
+
+.add-parking-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 25px;
+    background-color: var(--blue);
+    color: var(--white);
+    border: none;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none; /* removes underline on anchor */
+    z-index: 1000;
+}
+
+.add-parking-btn:hover {
+    background-color: #186dd6;
+    transform: scale(1.05);
+}

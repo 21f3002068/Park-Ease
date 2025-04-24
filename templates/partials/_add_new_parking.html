@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkEase</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/partials/_add_new_parking.css') }}">
+
+    <!-- Inline style using Jinja2 syntax -->
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            /* overflow: hidden; */
+        }
+
+        .background-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("{{ url_for('static', filename='image/parkease bg.png') }}") no-repeat center center / cover;
+            filter: blur(8px);
+            z-index: -1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            color: white;
+            text-align: center;
+            padding-top: 100px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-blur"></div>
+
+    <div class="content">
+        <div class="form-container">
+            <div class="form-content">
+                <h2>Add New Parking Lot</h2>
+                <form action="{{ url_for('admin.add_parking_lot') }}" method="POST">
+                    <!-- Prime Location Name -->
+                    <div class="form-group">
+                        <label for="prime_location_name">Prime Location Name</label>
+                        <input type="text" id="prime_location_name" name="prime_location_name" required>
+                    </div>
+    
+                    <!-- Address -->
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <input type="text" id="address" name="address" required>
+                    </div>
+    
+                    <!-- Pin Code -->
+                    <div class="form-group">
+                        <label for="pin_code">Pin Code</label>
+                        <input type="text" id="pin_code" name="pin_code" required>
+                    </div>
+    
+                    <!-- Price per Hour -->
+                    <div class="form-group">
+                        <label for="price_per_hour">Price per Hour</label>
+                        <input type="number" id="price_per_hour" name="price_per_hour" step="0.01" required>
+                    </div>
+    
+                    <!-- Number of Spots -->
+                    <div class="form-group">
+                        <label for="number_of_spots">Number of Spots</label>
+                        <input type="number" id="number_of_spots" name="number_of_spots" required>
+                    </div>
+    
+                    <!-- Available From (Time) -->
+                    <div class="form-group">
+                        <label for="available_from">Available From</label>
+                        <input type="time" id="available_from" name="available_from" required>
+                    </div>
+    
+                    <!-- Available To (Time) -->
+                    <div class="form-group">
+                        <label for="available_to">Available To</label>
+                        <input type="time" id="available_to" name="available_to" required>
+                    </div>
+    
+                    <!-- Active Status -->
+                    <div class="form-group">
+                        <label for="is_active">Is Active?</label>
+                        <select id="is_active" name="is_active">
+                            <option value="true" selected>Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+    
+                    <div class="button-group">
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="cancel-btn">Cancel</a>
+                        <button type="submit" class="submit-btn">Add Parking Lot</button>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -31,10 +31,20 @@ class User(db.Model, UserMixin):
 class ParkingLot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     prime_location_name = db.Column(db.String(100))
-    price = db.Column(db.Float)
     address = db.Column(db.String(200))
     pin_code = db.Column(db.String(10))
+    price_per_hour = db.Column(db.Float)
     number_of_spots = db.Column(db.Integer)
+    available_from = db.Column(db.Time)
+    available_to = db.Column(db.Time)
+    is_active = db.Column(db.Boolean, default=True)
+
+    #Not using these rn
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    image_url = db.Column(db.String)
+    admin_notes = db.Column(db.Text)
+
 
 class ParkingSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
