@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='/style/admin/adash_base.css') }}">
+    {% block head_scripts %}{% endblock %}
 
     {% block custom_styles %}
     {% endblock%}
@@ -43,6 +44,12 @@
                 <a href="{{url_for('admin.admin_dashboard')}}" class="dashboard-option">
                     <span class="icon"><ion-icon name="tv-outline"></ion-icon></span>
                     <span class="title">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{url_for('admin.locations')}}" class="dashboard-option">
+                    <span class="icon"><ion-icon name="location-outline"></ion-icon></span>
+                    <span class="title">Locations</span>
                 </a>
             </li>
             <li>
@@ -109,7 +116,7 @@
         <div class="cardBox">
             <div class="card">
                 <div>
-                    <div class="numbers">+ {{ total_users }}</div>
+                    <div class="numbers">+ {{ active_users }}</div>
                     <div class="cardName">Active Users</div>
                 </div>
                 <div class="iconBx">
@@ -118,7 +125,7 @@
             </div>
             <div class="card">
                 <div>
-                    <div class="numbers">1,504</div>
+                    <div class="numbers">{{total_parking_lots}}</div>
                     <div class="cardName">Total Parking Lots</div>
                 </div>
                 <div class="iconBx">
@@ -127,8 +134,8 @@
             </div>
             <div class="card">
                 <div>
-                    <div class="numbers">+ {{ active_services }}</div>
-                    <div class="cardName">Total Parking Spots (available/occupied)</div>
+                    <div class="numbers">{{ active_parkings }}</div>
+                    <div class="cardName">Active Parking Spots</div>
                 </div>
                 <div class="iconBx">
                     <ion-icon name="hammer-outline"></ion-icon>
@@ -136,22 +143,24 @@
             </div>
             <div class="card">
                 <div>
-                    <div class="numbers">+ {{ booking_count }}</div>
+                    <div class="numbers">{{ utilization_rate }}%</div>
                     <div class="cardName">Spot Utilization Rate</div>
                 </div>
                 <div class="iconBx">
                     <ion-icon name="bookmarks-outline"></ion-icon>
                 </div>
             </div>
+            
             <div class="card">
                 <div>
-                    <div class="numbers">+ {{successful_services}}</div>
+                    <div class="numbers">+ {{ vehicles_parked_today }}</div>
                     <div class="cardName">Vehicles Parked Today</div>
                 </div>
                 <div class="iconBx">
-                    <img src="{{url_for('static', filename='/icons/handshake_26dp_434343.svg')}}" alt="">
+                    <img src="{{ url_for('static', filename='/icons/handshake_26dp_434343.svg') }}" alt="">
                 </div>
             </div>
+                        
         </div>
         {% endblock %}
 

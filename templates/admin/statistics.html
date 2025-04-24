@@ -1,26 +1,172 @@
 {% extends 'admin/adash_base.html' %}
 
+{% block head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
 
 {% block title %} Summary Statistics {% endblock %}
-
 
 {% block body %}
 {% block content %}
 
-<div>
-    <h1> Smart Insights</h1>
-    <li>
-        <ol>Peak Parking Hours (based on historical data)</ol>
-        <ol>Most Popular Parking Lots</ol>
-        <ol>Frequent Parkers – top 5 users by parking frequency</ol>
-        <ol>Heatmap of Occupancy (if location data is involved)</ol>
-    
-    </li>
-    <li>Occupancy Trend Over Time</li>
-    <li>User Signups per Day/Week</li>
-    <li>Spots Occupied vs Released bar chart</li>
-    <li>Pie chart of Spot Distribution across lots</li>
+<div style="max-width: 400px; margin: auto;">
+    <canvas id="utilizationChart"></canvas>
 </div>
+
+<script>
+    const ctx = document.getElementById('utilizationChart');
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Occupied', 'Available'],
+            datasets: [{
+                data: [{{ occupied_spots }}, {{ available_spots }}],
+        backgroundColor: ['#FF6B6B', '#4ECDC4'],
+        borderWidth: 1
+    }]
+        },
+        options: {
+        cutout: '70%',
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        const value = context.raw;
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${context.label}: ${value} (${percentage}%)`;
+                    }
+                }
+            },
+            title: {
+                display: true,
+                text: 'Overall Spot Utilization'
+            }
+        }
+    }
+
+    });
+</script>
+
+
+<div style="max-width: 800px; margin: 50px auto;">
+    <canvas id="lotUtilizationChart"></canvas>
+</div>
+
+<script>
+    const lotLabels = {{ parking_lots | map(attribute='prime_location_name') | list | tojson }};
+    const utilizationRates = {{ parking_lots | map(attribute='utilization_rate') | list | tojson }};
+
+    new Chart(document.getElementById('lotUtilizationChart'), {
+        type: 'bar',
+        data: {
+            labels: lotLabels,
+            datasets: [{
+                label: 'Utilization (%)',
+                data: utilizationRates,
+                backgroundColor: '#5A9',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Utilization per Parking Lot'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Utilization (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Parking Lot'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+
+<div style="max-width: 900px; margin: 50px auto;">
+    <canvas id="peakUsageChart"></canvas>
+</div>
+
+<script>
+    const hourlyData = {{ hourly_occupancy | tojson }};
+    const hourLabels = [...Array(24).keys()].map(h => `${h}:00`);
+
+    new Chart(document.getElementById('peakUsageChart'), {
+        type: 'line',
+        data: {
+            labels: hourLabels,
+            datasets: [{
+                label: 'Vehicles Parked',
+                data: hourlyData,
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                tension: 0.3,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Peak Usage Hours (Today)'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => `Parked Vehicles: ${context.raw}`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '# of Vehicles'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Hour of the Day'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
 
 {% endblock %}
 {% endblock %}

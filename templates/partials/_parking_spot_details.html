@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/partials/_parking_spot_details.css') }}">
+    <style>
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            /* overflow: hidden; */
+        }
+
+        .background-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("{{ url_for('static', filename='image/parkease bg.png') }}") no-repeat center center / cover;
+            filter: blur(8px);
+            z-index: -1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            color: white;
+            text-align: center;
+            padding-top: 100px;
+        }
+    </style>
+    <title>Spot Details</title>
+</head>
+
+<body>
+
+    <div class="background-blur"></div>
+
+    <div class="spot-card">
+        {% if reservation %}
+            <h2>🚗 Vehicle Parked</h2>
+            <div class="spot-details">
+                <p><strong>Vehicle Type:</strong> {{ vehicle.vehicle_type }}</p>
+                <p><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
+                <p><strong>Color:</strong> {{ vehicle.color }}</p>
+                <p><strong>Owner:</strong> {{ user.firstname }} {{ user.lastname }}</p>
+                <p><strong>Parked At:</strong> {{ reservation.parking_timestamp }}</p>
+                <p><strong>Leaving At:</strong> {{ reservation.leaving_timestamp or "Still parked" }}</p>
+            </div>
+        {% else %}
+            <h2>✅ Spot Available</h2>
+            <div class="spot-details">
+                <p><strong>Spot ID:</strong> {{ spot.id }}</p>
+                <p><strong>Status:</strong> Available</p>
+            </div>
+        {% endif %}
+    
+        <!-- Delete Button - always shown, but disabled if reservation exists -->
+        <form method="POST" action="{{ url_for('admin.delete_spot', spot_id=spot.id) }}">
+            <button type="submit" class="delete-btn" {% if reservation %}disabled{% endif %}>
+                🗑️ Delete Spot
+            </button>
+        </form>
+    </div>
+    
+</body>
+
+</html>

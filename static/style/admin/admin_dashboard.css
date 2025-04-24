@@ -4,9 +4,10 @@
     --grey: #f5f5f5;
     --black1: #222;
     --black2: #999;
-    --card-bg: rgba(0, 0, 0, 0.6);
-    --occupied: #e53935;
-    --available: #4caf50;
+    --card-bg: #5395ff;
+    /* --card-bg: rgba(0, 0, 0, 0.6); */
+    --occupied: #38e474;
+    --available: #d5d5d5;
 }
 
 .parking-dashboard {
@@ -19,6 +20,7 @@
 .parking-card {
     background-color: var(--card-bg);
     color: var(--white);
+    /* border: 2px solid red; */
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);

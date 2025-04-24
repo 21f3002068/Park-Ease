@@ -28,33 +28,77 @@ class User(db.Model, UserMixin):
         return f'<User {self.username}>'
 
 
+class Location(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    max_parking_spots = db.Column(db.Integer, nullable=False)
+    
+    # Define parking_lots relationship
+    parking_lots = db.relationship('ParkingLot', backref='location_ref', lazy=True)
+    
+    def __repr__(self):
+        return f'<Location {self.name}>'
+
+
+
 class ParkingLot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     prime_location_name = db.Column(db.String(100))
     address = db.Column(db.String(200))
     pin_code = db.Column(db.String(10))
     price_per_hour = db.Column(db.Float)
-    number_of_spots = db.Column(db.Integer)
+    number_of_spots = db.Column(db.Integer, nullable=False)
     available_from = db.Column(db.Time)
     available_to = db.Column(db.Time)
     is_active = db.Column(db.Boolean, default=True)
-
-    #Not using these rn
+    
+    # Foreign key to Location
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'), nullable=False)
+        
+    # Not using these rn
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     image_url = db.Column(db.String)
     admin_notes = db.Column(db.Text)
+    # In ParkingLot model
+    spots = db.relationship('ParkingSpot', backref='lot', cascade='all, delete-orphan', lazy=True)
+
+    
+    def __repr__(self):
+        return f'<ParkingLot {self.prime_location_name}>'
 
 
 class ParkingSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id'))
+    spot_number = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(1), default='A')  # A = Available, O = Occupied
+
+
 
 class Reservation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     spot_id = db.Column(db.Integer, db.ForeignKey('parking_spot.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicle.id'))
+
     parking_timestamp = db.Column(db.DateTime)
     leaving_timestamp = db.Column(db.DateTime)
     parking_cost = db.Column(db.Float)
+
+
+
+class Vehicle(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    license_plate = db.Column(db.String(20), unique=True, nullable=False)
+    vehicle_type = db.Column(db.String(20))  # e.g., Car, Bike
+    color = db.Column(db.String(50))
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    # Relationship
+    reservations = db.relationship('Reservation', backref='vehicle', lazy=True)
+
+    def __repr__(self):
+        return f'<Vehicle {self.license_plate}>'

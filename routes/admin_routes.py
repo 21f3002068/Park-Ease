@@ -35,30 +35,142 @@ def admin_login():
     return render_template('admin/admin_login.html')
 
 
+
 @admin_bp.route('/admin_dashboard', methods=['GET'])
 def admin_dashboard():
-    # Get all parking lots
+    # Get the current date (today)
+    today = datetime.today().date()
+
+    # Count the number of reservations (vehicles parked) today
+    vehicles_parked_today = Reservation.query.filter(Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())).count()
+
+    # Get all parking lots and other info as before
     lots = ParkingLot.query.all()
 
     parking_lots = []
 
+    total_occupied_spots = 0
+    total_spots = 0
+
     for lot in lots:
         occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
+        total = lot.number_of_spots or 1
 
+        total_occupied_spots += occupied_count
+        total_spots += total
+
+        utilization = (occupied_count / total) * 100
         parking_lots.append({
             'id': lot.id,
             'prime_location_name': lot.prime_location_name,
             'number_of_spots': lot.number_of_spots,
             'occupied_spots': occupied_count,
+            'utilization_rate': round(utilization, 1)
         })
 
-    return render_template('admin/dashboard.html', parking_lots=parking_lots)
+    overall_utilization = round((total_occupied_spots / total_spots) * 100, 1) if total_spots else 0
+
+    active_users = User.query.filter_by(is_active=True).count()
+    total_parking_lots = ParkingLot.query.count()
+    active_parkings = ParkingLot.query.filter_by(is_active=True).count()
+
+    return render_template('admin/dashboard.html', 
+                           active_users=active_users,
+                           parking_lots=parking_lots, 
+                           active_parkings=active_parkings, 
+                           total_parking_lots=total_parking_lots,
+                           utilization_rate=overall_utilization,
+                           vehicles_parked_today=vehicles_parked_today)
+    
+    
+    
+@admin_bp.route('/parking_locations', methods=['GET', 'POST'])
+def locations():
+    
+    today = datetime.today().date()
+    lots = ParkingLot.query.all()
+
+    vehicles_parked_today = Reservation.query.filter(Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())).count()
+    parking_lots = []
+    
+    total_occupied_spots = 0
+    total_spots = 0
+
+    for lot in lots:
+        occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
+        total = lot.number_of_spots or 1
+        
+        total_occupied_spots += occupied_count
+        total_spots += total
+        
+        utilization = (occupied_count / total) * 100
+        
+        parking_lots.append({
+            'id': lot.id,
+            'prime_location_name': lot.prime_location_name,
+            'number_of_spots': lot.number_of_spots,
+            'occupied_spots': occupied_count,
+            'utilization_rate': round(utilization, 1)
+        })
+
+    overall_utilization = round((total_occupied_spots / total_spots) * 100, 1) if total_spots else 0
+
+    active_users = User.query.filter_by(is_active=True).count()
+    total_parking_lots = ParkingLot.query.count()
+    active_parkings = ParkingLot.query.filter_by(is_active=True).count()
+    
+    return render_template('admin/locations.html',
+                           active_users=active_users,
+                           parking_lots=parking_lots, 
+                           active_parkings=active_parkings, 
+                           total_parking_lots=total_parking_lots,
+                           utilization_rate=overall_utilization,
+                           vehicles_parked_today=vehicles_parked_today)
+
 
 
 @admin_bp.route('/users', methods=['GET', 'POST'])
 def admin_users():
     users = User.query.all()
-    return render_template('admin/users.html', users=users)
+    today = datetime.today().date()
+    lots = ParkingLot.query.all()
+
+    vehicles_parked_today = Reservation.query.filter(Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())).count()
+    parking_lots = []
+    
+    total_occupied_spots = 0
+    total_spots = 0
+
+    for lot in lots:
+        occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
+        total = lot.number_of_spots or 1
+        
+        total_occupied_spots += occupied_count
+        total_spots += total
+        
+        utilization = (occupied_count / total) * 100
+        
+        parking_lots.append({
+            'id': lot.id,
+            'prime_location_name': lot.prime_location_name,
+            'number_of_spots': lot.number_of_spots,
+            'occupied_spots': occupied_count,
+            'utilization_rate': round(utilization, 1)
+        })
+
+    overall_utilization = round((total_occupied_spots / total_spots) * 100, 1) if total_spots else 0
+
+    active_users = User.query.filter_by(is_active=True).count()
+    total_parking_lots = ParkingLot.query.count()
+    active_parkings = ParkingLot.query.filter_by(is_active=True).count()
+
+    return render_template('admin/users.html', users=users,
+                           active_users=active_users,
+                           parking_lots=parking_lots, 
+                           active_parkings=active_parkings, 
+                           total_parking_lots=total_parking_lots,
+                           utilization_rate=overall_utilization,
+                           vehicles_parked_today=vehicles_parked_today)
 
 
 
@@ -69,19 +181,139 @@ def admin_search():
 
 @admin_bp.route('/activity_log', methods=['GET', 'POST'])
 def activity_log():
-    return render_template('admin/activity_log.html')
+    users = User.query.all()
+    today = datetime.today().date()
+    lots = ParkingLot.query.all()
+
+    vehicles_parked_today = Reservation.query.filter(Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())).count()
+    parking_lots = []
+    
+    total_occupied_spots = 0
+    total_spots = 0
+
+    for lot in lots:
+        occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
+        total = lot.number_of_spots or 1
+        
+        total_occupied_spots += occupied_count
+        total_spots += total
+        
+        utilization = (occupied_count / total) * 100
+        
+        parking_lots.append({
+            'id': lot.id,
+            'prime_location_name': lot.prime_location_name,
+            'number_of_spots': lot.number_of_spots,
+            'occupied_spots': occupied_count,
+            'utilization_rate': round(utilization, 1)
+        })
+
+    overall_utilization = round((total_occupied_spots / total_spots) * 100, 1) if total_spots else 0
+
+    active_users = User.query.filter_by(is_active=True).count()
+    total_parking_lots = ParkingLot.query.count()
+    active_parkings = ParkingLot.query.filter_by(is_active=True).count()
+    return render_template('admin/activity_log.html',
+                           active_users=active_users,
+                           parking_lots=parking_lots, 
+                           active_parkings=active_parkings, 
+                           total_parking_lots=total_parking_lots,
+                           utilization_rate=overall_utilization,
+                           vehicles_parked_today=vehicles_parked_today)
 
 
 
 @admin_bp.route('/statistics', methods=['GET', 'POST'])
 def statistics():
-    return render_template('admin/statistics.html')
+    
+    users = User.query.all()
+    today = datetime.today().date()
+    lots = ParkingLot.query.all()
+
+    vehicles_parked_today = Reservation.query.filter(Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())).count()
+    parking_lots = []
+    
+    total_occupied_spots = 0
+    total_spots = 0
+
+    for lot in lots:
+        occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
+        total = lot.number_of_spots or 1
+        
+        total_occupied_spots += occupied_count
+        total_spots += total
+        
+        utilization = (occupied_count / total) * 100
+        
+        parking_lots.append({
+            'id': lot.id,
+            'prime_location_name': lot.prime_location_name,
+            'number_of_spots': lot.number_of_spots,
+            'occupied_spots': occupied_count,
+            'utilization_rate': round(utilization, 1)
+        })
+
+    hourly_occupancy = [0] * 24  # Initialize for 24 hours
+
+    reservations_today = Reservation.query.filter(
+        Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())
+    ).all()
+
+    for res in reservations_today:
+        hour = res.parking_timestamp.hour
+        hourly_occupancy[hour] += 1
+
+    overall_utilization = round((total_occupied_spots / total_spots) * 100, 1) if total_spots else 0
+
+    active_users = User.query.filter_by(is_active=True).count()
+    total_parking_lots = ParkingLot.query.count()
+    active_parkings = ParkingLot.query.filter_by(is_active=True).count()
+    available_spots = total_spots - total_occupied_spots
+
+    
+    return render_template('admin/statistics.html',
+                           active_users=active_users,
+                           parking_lots=parking_lots, 
+                           active_parkings=active_parkings, 
+                           total_parking_lots=total_parking_lots,
+                           utilization_rate=overall_utilization,
+                           vehicles_parked_today=vehicles_parked_today,
+                           available_spots=available_spots,
+                           hourly_occupancy=hourly_occupancy)
 
 
 
 @admin_bp.route('/add_new_parking', methods=['GET', 'POST'])
 def add_new_parking():
-    return render_template('partials/_add_new_parking.html')
+    locations = Location.query.all()
+    if not locations:
+        flash("Please add a location before creating a parking lot.", "warning")
+        return redirect(url_for('admin.add_location'))
+    return render_template('partials/_add_new_parking.html', locations=locations)
+
+
+@admin_bp.route('/location/add_new_location', methods=['GET', 'POST'])
+def add_location():
+    if request.method == 'POST':
+        name = request.form['name']
+        address = request.form['address']
+        max_parking_spots = int(request.form['max_parking_spots'])
+
+        new_location = Location(
+            name=name,
+            address=address,
+            max_parking_spots=max_parking_spots
+        )
+
+        db.session.add(new_location)
+        db.session.commit()
+
+        flash('New location added successfully!', 'success')
+        return redirect(url_for('admin.add_new_parking'))
+
+    return render_template('partials/_add_new_location.html')
+
+
 
 
 
@@ -89,41 +321,84 @@ def add_new_parking():
 def add_parking_lot():
     if request.method == 'POST':
         prime_location_name = request.form['prime_location_name']
-        address = request.form['address']
         pin_code = request.form['pin_code']
         price_per_hour = float(request.form['price_per_hour'])
         number_of_spots = int(request.form['number_of_spots'])
-        is_active = request.form['is_active'] == 'true'  
-        
-        available_from_str = request.form.get('available_from') 
-        available_to_str = request.form.get('available_to')      
+        is_active = request.form['is_active'] == 'true'
+
+        available_from_str = request.form.get('available_from')
+        available_to_str = request.form.get('available_to')
 
         available_from = datetime.strptime(available_from_str, "%H:%M").time()
         available_to = datetime.strptime(available_to_str, "%H:%M").time()
+        location_id = int(request.form['location_id'])
 
         # Create new ParkingLot object
         new_parking_lot = ParkingLot(
             prime_location_name=prime_location_name,
-            address=address,
             pin_code=pin_code,
             price_per_hour=price_per_hour,
             number_of_spots=number_of_spots,
             available_from=available_from,
             available_to=available_to,
-            is_active=is_active
+            is_active=is_active,
+            location_id=location_id
         )
 
-        # Add to database
+        # Commit to get new_parking_lot.id
         db.session.add(new_parking_lot)
         db.session.commit()
 
-        return redirect(url_for('admin.admin_dashboard'))  # Redirect to admin dashboard
+        # ✅ Create parking spots
+        for i in range(new_parking_lot.number_of_spots):
+            spot = ParkingSpot(lot_id=new_parking_lot.id, spot_number=i + 1)
+            db.session.add(spot)
+        db.session.commit()
+
+        return redirect(url_for('admin.admin_dashboard'))
 
 
 @admin_bp.route('/view_spot/<int:lot_id>/<int:spot_number>')
 def view_spot(lot_id, spot_number):
-    # logic to fetch and display info for that spot
-    return f"Spot {spot_number} in lot {lot_id}"
+    spot = ParkingSpot.query.filter_by(lot_id=lot_id, spot_number=spot_number).first_or_404()
+    
+    if spot.status == 'O':
+        reservation = Reservation.query.filter_by(spot_id=spot.id).order_by(Reservation.parking_timestamp.desc()).first()
+        vehicle = reservation.vehicle if reservation else None
+        user = User.query.get(reservation.user_id) if reservation else None
+
+        return render_template('partials/_parking_spot_details.html',
+                               spot=spot, reservation=reservation,
+                               vehicle=vehicle, user=user)
+    else:
+        return render_template('partials/_parking_spot_details.html',
+                               spot=spot, reservation=None,
+                               vehicle=None, user=None)
+
+
+@admin_bp.route('/delete_spot/<int:spot_id>', methods=['POST'])
+def delete_spot(spot_id):
+    spot = ParkingSpot.query.get_or_404(spot_id)
+
+    # Ensure the spot is not occupied
+    if spot.status == 'O':
+        flash("Cannot delete an occupied spot.", "warning")
+        return redirect(request.referrer)
+
+    # Get the corresponding parking lot
+    parking_lot = ParkingLot.query.get(spot.lot_id)
+
+    # Decrement the number of spots in the parking lot
+    if parking_lot.number_of_spots > 0:
+        parking_lot.number_of_spots -= 1
+
+    db.session.delete(spot)
+    db.session.commit()
+
+    flash("Spot deleted successfully.", "success")
+
+    return redirect(url_for('admin.admin_dashboard'))  # Reload the parking lot page
+
 
 
 def parse_time_string(time_str):
@@ -164,13 +439,20 @@ def edit_parking(lot_id):
 def delete_parking(lot_id):
     parking_lot = ParkingLot.query.get_or_404(lot_id)
 
-    ParkingSpot.query.filter_by(lot_id=lot_id).delete()
+    # Check if all parking spots are available
+    has_occupied_spots = any(spot.status != 'A' for spot in parking_lot.spots)
 
+    if has_occupied_spots:
+        flash('Cannot delete parking lot. Some spots are still occupied.', 'error')
+        return redirect(url_for('admin.admin_dashboard'))  # or wherever you want to redirect
+
+    # If all spots are empty, proceed with deletion
     db.session.delete(parking_lot)
     db.session.commit()
 
     flash('Parking lot deleted successfully.', 'success')
     return redirect(url_for('admin.admin_dashboard'))
+
 
 
 
