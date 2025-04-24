@@ -23,6 +23,8 @@ class User(db.Model, UserMixin):
 
     registration_date = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
+
+    vehicles = db.relationship('Vehicle', backref='owner', lazy=True)
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -91,8 +93,9 @@ class Reservation(db.Model):
 
 class Vehicle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    vehicle_name = db.Column(db.String(100))
     license_plate = db.Column(db.String(20), unique=True, nullable=False)
-    vehicle_type = db.Column(db.String(20))  # e.g., Car, Bike
+    vehicle_type = db.Column(db.String(20))  
     color = db.Column(db.String(50))
     
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

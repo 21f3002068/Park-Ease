@@ -1,0 +1,181 @@
+{% extends 'admin/adash_base.html' %}  <!-- Assuming you have a base admin template -->
+
+{% block custom_styles %}
+<link rel="stylesheet" href="{{url_for('static', filename='style/partials/_view_user_details.css' )}}">
+{% endblock %}
+
+{% block body %}
+
+{% block cards %}{% endblock %}
+
+{% block content %}
+
+<div class="user-detail-container">
+    <div class="user-header">
+        <h2>User Details: {{ user.firstname }} {{ user.lastname }}</h2>
+        <div class="user-status-badge {% if not user.is_active %}inactive{% endif %}">
+            {% if user.is_active %}Active{% else %}Inactive{% endif %}
+        </div>
+    </div>
+
+    <div class="user-detail-sections">
+        <!-- Basic Information Section -->
+        <section class="detail-section">
+            <h3><i class="fas fa-user"></i> Basic Information</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">User ID:</span>
+                    <span class="detail-value">{{ user.id }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Username:</span>
+                    <span class="detail-value">{{ user.username }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value">{{ user.email }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Phone:</span>
+                    <span class="detail-value">{{ user.phone }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Gender:</span>
+                    <span class="detail-value">{{ user.gender }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Address:</span>
+                    <span class="detail-value">{{ user.address }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">PIN Code:</span>
+                    <span class="detail-value">{{ user.pin }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Registered On:</span>
+                    <span class="detail-value">{{ user.registration_date.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vehicles Section -->
+        <section class="detail-section">
+            <h3><i class="fas fa-car"></i> Vehicles ({{ user.vehicles|length }})</h3>
+            {% if user.vehicles %}
+            <div class="table-responsive">
+                <table class="vehicles-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>License Plate</th>
+                            <th>Type</th>
+                            <th>Color</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vehicle in user.vehicles %}
+                        <tr>
+                            <td>{{ vehicle.vehicle_name or 'N/A' }}</td>
+                            <td>{{ vehicle.license_plate }}</td>
+                            <td>{{ vehicle.vehicle_type or 'N/A' }}</td>
+                            <td>{{ vehicle.color or 'N/A' }}</td>
+                            <td>
+                                <a href="#" class="btn-sm btn-edit">Edit</a>
+                                <a href="#" class="btn-sm btn-delete">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No vehicles registered</p>
+            {% endif %}
+            <!-- <button class="btn-add-vehicle">+ Add Vehicle</button> -->
+        </section>
+
+        <!-- Reservations History Section -->
+        <section class="detail-section">
+            <h3><i class="fas fa-history"></i> Reservation History ({{ user.reservations|length }})</h3>
+            {% if user.reservations %}
+            <div class="table-responsive">
+                <table class="reservations-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Vehicle</th>
+                            <th>Parking Spot</th>
+                            <th>Duration</th>
+                            <th>Cost</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in user.reservations %}
+                        <tr>
+                            <td>{{ reservation.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if reservation.vehicle and reservation.vehicle.spot and reservation.vehicle.spot.lot %}
+                                    {{ reservation.vehicle.spot.lot.prime_location_name }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.vehicle %}
+                                    {{ reservation.vehicle.license_plate }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.spot %}
+                                    Spot #{{ reservation.spot.spot_number }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.leaving_timestamp %}
+                                    {{ (reservation.leaving_timestamp - reservation.parking_timestamp).seconds // 3600 }}h
+                                {% else %}
+                                    Ongoing
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.parking_cost %}
+                                    ${{ "%.2f"|format(reservation.parking_cost) }}
+                                {% else %}
+                                    Pending
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge {% if reservation.leaving_timestamp %}completed{% else %}active{% endif %}">
+                                    {% if reservation.leaving_timestamp %}Completed{% else %}Active{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data">No reservation history</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="user-actions">
+        {% if user.is_active %}
+        <a href="{{ url_for('admin.flag_user_confirmation', user_type='user', user_id=user.id) }}" class="btn btn-warning">Flag User</a>
+        {% else %}
+        <a href="#" class="btn btn-success">Activate User</a>
+        {% endif %}
+        <a href="#" class="btn btn-danger">Delete User</a>
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
+{% endblock %}

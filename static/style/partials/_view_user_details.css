@@ -1,0 +1,142 @@
+.user-detail-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.user-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.user-status-badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-left: 15px;
+    font-size: 0.8rem;
+    background: #5cb85c;
+    color: white;
+}
+
+.user-status-badge.inactive {
+    background: #d9534f;
+}
+
+.detail-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-label {
+    font-weight: bold;
+    color: #555;
+}
+
+.detail-value {
+    color: #333;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.no-data {
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+}
+
+.btn-add-vehicle {
+    background: #4a6baf;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.status-badge {
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+}
+
+.status-badge.active {
+    background: #5bc0de;
+    color: white;
+}
+
+.status-badge.completed {
+    background: #5cb85c;
+    color: white;
+}
+
+.user-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-warning {
+    background: #f0ad4e;
+    color: white;
+}
+
+.btn-success {
+    background: #5cb85c;
+    color: white;
+}
+
+.btn-danger {
+    background: #d9534f;
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}

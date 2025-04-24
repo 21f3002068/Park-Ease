@@ -191,6 +191,24 @@ def admin_users():
                            vehicles_parked_today=vehicles_parked_today)
 
 
+@admin_bp.route('/admin_dashboard/users/view_user/<int:user_id>')
+def user_detail(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('partials/_view_user_details.html', user=user)
+
+
+#A MORE COMPLETE VERSION OF THE ABOVE
+# @admin_bp.route('/admin_dashboard/users/view_user/<int:user_id>')
+# @login_required
+# def user_detail(user_id):
+#     try:
+#         user = User.query.get_or_404(user_id)
+#         return render_template('partials/_view_user_details.html', user=user)
+#     except Exception as e:
+#         current_app.logger.error(f"Error viewing user {user_id}: {str(e)}")
+#         flash('Error loading user details', 'error')
+#         return redirect(url_for('admin.admin_dashboard'))
+
 
 @admin_bp.route('/search', methods=['GET', 'POST'])
 def admin_search():
