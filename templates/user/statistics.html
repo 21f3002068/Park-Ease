@@ -1,14 +1,363 @@
 {% extends 'user/udash_base.html' %}
 
+{% block title %}Statistics{% endblock %}
 
-{% block title %}
-Statistics
+{% block custom_styles %}
+
+
+<style>
+    /* Force 2x2 grid layout */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Always 2 columns */
+        gap: 16px;
+        padding: 16px;
+        max-width: 1000px; /* Constrain total width */
+        margin: 0 auto;
+        height: 90vh; /* Fill most of viewport */
+        max-height: 800px; /* But not too tall */
+    }
+
+    /* Compact grid items */
+    .grid-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Tight headings */
+    .grid-item h2 {
+        color: #2c3e50;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        margin: 0 0 10px 0;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 600;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    /* Chart containers fill available space */
+    .chart-container {
+        flex: 1; /* Fill remaining space */
+        min-height: 0; /* Allow shrinking */
+        position: relative;
+    }
+
+    .chart-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain;
+        background: white;
+        border-radius: 4px;
+        padding: 8px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+        .dashboard-grid {
+            gap: 12px;
+            padding: 12px;
+            max-width: 95vw;
+        }
+        .grid-item {
+            padding: 10px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        /* Switch to 1x4 on very small screens */
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+        .chart-container {
+            height: 200px; /* Fixed height for mobile */
+        }
+    }
+</style>
 {% endblock %}
 
-
-
-{% block body %}
 {% block content %}
 
-{% endblock %}
+
+<div class="dashboard-grid">
+    <div class="grid-item">
+        <h2>Reservation Status</h2>
+        <div class="chart-container">
+            <canvas id="reservationStatusChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="grid-item">
+        <h2>Parking Spending</h2>
+        <div class="chart-container">
+            <canvas id="totalSpendingChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="grid-item">
+        <h2>Top Locations</h2>
+        <div class="chart-container">
+            <canvas id="frequentLocationsChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="grid-item">
+        <h2>Vehicle Usage</h2>
+        <div class="chart-container">
+            <canvas id="vehicleUsageChart"></canvas>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Get the data from Flask template
+    var statusData = {{ status_data | tojson }};
+
+    // Prepare the labels and data for the pie chart
+    var labels = ["Pending", "Confirmed", "Completed", "Cancelled"];
+    var data = [
+        statusData.pending,
+        statusData.confirmed,
+        statusData.completed,
+        statusData.cancelled
+    ];
+
+    // Create the pie chart using Chart.js
+    var ctx = document.getElementById('reservationStatusChart').getContext('2d');
+    var reservationStatusChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Reservation Statuses',
+                data: data,
+                backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#FFC300'],
+                borderColor: ['#FF5733', '#33FF57', '#3357FF', '#FFC300'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return tooltipItem.label + ': ' + tooltipItem.raw;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+
+    // Get the data from Flask template
+    var spendingInfo = {{ spending_info | tojson }};
+
+    // Prepare the labels and data for the bar chart
+    var locations = spendingInfo.locations;
+    var totalSpending = spendingInfo.total_spending;
+
+    // Create the bar chart using Chart.js
+    var ctx = document.getElementById('totalSpendingChart').getContext('2d');
+    var totalSpendingChart = new Chart(ctx, {
+        type: 'bar',  // You can change this to 'pie' if you want a pie chart instead
+        data: {
+            labels: locations,
+            datasets: [{
+                label: 'Total Spending ($)',
+                data: totalSpending,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return '$' + tooltipItem.raw.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+
+    var frequentInfo = {{ frequent_info | tojson }};
+
+    // Prepare the labels and data for the horizontal bar chart
+    var locations = frequentInfo.locations;
+    var reservationCounts = frequentInfo.reservation_counts;
+
+    // Create the horizontal bar chart using Chart.js
+    var ctx = document.getElementById('frequentLocationsChart').getContext('2d');
+    var frequentLocationsChart = new Chart(ctx, {
+        type: 'bar',  // Horizontal bar chart
+        data: {
+            labels: locations,
+            datasets: [{
+                label: 'Number of Reservations',
+                data: reservationCounts,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            indexAxis: 'y',  // This makes the bar chart horizontal
+            scales: {
+                x: {
+                    beginAtZero: true
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Parking Locations'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return tooltipItem.raw + ' reservations';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+
+
+    var vehicleInfo = {{ vehicle_info | tojson }};
+
+    // Prepare the labels and data for the bar chart
+    var vehicleNames = vehicleInfo.vehicle_names;
+    var reservationCounts = vehicleInfo.reservation_counts;
+
+    // Create the bar chart using Chart.js
+    var ctx = document.getElementById('vehicleUsageChart').getContext('2d');
+    var vehicleUsageChart = new Chart(ctx, {
+        type: 'bar',  // Bar chart
+        data: {
+            labels: vehicleNames,
+            datasets: [{
+                label: 'Number of Reservations',
+                data: reservationCounts,
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Vehicles'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Reservation Count'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return tooltipItem.raw + ' reservations';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+
+
+
+    // Common chart configuration
+    const chartConfig = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: {
+                        family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                        size: 12
+                    },
+                    padding: 20
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                titleFont: {
+                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                    size: 14
+                },
+                bodyFont: {
+                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                    size: 12
+                },
+                padding: 12,
+                cornerRadius: 6
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.05)'
+                }
+            },
+            x: {
+                grid: {
+                    color: 'rgba(0,0,0,0.05)'
+                }
+            }
+        }
+    };
+
+</script>
+
+
+
 {% endblock %}

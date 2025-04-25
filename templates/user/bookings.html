@@ -25,216 +25,179 @@
 {% block content %}
 <div class="user-dashboard">
 
-    <div class="ongoing-services-panel">
-        <h3 class="panel-headings">Booked Parkings</h3>
-        <div class="table-container">
-            <table class="services-table">
-                <thead>
-                    <tr>
-                        <th>B.id</th>
-                        <th>Service</th>
-                        <th>Professional</th>
-                        <th>On Date</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for booking in scheduled_services %}
-                    <tr data-id="{{ booking.id }}">
-                        <td>
-                            <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}">
-                                #bkd{{ loop.index }}
-                            </a>
-                        </td>
-                        <td>{{ booking.service.name }}</td>
-                        <td>{{ booking.professional.first_name }} {{ booking.professional.last_name }}</td>
-                        <td>{{ booking.booking_date.strftime('%Y-%m-%d') }}</td>
-                        <td>{{ booking.location }}</td>
-                        <td><span class="status {{ booking.status | lower }}">{{ booking.status }}</td>
-                        <td>
-                            {% if booking.status == 'Completed' %}
-                            <a
-                                href="{{ url_for('user.payment', booking_id=booking.id, amount=booking.service.price * booking.quantity) }}">
-                                <button type="submit" class="done-btn">
-                                    PAY
+    <div class="dashboard-grid">
+        <!-- Current Bookings -->
+        <div class="panel current-bookings">
+            <h3 class="panel-heading">Active Parking Bookings</h3>
+            <div class="table-container">
+                <table class="parking-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Parking Lot</th>
+                            <th>Spot #</th>
+                            <th>Vehicle</th>
+                            <th>Entry Time</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in active_bookings %}
+                        <tr>
+                            <td>#PARK{{ booking.id }}</td>
+                            <td>{{ booking.spot.lot.prime_location_name }}</td>
+                            <td>{{ booking.spot.spot_number }}</td>
+                            <td>{{ booking.vehicle.license_plate }}</td>
+                            <td>{{ booking.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td><span class="status active">Active</span></td>
+                            <td>
+                                <button class="checkout-btn" data-booking-id="{{ booking.id }}">
+                                    Check Out
                                 </button>
-                            </a>
-
-
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr class="hidden-details" style="display: none;">
-                        <td colspan="7">
-                            <strong>Details:</strong> Location: {{ booking.location }}, Status: {{ booking.status }}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr class="empty">
-                        <td colspan="7">You have no booked services</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty">
+                            <td colspan="7">No active parking bookings</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-    <div class="sent-requests-panel">
-        <h3 class="panel-headings">Pending Requests</h3>
-        <div class="table-container">
-            <table class="requests-table">
-                <thead>
-                    <tr>
-                        <th>R.id</th>
-                        <th>Service</th>
-                        <th>Professional</th>
-                        <th>Time Slot</th>
-                        <th>Service Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for booking in bookings %}
-                    <tr data-id="{{ booking.id }}" class="booking-row">
-                        <td>
-                            <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}">
 
-                                #rqd{{ loop.index }}
-                            </a>
-                        </td>
-                        <td>{{ booking.service.name }}</td>
-                        <td>
-                            {% if booking.professional %}
-                            {{ booking.professional.first_name }} {{ booking.professional.last_name }}
-                            {% else %}
-                            No professional assigned
-                            {% endif %}
-                        </td>
-
-                        <td>{{ booking.time_slot }}</td>
-                        <td>{{ booking.booking_date.strftime('%Y-%m-%d') }}</td>
-                        <td>
-                            <span class="button-container">
-                                <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}"
-                                    class="more-info-link">
-                                    <img src="{{ url_for('static', filename='/icons/info_26dp_B7B7B7.svg') }}"
-                                        alt="More Info" class="more-booking-info">
-                                </a>
-
-                                <a
-                                    href="{{ url_for('user.cancelRequest', user_id=booking.user.id, service_id=booking.service.id, request_id=booking.id) }}">
-                                    <img src="{{ url_for('static', filename='/icons/cancel_26dp_EA3323.svg') }}" alt=""
-                                        class="cancel-btn">
-                                </a>
-                            </span>
-                        </td>
-                    </tr>
-                    <!-- Hidden row for more details -->
-                    <tr class="hidden-details" style="display: none;">
-                        <td colspan="7">
-                            <strong>Details:</strong> Location: {{ booking.location }}, Status: {{ booking.status }}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr class="empty">
-                        <td colspan="7">You have not sent any service requests</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Pending Requests -->
+        <div class="panel pending-requests">
+            <h3 class="panel-heading">Pending Parking Requests</h3>
+            <div class="table-container">
+                <table class="parking-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Parking Lot</th>
+                            <th>Vehicle</th>
+                            <th>Requested Time</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in pending_requests %}
+                        <tr>
+                            <td>#REQ{{ request.id }}</td>
+                            <td>
+                                {% if request.spot %}
+                                {{ request.spot.lot.prime_location_name }}
+                                {% elif request.lot %}
+                                {{ request.lot.prime_location_name }}
+                                {% else %}
+                                Awaiting spot assignment
+                                {% endif %}
+                            </td>
+                            <td>{{ request.vehicle.license_plate }}</td>
+                            <td>{{ request.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td><span class="status pending">Pending</span></td>
+                            <td>
+                                <form action="{{ url_for('user.cancel_booking', request_id=request.id) }}" method="POST"
+                                    style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="cancel-btn"
+                                        onclick="return confirm('Are you sure you want to cancel this booking?');">
+                                        Cancel
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6">No pending requests</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
-    <div class="cancelled-rejected-panel">
-        <h3 class="panel-headings">Cancelled Requests</h3>
-        <div class="table-container">
-            <table class="requests-table cancelled-rejected">
-                <thead>
-                    <tr>
-                        <th>C.id</th>
-                        <th>Service</th>
-                        <th>Professional</th>
-                        <th>Request Date</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for booking in cancelled_bookings %}
-                    <tr data-id="{{ booking.id }}">
-                        <td>
-                            <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}">
-
-                                #cnd{{ loop.index }}
-                            </a>
-                        </td>
-                        <td>{{ booking.service.name }}</td>
-                        <td>{{ booking.professional.first_name }} {{ booking.professional.last_name }}</td>
-                        <td>{{ booking.booking_date.strftime('%Y-%m-%d') }}</td>
-                        <td><span class="status {{ booking.status | lower }}">{{ booking.status }}</td>
-                        <td>
-                            <a href="{{ url_for('user.cart') }}">
-                                <button type="button" class="rebook-btn">Rebook</button>
-                            </a>
-                        </td>
-
-                    </tr>
-                    {% else %}
-                    <tr class="empty">
-                        <td colspan="5">No services Cancelled or Rejected</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Cancelled/Rejected Bookings -->
+        <div class="panel cancelled-bookings">
+            <h3 class="panel-heading">Cancelled/Rejected Bookings</h3>
+            <div class="table-container">
+                <table class="parking-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Parking Lot</th>
+                            <th>Vehicle</th>
+                            <th>Requested Time</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in cancelled_bookings %}
+                        <tr>
+                            <td>#CAN{{ booking.id }}</td>
+                            <td>{{ booking.spot.lot.prime_location_name }}</td>
+                            <td>{{ booking.vehicle.license_plate }}</td>
+                            <td>{{ booking.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td><span class="status cancelled">{{ booking.status }}</span></td>
+                            <td>{{ booking.cancellation_reason or "User cancelled" }}</td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty">
+                            <td colspan="6">No cancelled/rejected bookings</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
-    <div class="service-history-panel">
-        <h3 class="panel-headings">Booking History</h3>
-        <div class="table-container">
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>S.id</th>
-                        <th>Service</th>
-                        <th>Professional</th>
-                        <th>D.O.C.</th>
-                        <th>Location</th>
-                        <th>Review</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for booking in service_history %}
-                    <tr data-id="{{ booking.id }}">
-                        <td>
-                            <a href="{{ url_for('user.user_view_booking_info', booking_id=booking.id) }}">
-
-                                #hst{{ loop.index }}
-                            </a>
-                        </td>
-                        <td>{{ booking.service.name }}</td>
-                        <td>{{ booking.professional.first_name }} {{ booking.professional.last_name }}</td>
-                        <td>{{ booking.booking_date.strftime('%Y-%m-%d') }}</td>
-                        <td>{{ booking.location }}</td>
-                        <td>
-                            {% if booking.review %}
-                            {{ booking.review }}
-
-                            {% else %}
-                            <a href="{{url_for('user.review', booking_id=booking.id)}}">
-                                <button class="review-btn">Review</button>
-                            </a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr class="empty">
-                        <td colspan="4">No services done</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Parking History -->
+        <div class="panel parking-history">
+            <h3 class="panel-heading">Parking History</h3>
+            <div class="table-container">
+                <table class="parking-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Parking Lot</th>
+                            <th>Vehicle</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                            <th>Amount</th>
+                            <th>Review</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for history in parking_history %}
+                        <tr>
+                            <td>#HIS{{ history.id }}</td>
+                            <td>{{ history.spot.lot.prime_location_name }}</td>
+                            <td>{{ history.vehicle.license_plate }}</td>
+                            <td>{{ history.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ history.leaving_timestamp.strftime('%Y-%m-%d %H:%M') if history.leaving_timestamp
+                                else 'N/A' }}</td>
+                            <td>₹{{ history.parking_cost }}</td>
+                            <td>
+                                {% if history.review %}
+                                {{ history.review.rating }}★
+                                {% else %}
+                                <button class="review-btn" data-booking-id="{{ history.id }}">
+                                    Add Review
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty">
+                            <td colspan="7">No parking history found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

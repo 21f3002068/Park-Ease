@@ -1,0 +1,38 @@
+{% extends 'user/udash_base.html' %}
+
+{% block title %}Book Parking{% endblock %}
+
+{% block content %}
+<div class="booking-container">
+    <h2>Book Parking at {{ parking_lot.prime_location_name }}</h2>
+    
+    <div class="lot-info">
+        <p><strong>Address:</strong> {{ parking_lot.address }}</p>
+        <p><strong>Price per hour:</strong> ₹{{ parking_lot.price_per_hour }}</p>
+        <p><strong>Available spots:</strong> {{ available_spots_count }}</p>
+    </div>
+    
+    <form method="POST" class="booking-form">
+        <div class="form-group">
+            <label for="vehicle_id">Select Vehicle:</label>
+            <select name="vehicle_id" id="vehicle_id" required>
+                {% for vehicle in vehicles %}
+                <option value="{{ vehicle.id }}">
+                    {{ vehicle.vehicle_name }} ({{ vehicle.license_plate }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="hours">Duration (hours):</label>
+            <input type="number" name="hours" id="hours" min="1" max="24" value="1" required>
+        </div>
+        
+        <div class="form-group">
+            <button type="submit" class="book-btn">Confirm Booking</button>
+            <a href="{{ url_for('user.locations') }}" class="cancel-btn">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

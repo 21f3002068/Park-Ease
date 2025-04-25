@@ -1,18 +1,145 @@
 {% extends 'user/udash_base.html' %}
 
-
-{% block title %} User Dashboard {% endblock %}
-
-
+{% block title %}User Dashboard{% endblock %}
 
 {% block body %}
 {% block content %}
 
+<div class="user-dashboard">
+    <!-- User Greeting -->
+    <div class="user-greeting">
+        <h1>Hello, {{ current_user.firstname }}!</h1>
+        <p class="welcome-message">Welcome to your parking dashboard</p>
 
-<div class="user-greeting">
-    Hello, {{ current_user.firstname }}!
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="dashboard-grid">
+        <!-- Current Parking (Left Vertical Rectangle) -->
+        <div class="current-parking-section">
+            <h2><ion-icon name="car-sport-outline"></ion-icon> Current Parking</h2>
+
+            {% if current_parking %}
+            <div class="parking-card">
+                <div class="parking-info">
+                    <div class="info-row">
+                        <span class="label">Vehicle:</span>
+                        <span class="value">{{ current_parking.vehicle.vehicle_name }} ({{
+                            current_parking.vehicle.license_plate }})</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Location:</span>
+                        <span class="value">{{ current_parking.spot.lot.prime_location_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Spot Number:</span>
+                        <span class="value">#{{ current_parking.spot.spot_number }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Parked Since:</span>
+                        <span class="value">{{ current_parking.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Duration:</span>
+                        <span class="value">{{ calculate_duration(current_parking.parking_timestamp) }}</span>
+                    </div>
+                </div>
+                <div class="parking-actions">
+                    <form action="{{ url_for('user.park_out', reservation_id=current_parking.id) }}" method="POST">
+                        <button type="submit" class="park-out-btn">
+                            <ion-icon name="exit-outline"></ion-icon> Park Out
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-parking">
+                <p>No active parking session</p>
+                <a href="#" class="find-parking-btn">
+                    <ion-icon name="search-outline"></ion-icon> Find Parking
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column (Vehicles on top, History on bottom) -->
+        <div class="right-column">
+            <!-- Your Vehicles -->
+            <div class="vehicles-section">
+                <h2><ion-icon name="car-outline"></ion-icon> Your Vehicles</h2>
+                <div class="vehicle-cards">
+                    {% for vehicle in current_user.vehicles %}
+                    <div class="vehicle-card">
+                        <div class="vehicle-icon">
+                            {% if vehicle.vehicle_type == 'car' %}
+                            <ion-icon name="car-sport-outline"></ion-icon>
+                            {% elif vehicle.vehicle_type == 'bike' %}
+                            <ion-icon name="bicycle-outline"></ion-icon>
+                            {% else %}
+                            <ion-icon name="car-outline"></ion-icon>
+                            {% endif %}
+                        </div>
+                        <div class="vehicle-info">
+                            <h3>{{ vehicle.vehicle_name or 'My Vehicle' }}</h3>
+                            <p>{{ vehicle.license_plate }}</p>
+                            <p>{{ vehicle.color }} • {{ vehicle.vehicle_type or 'vehicle' }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="add-vehicle-card">
+                        <a href="{{ url_for('user.add_vehicle') }}" class="add-vehicle-btn">
+                            <ion-icon name="add-outline"></ion-icon>
+                            <span>Add Vehicle</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parking History -->
+            <div class="history-section">
+                <h2><ion-icon name="time-outline"></ion-icon> Recent Parking History</h2>
+                <div class="history-table">
+                    {% if parking_history %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Vehicle</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in parking_history %}
+                            <tr>
+                                <td>{{ record.parking_timestamp.strftime('%b %d') }}</td>
+                                <td>{{ record.spot.lot.prime_location_name }}</td>
+                                <td>{{ record.vehicle.license_plate }}</td>
+                                <td>
+                                    {% if record.leaving_timestamp %}
+                                    {{ (record.leaving_timestamp - record.parking_timestamp).seconds // 3600 }}h
+                                    {{ ((record.leaving_timestamp - record.parking_timestamp).seconds % 3600) // 60 }}m
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="view-all">
+                        <a href="#">View All</a>
+                    </div>
+                    {% else %}
+                    <p class="no-history">No parking history found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </div>
-
 
 {% endblock %}
 {% endblock %}

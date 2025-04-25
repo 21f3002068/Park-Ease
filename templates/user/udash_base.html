@@ -25,7 +25,15 @@
 </head>
 
 <body>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flash-messages">
+        {% for category, message in messages %}
+        <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
     <nav class="user-nav-bar">
 
         <div class="company-container">
@@ -62,6 +70,12 @@
                 <a href="{{ url_for('user.dashboard') }}">
                     <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
                     <span class="title">Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('user.locations') }}">
+                    <span class="icon"><ion-icon name="location-outline"></ion-icon></span>
+                    <span class="title">Locations</span>
                 </a>
             </li>
             <li>

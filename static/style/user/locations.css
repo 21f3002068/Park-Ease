@@ -1,0 +1,79 @@
+/* Action Buttons */
+.card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: flex-end;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.action-label {
+    display: none;
+}
+
+.details-btn {
+    background: rgba(74, 107, 175, 0.1);
+    color: #4a6baf;
+}
+
+.book-btn {
+    background: #4a6baf;
+    color: white;
+}
+
+.book-btn.disabled {
+    background: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+.favorite-btn {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+/* Hover Effects */
+.details-btn:hover {
+    background: rgba(74, 107, 175, 0.2);
+}
+
+.book-btn:not(.disabled):hover {
+    background: #3a5a99;
+}
+
+.favorite-btn:hover {
+    background: rgba(255, 193, 7, 0.2);
+}
+
+/* Find Parking Button */
+.find-parking-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #4a6baf;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-top: 20px;
+    font-weight: 500;
+}
+
+/* Responsive Adjustments */
+@media (min-width: 768px) {
+    .action-label {
+        display: inline;
+    }
+}

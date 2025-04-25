@@ -1,0 +1,109 @@
+{% extends 'user/udash_base.html' %}
+
+{% block title %}Parking Locations{% endblock %}
+
+{% block custom_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='/style/user/locations.css') }}">
+{% endblock%}
+
+{% block body %}
+{% block content %}
+
+<div class="locations-wrapper">
+    {% for item in location_data %}
+    <div class="location-section">
+        <div class="location-header">
+            <h2>
+                <ion-icon name="business-outline"></ion-icon>
+                {{ item.location.name }}
+            </h2>
+        </div>
+
+        <p class="location-address">
+            <ion-icon name="location-outline"></ion-icon>
+            {{ item.location.address }} | Max Spots: {{ item.location.max_parking_spots }}
+        </p>
+        <div class="lot-cards">
+            {% for lot in item.lots %}
+            <div class="lot-card">
+                <div class="status-dot {% if lot.is_active %}active{% else %}inactive{% endif %}"></div>
+
+                <h3>{{ lot.prime_location_name }}</h3>
+                <p><strong>Pin Code:</strong> {{ lot.pin_code }}</p>
+                <p><strong>Price/hr:</strong> ₹{{ lot.price_per_hour }}</p>
+                <p><strong>Available Spots:</strong> {{ spots_count.get(lot.id, 0) }}/{{ lot.number_of_spots }}</p>
+                <p><strong>Time:</strong> {{ lot.available_from }} - {{ lot.available_to }}</p>
+
+                <!-- User Actions -->
+                <div class="card-actions">
+                    <!-- View Details Button -->
+                    <a href="{{ url_for('user.view_parking_details', lot_id=lot.id) }}" class="action-btn details-btn"
+                        title="View Details">
+                        <ion-icon name="information-circle-outline"></ion-icon>
+                        <span class="action-label">Details</span>
+                    </a>
+
+                    <!-- Book Now Button -->
+                    <a href="{{ url_for('user.book_parking', lot_id=lot.id) }}"
+                        class="action-btn book-btn {% if not lot.is_active or available_spots_count(lot) == 0 %}disabled{% endif %}"
+                        title="Book Now" {% if not lot.is_active or available_spots_count(lot)==0 %}aria-disabled="true"
+                        {% endif %}>
+                        <ion-icon name="calendar-outline"></ion-icon>
+                        <span class="action-label">Book</span>
+                    </a>
+
+                    <!-- Favorite Button -->
+                    <button class="action-btn favorite-btn" title="Add to Favorites"
+                        onclick="toggleFavorite({{ lot.id }})">
+                        <ion-icon name="heart-outline" id="fav-icon-{{ lot.id }}"></ion-icon>
+                        <span class="action-label">Save</span>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<a href="#" class="find-parking-btn">
+    <ion-icon name="search-outline"></ion-icon> Find Parking Near Me
+</a>
+
+
+<script>
+    function toggleFavorite(lotId) {
+        const icon = document.getElementById(`fav-icon-${lotId}`);
+
+        // Toggle between heart outline and heart filled
+        if (icon.getAttribute('name') === 'heart-outline') {
+            icon.setAttribute('name', 'heart');
+            // Call API to add to favorites
+            fetch(`/user/favorites/${lotId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Added to favorites');
+                    }
+                });
+        } else {
+            icon.setAttribute('name', 'heart-outline');
+            // Call API to remove from favorites
+            fetch(`/user/favorites/${lotId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Removed from favorites');
+                    }
+                });
+        }
+    }
+
+    function showToast(message) {
+        // Implement your toast notification here
+        console.log(message); // Replace with actual toast implementation
+    }
+</script>
+
+{% endblock %}
+{% endblock %}

@@ -88,20 +88,33 @@ class Reservation(db.Model):
     parking_timestamp = db.Column(db.DateTime)
     leaving_timestamp = db.Column(db.DateTime)
     parking_cost = db.Column(db.Float)
-
-
+    status = db.Column(db.String(20), default='Pending')
+    cancellation_reason = db.Column(db.String(200))
+    
+    # Define relationships - removed backref from vehicle
+    spot = db.relationship('ParkingSpot', backref='reservations')
+    user = db.relationship('User', backref='reservations')
+    vehicle = db.relationship('Vehicle')  # No backref here
 
 class Vehicle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     vehicle_name = db.Column(db.String(100))
     license_plate = db.Column(db.String(20), unique=True, nullable=False)
-    vehicle_type = db.Column(db.String(20))  
     color = db.Column(db.String(50))
-    
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-    # Relationship
-    reservations = db.relationship('Reservation', backref='vehicle', lazy=True)
+    # Relationship - using back_populates instead of backref
+    reservations = db.relationship('Reservation', back_populates='vehicle', lazy=True)
 
     def __repr__(self):
         return f'<Vehicle {self.license_plate}>'
+
+
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    reservation_id = db.Column(db.Integer, db.ForeignKey('reservation.id'))
+    rating = db.Column(db.Integer)
+    comment = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    reservation = db.relationship('Reservation', backref=db.backref('review', uselist=False))

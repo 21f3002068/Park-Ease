@@ -1,0 +1,50 @@
+{% extends 'user/udash_base.html' %}
+
+{% block title %}Add Vehicle{% endblock %}
+
+{% block custom_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style/partials/_add_new_vehicle.css') }}">
+
+{% endblock %}
+
+
+
+{% block content %}
+<div class="vehicle-form-container">
+    <h2>Add Your Vehicle</h2>
+    
+    {% if return_to %}
+    <p class="info-message">You need to add a vehicle before booking parking</p>
+    {% endif %}
+    
+    <form method="POST" class="vehicle-form">
+        <div class="form-group">
+            <label for="vehicle_name">Vehicle Nickname (Optional):</label>
+            <input type="text" id="vehicle_name" name="vehicle_name" 
+                   placeholder="e.g. My Work Car">
+        </div>
+        
+        <div class="form-group">
+            <label for="license_plate">License Plate:*</label>
+            <input type="text" id="license_plate" name="license_plate" 
+                   required placeholder="e.g. ABC1234">
+        </div>
+        
+        
+        <div class="form-group">
+            <label for="color">Color:*</label>
+            <input type="text" id="color" name="color" required 
+                   placeholder="e.g. Red, Blue, Black">
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="submit-btn">Add Vehicle</button>
+            <a href="{{ url_for('user.profile') }}" class="cancel-btn">Cancel</a>
+        </div>
+        
+        {% if return_to %}
+        <input type="hidden" name="return_to" value="{{ return_to }}">
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
