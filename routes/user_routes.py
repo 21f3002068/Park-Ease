@@ -260,8 +260,42 @@ def available_spots_count(lot):
 
 @user_bp.route('/parking/<int:lot_id>')
 def view_parking_details(lot_id):
-    # Detailed view endpoint
-    return None
+
+    parking_lot = ParkingLot.query.get(lot_id)
+    all_locations = Location.query.options(
+        joinedload(Location.parking_lots)
+    ).all()
+    
+    lot_ids = [lot.id for loc in all_locations for lot in loc.parking_lots]
+
+    
+    if not parking_lot:
+        return "Parking lot not found", 404
+    
+    # Count available spots per lot in one query
+    spots_count = dict(db.session.query(
+        ParkingSpot.lot_id,
+        func.count(ParkingSpot.id)
+    ).filter(
+        ParkingSpot.lot_id.in_(lot_ids),
+        ParkingSpot.status == 'A'
+    ).group_by(ParkingSpot.lot_id).all())
+    
+    # Prepare data for template
+    location_data = []
+    for loc in all_locations:
+        location_data.append({
+            "location": loc,
+            "lots": loc.parking_lots,
+            "spots_count": spots_count
+        })
+
+    
+    return render_template('partials/_view_parking_details.html', 
+                        lot=parking_lot,
+                        location_data=location_data,
+                        spots_count=spots_count,
+                        available_spots_count=lambda lot: spots_count.get(lot.id, 0))
 
 
 

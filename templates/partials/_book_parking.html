@@ -2,12 +2,17 @@
 
 {% block title %}Book Parking{% endblock %}
 
+{% block custom_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style/partials/_book_parking.css') }}">
+
+{% endblock %}
+
 {% block content %}
 <div class="booking-container">
     <h2>Book Parking at {{ parking_lot.prime_location_name }}</h2>
     
     <div class="lot-info">
-        <p><strong>Address:</strong> {{ parking_lot.address }}</p>
+        <p><strong>Address:</strong> {{ parking_lot.location_ref.address }}</p>
         <p><strong>Price per hour:</strong> ₹{{ parking_lot.price_per_hour }}</p>
         <p><strong>Available spots:</strong> {{ available_spots_count }}</p>
     </div>

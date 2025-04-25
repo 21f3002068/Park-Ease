@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename='style/partials/_view_parking_details.css')}}">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <title>Parking Details</title>
+</head>
+
+<body>
+
+
+    <div class="parking-lot-details">
+        <h2 class="lot-title">Parking Lot Details</h2>
+
+        <div class="lot-info-card">
+            <div class="lot-info-grid">
+                <div class="info-item">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">{{ lot.prime_location_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Address:</span>
+                    <span class="info-value">{{ lot.location_ref.address }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Pin Code:</span>
+                    <span class="info-value">{{ lot.pin_code }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Location:</span>
+                    <span class="info-value">{{ lot.location_ref.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Price per Hour:</span>
+                    <span class="info-value">${{ lot.price_per_hour }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Available Hours:</span>
+                    <span class="info-value">{{ lot.available_from.strftime('%I:%M %p') }} to {{
+                        lot.available_to.strftime('%I:%M %p') }}</span>
+                </div>
+                <div class="info-item full-width">
+                    <span class="info-label">Available Spots:</span>
+                    <span class="info-value">{{ spots_count.get(lot.id, 0) }}/{{ lot.number_of_spots }}</span>
+                </div>
+                <div class="info-item full-width">
+                    <span class="info-label">Admin Notes:</span>
+                    <span class="info-value">{{ lot.admin_notes or 'No notes available' }}</span>
+                </div>
+            </div>
+
+            <div class="lot-image-container">
+                {% if lot.image_url %}
+                <img src="{{ lot.image_url }}" alt="Parking Lot Image" class="parking-lot-image">
+                {% else %}
+                <div class="no-image-placeholder">
+                    <i class="fas fa-image"></i>
+                    <p>No image available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn favorite-btn" title="Add to Favorites" onclick="toggleFavorite({{ lot.id }})">
+                <ion-icon name="heart-outline" id="fav-icon-{{ lot.id }}"></ion-icon>
+                <span class="action-label">Save</span>
+            </button>
+
+            <a href="{{ url_for('user.book_parking', lot_id=lot.id) }}"
+                class="action-btn book-btn {% if not lot.is_active or available_spots_count(lot) == 0 %}disabled{% endif %}"
+                title="Book Now" {% if not lot.is_active or available_spots_count(lot)==0 %}aria-disabled="true" {%
+                endif %}>
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span class="action-label">Book</span>
+            </a>
+        </div>
+    </div>
+
+
+    <script>
+        function toggleFavorite(lotId) {
+            const icon = document.getElementById(`fav-icon-${lotId}`);
+
+            // Toggle between heart outline and heart filled
+            if (icon.getAttribute('name') === 'heart-outline') {
+                icon.setAttribute('name', 'heart');
+                // Call API to add to favorites
+                fetch(`/user/favorites/${lotId}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Added to favorites');
+                        }
+                    });
+            } else {
+                icon.setAttribute('name', 'heart-outline');
+                // Call API to remove from favorites
+                fetch(`/user/favorites/${lotId}`, { method: 'DELETE' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Removed from favorites');
+                        }
+                    });
+            }
+        }
+
+        function showToast(message) {
+            // Implement your toast notification here
+            console.log(message); // Replace with actual toast implementation
+        }
+    </script>
+</body>
+
+</html>
