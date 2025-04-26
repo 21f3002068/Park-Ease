@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename='style/partials/_edit_vehicle.css')}}">
+    <title>Edit Vehicle</title>
+</head>
+<body>
+    
+    
+    <form method="POST" class="vehicle-form">
+        <div class="form-group">
+            <label for="vehicle_name">Vehicle Name</label>
+            <input type="text" id="vehicle_name" name="vehicle_name" value="{{ vehicle.vehicle_name }}" required>
+        </div>
+    
+        <div class="form-group">
+            <label for="license_plate">License Plate</label>
+            <input type="text" id="license_plate" name="license_plate" value="{{ vehicle.license_plate }}" required>
+        </div>
+    
+        <div class="form-group">
+            <label for="color">Color</label>
+            <div class="color-input">
+                <input type="color" id="color-picker" value="{{ vehicle.color }}" onchange="updateColorText(this.value)">
+                <input type="text" id="color" name="color" value="{{ vehicle.color }}" required>
+            </div>
+        </div>
+    
+        <div class="form-actions">
+            <button type="submit" class="btn-save">Save Changes</button>
+            <a href="{{ url_for('user.profile') }}" class="btn-cancel">Cancel</a>
+        </div>
+    </form>
+    
+    <script>
+        function updateColorText(color) {
+            document.getElementById('color').value = color;
+        }
+    </script>
+
+</body>
+</html>

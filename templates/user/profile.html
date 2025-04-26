@@ -57,42 +57,35 @@ Profile
     </div>
 
     <div class="mid-section">
-        
+
         <!-- Favorites Section -->
         <div class="saved-parking-div">
-            
-            <div class="section-header">
-                <h2 class="section-title"><i class="fas fa-heart"></i> Saved Parking Lots</h2>
+            <div class="section-header-1">
+                <h2 class="section-title-1"><i class="fas fa-heart"></i> Saved Parking Lots</h2>
             </div>
-            
+
             {% if favorites %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Parking Lot</th>
-                        <th>Location</th>
-                        <th>Price/Hour</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for lot in favorites %}
-                    <tr>
-                        <td>{{ lot.prime_location_name }}</td>
-                        <td>{{ lot.location_ref.name }}</td>
-                        <td>${{ "%.2f"|format(lot.price_per_hour) }}</td>
-                        <td>
+            <div class="card-container">
+                {% for lot in favorites %}
+                <div class="parking-card">
+                    <div class="card-header">
+                        <h3>{{ lot.prime_location_name }}</h3>
+                        <span class="price-tag">${{ "%.2f"|format(lot.price_per_hour) }}/hr</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> {{ lot.location_ref.name }}</p>
+                        <div class="card-actions">
                             <a href="{{ url_for('user.book_parking', lot_id=lot.id) }}" class="btn btn-primary">
                                 <i class="fas fa-calendar-alt"></i> Book
                             </a>
-                            <button class="btn btn-danger" onclick="removeFavorite({{ lot.id }})">
+                            <button class="btn btn-outline-danger" onclick="removeFavorite({{ lot.id }})">
                                 <i class="fas fa-trash"></i> Remove
                             </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
             {% else %}
             <div class="empty-state">
                 <i class="fas fa-heart"></i>
@@ -102,54 +95,52 @@ Profile
                     <i class="fas fa-search"></i> Find Parking
                 </a>
             </div>
+            {% endif %}
         </div>
-        {% endif %}
-        
-        
+
+
         <!-- Vehicles Section -->
         <div class="my-vehicle-div">
-            <div class="section-header">
-                <h2 class="section-title"><i class="fas fa-car"></i> My Vehicles</h2>
+            <div class="section-header-1">
+                <h2 class="section-title-1"><i class="fas fa-car"></i> My Vehicles</h2>
                 <div class="add-vehicle-btn">
                     <button class="btn btn-primary" onclick="showAddVehicleForm()">
                         <i class="fas fa-plus"></i>
-                        Add Vehicle
+                        <a href="{{url_for('user.add_vehicle')}}" class="add-vehicle-link">
+
+                            Add Vehicle
+                        </a>
                     </button>
                 </div>
             </div>
 
             {% if user.vehicles %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Vehicle Name</th>
-                        <th>License Plate</th>
-                        <th>Color</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vehicle in user.vehicles %}
-                    <tr>
-                        <td>{{ vehicle.vehicle_name }}</td>
-                        <td>{{ vehicle.license_plate }}</td>
-                        <td>
-                            <span
-                                style="display: inline-block; width: 15px; height: 15px; background-color: {{ vehicle.color }}; border-radius: 3px;"></span>
-                            {{ vehicle.color }}
-                        </td>
-                        <td>
-                            <button class="btn btn-outline" onclick="editVehicle({{ vehicle.id }})">
+            <div class="card-container">
+                {% for vehicle in user.vehicles %}
+                <div class="vehicle-card" data-vehicle-id="{{ vehicle.id }}">
+                    <div class="card-header">
+                        <h3>{{ vehicle.vehicle_name }}</h3>
+                        <span class="license-plate">{{ vehicle.license_plate }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="vehicle-color">
+                            <span class="color-swatch" style="background-color: {{ vehicle.color }};"></span>
+                            <span class="color-value">{{ vehicle.color }}</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="{{ url_for('user.edit_vehicle', vehicle_id=vehicle.id) }}" class="btn btn-primary">
                                 <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-danger" onclick="confirmDeleteVehicle({{ vehicle.id }})">
-                                <i class="fas fa-trash"></i> Remove
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </a>
+                            <form action="{{ url_for('user.delete_vehicle', vehicle_id=vehicle.id) }}" method="POST">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Delete Vehicle
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
             {% else %}
             <div class="empty-state">
                 <i class="fas fa-car"></i>
@@ -161,9 +152,7 @@ Profile
             </div>
             {% endif %}
         </div>
-
     </div>
-
     <!-- Reservations Section -->
     <div class="section">
         <div class="section-header">
@@ -315,6 +304,7 @@ Profile
             // In a real implementation, this would make an API call
         }
     }
+
 </script>
 
 {% endblock %}

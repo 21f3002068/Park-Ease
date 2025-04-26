@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session, abort, jsonify
 from model import *
 import logging
 from sqlalchemy.orm import joinedload
@@ -556,3 +556,37 @@ def profile():
         .all()
     )
     return render_template('user/profile.html', user=current_user, user_reviews=user_reviews)
+
+
+
+
+@user_bp.route('/edit_vehicle/<int:vehicle_id>', methods=['GET', 'POST'])
+@login_required
+def edit_vehicle(vehicle_id):
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    if vehicle.user_id != current_user.id:
+        abort(403)
+
+    if request.method == 'POST':
+        vehicle.vehicle_name = request.form['vehicle_name']
+        vehicle.license_plate = request.form['license_plate']
+        vehicle.color = request.form['color']
+
+        db.session.commit()
+        return redirect(url_for('user.profile'))
+
+    return render_template('partials/_edit_vehicle.html', vehicle=vehicle)
+
+
+
+@user_bp.route('/user/delete_vehicle/<int:vehicle_id>', methods=['POST'])
+@login_required
+def delete_vehicle(vehicle_id):
+    vehicle = Vehicle.query.get_or_404(vehicle_id)
+    if vehicle.user_id != current_user.id:
+        abort(403)
+    
+    db.session.delete(vehicle)
+    db.session.commit()
+    flash('Vehicle deleted successfully', 'success')
+    return redirect(url_for('user.profile'))
