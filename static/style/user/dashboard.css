@@ -1,11 +1,16 @@
 .user-dashboard {
     padding: 20px;
+    padding-top: 0px;
     max-width: 1200px;
     margin: 0 auto;
+    /* border: 2px solid red; */
+    
 }
 
 .user-greeting {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    padding-left: 20px;
+    /* border: 2px solid red; */
 }
 
 .user-greeting h1 {
@@ -37,50 +42,149 @@
 .history-section {
     background: white;
     padding: 20px;
+    padding-top: 10px;
+    max-height: 400px;
+    overflow-y: scroll;
+    /* border: 2px solid red; */
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Current Parking Card */
-.parking-card {
-    display: flex;
-    flex-direction: column;
-    height: calc(100% - 40px);
-    justify-content: space-between;
-}
+  
 
-.parking-info {
-    margin-bottom: 20px;
-}
+/* Current Parking Section */
+.current-parking-section {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+    }
+    
+    .current-parking-section h2 {
+        color: #2c3e50;
+        font-size: 1.4rem;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-.info-row {
-    display: flex;
-    margin-bottom: 10px;
-}
+    /* Parking Card */
+    .parking-card {
+        border: 1px solid #25c58583;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(18, 229, 39, 0.2); /* Greenish shadow */
+        transition: all 0.3s ease;
+        /* border: 2px solid red; */
+        position: relative;
+    }
+    
+    /* Optional: Add a subtle green glow on hover */
+    /* .parking-card:hover {
+        box-shadow: 0 3px 10px rgba(18, 229, 39, 0.3);
+        transform: translateY(-2px);
+    } */
+    
+    /* For extra style, add a green accent border */
+    .parking-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #494949, #494949);
+        border-radius: 8px 8px 0 0;
+    }
 
-.label {
-    font-weight: bold;
-    min-width: 120px;
-    color: #555;
-}
+    .parking-info {
+        padding: 20px;
+    }
 
-.value {
-    color: #333;
-}
+    .info-row {
+        display: flex;
+        margin-bottom: 12px;
+        line-height: 1.5;
+    }
 
-.park-out-btn {
-    background: #d9534f;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 4px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    transition: background 0.2s;
-    margin-top: auto;
-}
+    .info-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .label {
+        font-weight: 600;
+        color: #34495e;
+        min-width: 120px;
+    }
+
+    .value {
+        color: #2c3e50;
+    }
+
+    /* Parking Actions */
+    .parking-actions {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-top: 1px solid #e0e0e0;
+        text-align: right;
+    }
+
+    .park-out-btn {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s;
+    }
+
+    .park-out-btn:hover {
+        background-color: #c0392b;
+    }
+
+    /* No Parking State */
+    .no-parking {
+        text-align: center;
+        padding: 30px 20px;
+        border: 2px dashed #e0e0e0;
+        border-radius: 8px;
+    }
+
+    .no-parking p {
+        color: #7f8c8d;
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+    }
+
+    .find-parking-btn {
+        background-color: #4a6baf;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s;
+    }
+
+    .find-parking-btn:hover {
+        background-color: #3a5a9f;
+    }
+
+    /* Icons */
+    ion-icon {
+        font-size: 1.2em;
+        vertical-align: middle;
+    }
+
 
 /* Vehicles Section */
 .vehicle-cards {

@@ -9,7 +9,7 @@
     <!-- User Greeting -->
     <div class="user-greeting">
         <h1>Hello, {{ current_user.firstname }}!</h1>
-        <p class="welcome-message">Welcome to your parking dashboard</p>
+        <p class="welcome-message">Welcome to your ParkEase dashboard. Let's make parking effortless today!</p>
 
     </div>
 
@@ -17,7 +17,7 @@
     <div class="dashboard-grid">
         <!-- Current Parking (Left Vertical Rectangle) -->
         <div class="current-parking-section">
-            <h2><ion-icon name="car-sport-outline"></ion-icon> Current Parking</h2>
+            <h2><ion-icon name="car-sport-outline"></ion-icon> Currently Parked</h2>
 
             {% if current_parking %}
             <div class="parking-card">
@@ -128,8 +128,9 @@
                         </tbody>
                     </table>
                     <div class="view-all">
-                        <a href="#">View All</a>
+                        <a href="{{ url_for('user.profile') }}#reservation-history">View All</a>
                     </div>
+                    
                     {% else %}
                     <p class="no-history">No parking history found</p>
                     {% endif %}

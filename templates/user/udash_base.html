@@ -39,8 +39,8 @@
         <div class="company-container">
             <div class="company-logo-div">
                 <a href="#">
-                    <img class="company-logo-img"
-                        src="{{ url_for('static', filename='style/images/HomeEase logo.png') }}" alt="company logo">
+                    <img class="company-logo-img" src="{{ url_for('static', filename='image/ParkEase Logo.png') }}"
+                        alt="company logo" style="border-radius: 50%;">
 
                 </a>
             </div>
@@ -51,14 +51,25 @@
             </div>
         </div>
 
-        <div class="search-container search">
-            <form action="{{ url_for('user.search') }}" method="GET">
-                <input type="text" class="search-input" name="query" placeholder="Search locations or parkings...">
-                <button class="search-btn" type="submit">
-                    <img src="{{ url_for('static', filename='style/images/search_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg') }}"
-                        alt="Search">
-                </button>
-            </form>
+        <div class="right-section">
+
+            <div class="search-container">
+                <form action="{{ url_for('user.search') }}" method="GET" class="search-form">
+                    <input type="text" class="search-input" name="query" placeholder="Search locations or parking..."
+                        aria-label="Search">
+                    <button class="search-btn" type="submit" aria-label="Submit search">
+                        <ion-icon name="search-outline" class="search-icon"></ion-icon>
+                    </button>
+                </form>
+            </div>
+
+            <div class="profile-icon">
+                <a href="{{url_for('user.profile')}}">
+                    <ion-icon name="person-circle-outline" class="profile-icon-icon"></ion-icon>
+                </a>
+                
+            </div>
+
         </div>
 
 
@@ -66,37 +77,38 @@
 
     <div class="sidebar">
         <ul class="nav-links">
+            {% set current_path = request.path %}
             <li>
-                <a href="{{ url_for('user.dashboard') }}">
+                <a href="{{ url_for('user.dashboard') }}" class="{% if current_path == url_for('user.dashboard') %}active{% endif %}">
                     <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
                     <span class="title">Home</span>
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('user.locations') }}">
+                <a href="{{ url_for('user.locations') }}" class="{% if current_path == url_for('user.locations') %}active{% endif %}">
                     <span class="icon"><ion-icon name="location-outline"></ion-icon></span>
                     <span class="title">Locations</span>
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('user.bookings') }}">
+                <a href="{{ url_for('user.bookings') }}" class="{% if current_path == url_for('user.bookings') %}active{% endif %}">
                     <span class="icon"><ion-icon name="calendar-outline"></ion-icon></span>
                     <span class="title">My Bookings</span>
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('user.statistics') }}">
+                <a href="{{ url_for('user.statistics') }}" class="{% if current_path == url_for('user.statistics') %}active{% endif %}">
                     <span class="icon"><ion-icon name="bar-chart-outline"></ion-icon></span>
                     <span class="title">Stats</span>
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('user.profile') }}">
+                <a href="{{ url_for('user.profile') }}" class="{% if current_path == url_for('user.profile') %}active{% endif %}">
                     <span class="icon"><ion-icon name="person-outline"></ion-icon></span>
                     <span class="title">Profile</span>
                 </a>
             </li>
-            <li>
+            <li class="logout-link">
                 <a href="{{ url_for('logout') }}">
                     <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
                     <span class="title">Logout</span>
@@ -104,7 +116,7 @@
             </li>
         </ul>
     </div>
-    
+
 
 
     <div class="main-content">
@@ -114,12 +126,12 @@
         {% endblock %}
         {% endblock %}
     </div>
-    
+
 
 
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    
+
 
 </body>
 

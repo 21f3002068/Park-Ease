@@ -41,6 +41,28 @@ body {
     font-size: 3.5rem;
 }
 
+.profile-name {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between name and edit icon */
+    /* border: 2px solid red; */
+    font-size: 2rem; /* Your heading size */
+}
+
+.edit-profile-link {
+    color: var(--primary); /* Match your site's theme */
+    font-size: 1.2rem; /* Slightly smaller than name */
+    text-decoration: none;
+    /* border: 2px solid red; */
+    padding-top: 5px;
+    padding-left: 5px;
+}
+
+.edit-profile-link:hover {
+    color: #2980b9; /* Hover effect if you want */
+}
+
+
 .profile-info {
     flex: 1;
 }
@@ -144,12 +166,16 @@ body {
     /* border: 2px solid red; */
     background-color: white;
     padding: 25px;
+    flex: 1 1 48%;
     border-radius: 10px;
 }
 .saved-parking-div{
     /* border: 2px solid red; */
     border-radius: 10px;
     padding: 25px;
+    flex: 1 1 48%;
+    max-width: 48%;
+    /* box-sizing: border-box; */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     background-color: white;
 }
@@ -267,8 +293,9 @@ body {
 
 .color-swatch {
     display: inline-block;
-    width: 16px;
-    height: 16px;
+    border: 2px solid red;
+    width: 14px;
+    height: 14px;
     border-radius: 3px;
     border: 1px solid #e0e0e0;
 }
@@ -303,15 +330,7 @@ body {
     font-size: 0.85rem;
 }
 
-.custom-btn-primary {
-    background-color: var(--primary, #4a6baf);
-    color: white;
-}
 
-.custom-btn-primary:hover {
-    background-color: #2980b9;
-    transform: translateY(-2px);
-}
 
 .custom-btn-outline {
     background-color: transparent;
@@ -406,14 +425,66 @@ body {
     background-color: rgba(52, 152, 219, 0.1);
 }
 
-.btn-danger {
-    background-color: var(--danger);
-    color: white;
+/* .btn-icon {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--primary);
+    transition: transform 0.2s, color 0.2s;
 }
 
-.btn-danger:hover {
-    background-color: #c0392b;
+.btn-icon.btn-danger {
+    color: var(--danger);
 }
+
+.btn-icon:hover {
+    transform: scale(1.2);
+}
+    */
+
+
+    .card-actions{
+        align-items: center;
+        /* border: 2px solid red; */
+        /* align-content: end; */
+        margin-right: auto;
+    }
+
+    .vehicle-action {
+        background: none;
+        border: none;
+        padding: 4px;
+        /* border: 2px solid red; */
+        cursor: pointer;
+        font-size: 15px;
+        color: gray; /* Neutral color by default */
+        transition: color 0.2s, transform 0.2s;
+    }
+    
+    .vehicle-action:hover {
+        transform: scale(1.2);
+    }
+    
+    .edit-action {
+        color: var(--primary); /* your dashboard's primary blue */
+    }
+    
+    .edit-action:hover {
+        color: #2980b9; /* slightly darker blue on hover */
+    }
+    
+    .delete-action {
+        color: var(--danger); /* your dashboard's red */
+    }
+    
+    .delete-action:hover {
+        color: #c0392b; /* slightly darker red on hover */
+    }
+    
+
+
 
 table {
     width: 100%;
@@ -484,12 +555,13 @@ tr:hover {
 .stat-value {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--primary);
+    /* color: var(--primary); */
+    color: rgb(0, 187, 143);
     margin: 10px 0;
 }
 
 .stat-label {
-    color: #7f8c8d;
+    color: #1f65a8;
     font-size: 0.9rem;
 }
 

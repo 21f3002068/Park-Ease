@@ -20,7 +20,13 @@ Profile
             <i class="fas fa-user"></i>
         </div>
         <div class="profile-info">
-            <h1>{{ user.firstname }} {{ user.lastname }}</h1>
+            <h1 class="profile-name">
+                {{ user.firstname }} {{ user.lastname }}
+                <a href="{{ url_for('user.edit_profile') }}" class="edit-profile-link" title="Edit Profile">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </h1>
+            
             <p><i class="fas fa-user"></i> {{ user.username }}</p>
             <p><i class="fas fa-envelope"></i> {{ user.email }}</p>
             <p><i class="fas fa-phone"></i> {{ user.phone }}</p>
@@ -128,15 +134,18 @@ Profile
                             <span class="color-value">{{ vehicle.color }}</span>
                         </div>
                         <div class="card-actions">
-                            <a href="{{ url_for('user.edit_vehicle', vehicle_id=vehicle.id) }}" class="btn btn-primary">
-                                <i class="fas fa-edit"></i> Edit
+                            <a href="{{ url_for('user.edit_vehicle', vehicle_id=vehicle.id) }}"
+                                class="vehicle-action edit-action" title="Edit">
+                                <i class="fas fa-edit"></i>
                             </a>
-                            <form action="{{ url_for('user.delete_vehicle', vehicle_id=vehicle.id) }}" method="POST">
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-trash"></i> Delete Vehicle
+                            <form action="{{ url_for('user.delete_vehicle', vehicle_id=vehicle.id) }}" method="POST"
+                                style="display: inline;">
+                                <button type="submit" class="vehicle-action delete-action" title="Delete Vehicle">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </form>
                         </div>
+
                     </div>
                 </div>
                 {% endfor %}
@@ -154,7 +163,7 @@ Profile
         </div>
     </div>
     <!-- Reservations Section -->
-    <div class="section">
+    <div class="section" id="reservation-history">
         <div class="section-header">
             <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Reservation History</h2>
         </div>

@@ -558,6 +558,43 @@ def profile():
     return render_template('user/profile.html', user=current_user, user_reviews=user_reviews)
 
 
+@user_bp.route('/profile/edit', methods=['GET', 'POST'])
+def edit_profile():
+    if request.method == 'POST':
+        # Get form data
+        email = request.form['email']
+        password = request.form['password']
+        firstname = request.form['firstname']
+        lastname = request.form['lastname']
+        gender = request.form['gender']
+        phone = request.form['phone']
+        address = request.form['address']
+        pin = request.form['pin']
+
+        # Handle password change (only update if a new password is provided)
+        if password:
+            hashed_password = generate_password_hash(password)
+        else:
+            hashed_password = current_user.password  # Keep the existing password
+
+        # Update the user profile
+        current_user.email = email
+        current_user.password = hashed_password
+        current_user.firstname = firstname
+        current_user.lastname = lastname
+        current_user.gender = gender
+        current_user.phone = phone
+        current_user.address = address
+        current_user.pin = pin
+
+        db.session.commit()
+
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('user.profile'))
+
+    # Render the profile edit page with user data
+    return render_template('partials/_edit_user_profile.html', user=current_user)
+
 
 
 @user_bp.route('/edit_vehicle/<int:vehicle_id>', methods=['GET', 'POST'])

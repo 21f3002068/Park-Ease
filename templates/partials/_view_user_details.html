@@ -70,7 +70,6 @@
                             <th>License Plate</th>
                             <th>Type</th>
                             <th>Color</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,10 +79,7 @@
                             <td>{{ vehicle.license_plate }}</td>
                             <td>{{ vehicle.vehicle_type or 'N/A' }}</td>
                             <td>{{ vehicle.color or 'N/A' }}</td>
-                            <td>
-                                <a href="#" class="btn-sm btn-edit">Edit</a>
-                                <a href="#" class="btn-sm btn-delete">Delete</a>
-                            </td>
+
                         </tr>
                         {% endfor %}
                     </tbody>
