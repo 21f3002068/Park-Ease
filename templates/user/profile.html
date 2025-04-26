@@ -5,10 +5,317 @@
 Profile
 {% endblock %}
 
-
+{% block custom_styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{url_for('static', filename='style/user/profile.css')}}">
+{% endblock %}
 
 {% block body %}
 {% block content %}
+
+<div class="container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="profile-info">
+            <h1>{{ user.firstname }} {{ user.lastname }}</h1>
+            <p><i class="fas fa-user"></i> {{ user.username }}</p>
+            <p><i class="fas fa-envelope"></i> {{ user.email }}</p>
+            <p><i class="fas fa-phone"></i> {{ user.phone }}</p>
+            <p><i class="fas fa-map-marker-alt"></i> {{ user.address }}, {{ user.pin }}</p>
+            <span class="status-badge {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
+                {% if user.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+        </div>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Total Bookings</div>
+                <div class="stat-value">{{ user.reservations|length }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Spent</div>
+                <div class="stat-value">${{ "%.2f"|format(user.reservations|sum(attribute='parking_cost')) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg. Rating Given</div>
+                <div class="stat-value">
+                    {% set valid_reviews = user.reservations|map(attribute='review')|select('defined')|list %}
+                    {% set rated_reviews = valid_reviews|selectattr('rating')|list %}
+                    {% if rated_reviews %}
+                    {{ "%.1f"|format(rated_reviews|sum(attribute='rating') / rated_reviews|length) }} ⭐
+                    {% else %}N/A{% endif %}
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Member Since</div>
+                <div class="stat-value">{{ user.registration_date.strftime('%b %Y') }}</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mid-section">
+        
+        <!-- Favorites Section -->
+        <div class="saved-parking-div">
+            
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-heart"></i> Saved Parking Lots</h2>
+            </div>
+            
+            {% if favorites %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parking Lot</th>
+                        <th>Location</th>
+                        <th>Price/Hour</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lot in favorites %}
+                    <tr>
+                        <td>{{ lot.prime_location_name }}</td>
+                        <td>{{ lot.location_ref.name }}</td>
+                        <td>${{ "%.2f"|format(lot.price_per_hour) }}</td>
+                        <td>
+                            <a href="{{ url_for('user.book_parking', lot_id=lot.id) }}" class="btn btn-primary">
+                                <i class="fas fa-calendar-alt"></i> Book
+                            </a>
+                            <button class="btn btn-danger" onclick="removeFavorite({{ lot.id }})">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-heart"></i>
+                <h3>No Saved Parking Lots</h3>
+                <p>Save your favorite parking lots for quick access when booking</p>
+                <a href="#" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Find Parking
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        
+        <!-- Vehicles Section -->
+        <div class="my-vehicle-div">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-car"></i> My Vehicles</h2>
+                <div class="add-vehicle-btn">
+                    <button class="btn btn-primary" onclick="showAddVehicleForm()">
+                        <i class="fas fa-plus"></i>
+                        Add Vehicle
+                    </button>
+                </div>
+            </div>
+
+            {% if user.vehicles %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vehicle Name</th>
+                        <th>License Plate</th>
+                        <th>Color</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in user.vehicles %}
+                    <tr>
+                        <td>{{ vehicle.vehicle_name }}</td>
+                        <td>{{ vehicle.license_plate }}</td>
+                        <td>
+                            <span
+                                style="display: inline-block; width: 15px; height: 15px; background-color: {{ vehicle.color }}; border-radius: 3px;"></span>
+                            {{ vehicle.color }}
+                        </td>
+                        <td>
+                            <button class="btn btn-outline" onclick="editVehicle({{ vehicle.id }})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger" onclick="confirmDeleteVehicle({{ vehicle.id }})">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-car"></i>
+                <h3>No Vehicles Registered</h3>
+                <p>Add your first vehicle to get started with parking reservations</p>
+                <button class="btn btn-primary" onclick="showAddVehicleForm()">
+                    <i class="fas fa-plus"></i> Add Vehicle
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Reservations Section -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Reservation History</h2>
+        </div>
+
+        {% if user.reservations %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Parking Lot</th>
+                    <th>Spot</th>
+                    <th>Vehicle</th>
+                    <th>Parking Time</th>
+                    <th>Leaving Time</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in user.reservations|sort(attribute='parking_timestamp', reverse=True) %}
+                <tr>
+                    <td>{{ reservation.spot.lot.prime_location_name }}</td>
+                    <td>{{ reservation.spot.spot_number }}</td>
+                    <td>{{ reservation.vehicle.license_plate }}</td>
+                    <td>{{ reservation.parking_timestamp.strftime('%b %d, %Y %I:%M %p') }}</td>
+                    <td>
+                        {% if reservation.leaving_timestamp %}
+                        {{ reservation.leaving_timestamp.strftime('%b %d, %Y %I:%M %p') }}
+                        {% else %}N/A{% endif %}
+                    </td>
+                    <td>${{ "%.2f"|format(reservation.parking_cost) }}</td>
+                    <td class="status-{{ reservation.status|lower }}">
+                        {{ reservation.status }}
+                        {% if reservation.cancellation_reason %}
+                        <br><small>Reason: {{ reservation.cancellation_reason }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if reservation.status == 'Confirmed' and not reservation.review %}
+                        <button class="btn btn-outline" onclick="showReviewForm({{ reservation.id }})">
+                            <i class="fas fa-star"></i> Review
+                        </button>
+                        {% endif %}
+                        {% if reservation.spot.lot.is_active %}
+                        <a href="{{ url_for('user.book_parking', lot_id=reservation.spot.lot.id) }}"
+                            class="btn btn-outline">
+                            <i class="fas fa-redo"></i> Rebook
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>No Reservations Yet</h3>
+            <p>Book your first parking spot to see your reservation history here</p>
+            <a href="{{ url_for('user.find_parking') }}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Find Parking
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-star"></i> My Reviews</h2>
+        </div>
+
+        {% set user_reviews = user.reservations|map(attribute='review')|select('defined')|list %}
+        {% if user_reviews %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Parking Lot</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for review in user_reviews if review %}
+                <tr>
+                </tr>
+                <td>{{ review.comment }}</td>
+                <td>
+                    {% if review.reservation %}
+                    {{ review.reservation.spot.lot.prime_location_name }}
+                    {% else %}
+                    No associated parking
+                    {% endif %}
+                </td>
+                <td>{{ review.created_at.strftime('%b %d, %Y') }}</td>
+                <td>
+                    <button class="btn btn-outline" onclick="editReview({{ review.id }})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-star"></i>
+            <h3>No Reviews Yet</h3>
+            <p>Complete a parking reservation to leave your first review</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    // Placeholder functions for the interactive elements
+    function showAddVehicleForm() {
+        alert("Show form to add new vehicle");
+        // In a real implementation, this would show a modal or redirect
+    }
+
+    function editVehicle(vehicleId) {
+        alert("Edit vehicle with ID: " + vehicleId);
+    }
+
+    function confirmDeleteVehicle(vehicleId) {
+        if (confirm("Are you sure you want to remove this vehicle?")) {
+            alert("Delete vehicle with ID: " + vehicleId);
+            // In a real implementation, this would make an API call
+        }
+    }
+
+    function showReviewForm(reservationId) {
+        alert("Show review form for reservation: " + reservationId);
+    }
+
+    function editReview(reviewId) {
+        alert("Edit review with ID: " + reviewId);
+    }
+
+    function removeFavorite(lotId) {
+        if (confirm("Remove this parking lot from your favorites?")) {
+            alert("Remove favorite lot ID: " + lotId);
+            // In a real implementation, this would make an API call
+        }
+    }
+</script>
 
 {% endblock %}
 {% endblock %}

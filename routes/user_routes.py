@@ -540,6 +540,19 @@ def statistics():
 
 
 
-@user_bp.route('/profile', methods=['GET', 'POST'])
+@user_bp.route('/profile')
+@login_required
 def profile():
-    return render_template('user/profile.html')
+    user_reviews = (
+        db.session.query(Review)
+        .join(Review.reservation)
+        .filter(Reservation.user_id == current_user.id)
+        .options(
+            joinedload(Review.reservation)
+            .joinedload(Reservation.spot)
+            .joinedload(ParkingSpot.lot)  # not Spot.lot
+        )
+        .order_by(Review.created_at.desc())
+        .all()
+    )
+    return render_template('user/profile.html', user=current_user, user_reviews=user_reviews)
