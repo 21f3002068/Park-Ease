@@ -219,6 +219,7 @@ Profile
         <table>
             <thead>
                 <tr>
+                    <th>Booking ID</th>
                     <th>Parking Lot</th>
                     <th>Spot</th>
                     <th>Vehicle</th>
@@ -230,8 +231,9 @@ Profile
                 </tr>
             </thead>
             <tbody>
-                {% for reservation in user.reservations|sort(attribute='parking_timestamp', reverse=True) %}
+                {% for reservation in user.reservations|selectattr('parking_timestamp')|sort(attribute='parking_timestamp', reverse=True) %}
                 <tr>
+                    <td>{{ reservation.booking_id }}</td>
                     <td>{{ reservation.spot.lot.prime_location_name }}</td>
                     <td>{{ reservation.spot.spot_number }}</td>
                     <td>{{ reservation.vehicle.license_plate }}</td>

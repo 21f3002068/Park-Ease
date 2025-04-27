@@ -1,0 +1,62 @@
+<link rel="stylesheet" href="{{url_for('static', filename='style/partials/_add_parking_review.css')}}">
+
+{% block body %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash-messages">
+    {% for category, message in messages %}
+    <li class="flash {{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+
+{% block content %}
+<div class="review-page-wrapper">
+    <!-- Blurred background image -->
+    <div class="background-image"></div>
+    
+    <!-- Review form container -->
+    <div class="review-form-container">
+        <h2 class="form-title">
+            <ion-icon name="star-outline"></ion-icon>
+            Leave a Review
+        </h2>
+        
+        <p class="form-subtitle">Share your experience with us</p>
+
+        <form method="POST" class="review-form">
+            <div class="form-group">
+                <label for="rating" class="form-label">Rating</label>
+                <div class="star-rating">
+                    {% for i in range(5, 0, -1) %}
+                    <input type="radio" id="star{{i}}" name="rating" value="{{i}}" {% if i == 5 %}checked{% endif %}>
+                    <label for="star{{i}}" class="star-label">★</label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="comment" class="form-label">Comments</label>
+                <textarea name="comment" rows="3" class="form-textarea" 
+                          placeholder="How was your parking experience?" required></textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('user.dashboard') }}" class="btn btn-later">
+                    <ion-icon name="time-outline"></ion-icon>
+                    Later
+                </a>
+                <button type="submit" class="btn btn-submit">
+                    <ion-icon name="send-outline"></ion-icon>
+                    Submit Review
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+{% endblock %}

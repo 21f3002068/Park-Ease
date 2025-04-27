@@ -65,10 +65,22 @@
                     <tbody>
                         {% for booking in active_bookings %}
                         <tr>
-                            <td>#PARK{{ booking.id }}</td>
+                            <td>
+                                <small>
+                                    <a href="{{ url_for('user.booking_details', booking_id=booking.booking_id) }}" class="bid-link">
+                                        {{ booking.booking_id }}
+                                    </a>
+                                    
+                                </small>
+                            </td>
                             <td>{{ booking.spot.lot.prime_location_name }}</td>
                             <td>{{ booking.spot.spot_number }}</td>
-                            <td>{{ booking.vehicle.license_plate }}</td>
+                            <td>
+                                <small>
+                                    {{ booking.vehicle.license_plate }}
+                                </small>
+                                
+                            </td>
                             <td>{{ booking.expected_arrival.strftime('%I:%M %p') }}</td>
                         </tr>
                         {% else %}
@@ -97,7 +109,14 @@
                     <tbody>
                         {% for request in pending_requests %}
                         <tr>
-                            <td>#REQ{{ request.id }}</td>
+                            <td>
+                                <small>
+                                    <a href="{{url_for('user.booking_details' , booking_id=request.booking_id)}}" class="bid-link">
+
+                                    {{ request.booking_id }}
+                                    </a>
+                                </small>
+                            </td>
                             <td>
                                 {% if request.spot %}
                                 {{ request.spot.lot.prime_location_name }}
@@ -107,7 +126,11 @@
                                 Awaiting spot assignment
                                 {% endif %}
                             </td>
-                            <td>{{ request.vehicle.license_plate }}</td>
+                            <td>
+                                <small>
+                                    {{ request.vehicle.license_plate }}
+                                </small>
+                            </td>
                             <td>{{ request.parking_timestamp.strftime('%I:%M %p') }}</td>
                         </tr>
                         {% else %}
@@ -136,10 +159,21 @@
                     <tbody>
                         {% for booking in cancelled_bookings %}
                         <tr>
-                            <td>#CAN{{ booking.id }}</td>
+                            <td>
+                                <small>
+                                    <a href="{{url_for('user.booking_details', booking_id=booking.booking_id)}}" class="bid-link">
+                                    {{ booking.booking_id }}
+                                    </a>
+                                </small>
+                            </td>
                             <td>{{ booking.spot.lot.prime_location_name }}</td>
                             <td><span class="status cancelled">{{ booking.status }}</span></td>
-                            <td>{{ booking.cancellation_reason or "User cancelled" }}</td>
+                            <td>
+                                <small>
+
+                                    {{ booking.cancellation_reason or "User cancelled" }}
+                                </small>
+                            </td>
                         </tr>
                         {% else %}
                         <tr class="empty">
@@ -168,19 +202,29 @@
                     <tbody>
                         {% for history in parking_history %}
                         <tr>
-                            <td>#HIS{{ history.id }}</td>
+                            <td>
+                                <small>
+                                    <a href="{{url_for('user.booking_details', booking_id=history.booking_id)}}" class="bid-link">
+                                    {{ history.booking_id}}
+                                    </a>
+                                </small>
+                            </td>
                             <td>{{ history.parking_timestamp.strftime('%I:%M %p') }}</td>
                             <td>{{ history.leaving_timestamp.strftime('%I:%M %p') if history.leaving_timestamp
                                 else 'N/A' }}</td>
-                                <td>₹{{ history.parking_cost|int }}</td>
-                                <td>
-                                {% if history.review %}
-                                {{ history.review.rating }}★
-                                {% else %}
-                                <button class="review-btn" data-booking-id="{{ history.id }}">
-                                    Add Review
-                                </button>
-                                {% endif %}
+                            <td>₹{{ history.parking_cost|int }}</td>
+                            <td>
+                                <small>
+
+                                    {% if history.review %}
+                                    {{ history.review.rating }}★
+                                    {% else %}
+                                    <a href="{{ url_for('user.add_review', reservation_id=history.id) }}" class="review-btn">
+                                        Add Review
+                                    </a>
+                                    
+                                    {% endif %}
+                                </small>
                             </td>
                         </tr>
                         {% else %}

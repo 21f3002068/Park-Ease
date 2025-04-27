@@ -1,0 +1,237 @@
+    /* Base styles */
+    .review-page-wrapper {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        overflow: hidden;
+    }
+    
+    /* Background image with blur effect */
+    .background-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-attachment: fixed;
+        background-image: url('https://images.unsplash.com/photo-1489824904134-891ab64532f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');
+        background-size:cover;
+        background-position: center;
+        filter: blur(8px);
+        z-index: -1;
+        opacity: 0.7;
+    }
+    
+    /* Form container */
+    .review-form-container {
+        background: white;
+        border-radius: 12px;
+        /* border: 2px solid red; */
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .form-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+        font-size: 1.5rem;
+    }
+    
+    .form-subtitle {
+        color: #7f8c8d;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+    }
+    
+    /* Form elements */
+    .review-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #34495e;
+        font-size: 0.95rem;
+    }
+    
+    /* Star rating */
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 0.25rem;
+    }
+    
+    .star-rating input {
+        display: none;
+    }
+    
+    .star-rating label {
+        color: #ddd;
+        font-size: 1.8rem;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .star-rating input:checked ~ label,
+    .star-rating input:hover ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #f1c40f;
+    }
+    
+    /* Textarea */
+    .form-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-family: inherit;
+        resize: none;
+        transition: border-color 0.2s;
+    }
+    
+    .form-textarea:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+    
+    /* Buttons */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+    }
+    
+    .btn-later {
+        background: #f5f5f5;
+        color: #7f8c8d;
+    }
+    
+    .btn-later:hover {
+        background: #e0e0e0;
+    }
+    
+    .btn-submit {
+        background: #3498db;
+        color: white;
+    }
+    
+    .btn-submit:hover {
+        background: #2980b9;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+        .review-page-wrapper {
+            padding: 1rem;
+        }
+        
+        .review-form-container {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            justify-content: center;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+/* Flash message container */
+.flash-messages {
+    position: fixed;
+    top: 20px; 
+    right: 20px;
+    z-index: 1000; /* Ensure it stays on top of other elements */
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    max-width: 90%;
+}
+
+/* General flash message styling */
+.flash {
+    margin: 10px 0;
+    padding: 10px 30px 10px 30px;
+    border-radius: 10px;
+    color: #fff;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0.8;
+}
+
+/* Flash message categories */
+.flash.success {
+    background-color: #4CAF50; /* Green for success */
+}
+
+.flash.error {
+    background-color: #f44336; /* Red for error */
+}
+
+.flash.info {
+    background-color: #2196F3; /* Blue for info */
+}
+
+.flash.warning {
+    background-color: #ff9800; /* Orange for warning */
+}
+
+
+
+
+

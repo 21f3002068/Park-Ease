@@ -122,49 +122,88 @@
         </div>
 
         <div class="upcoming-booking">
-            <h2><ion-icon name="calendar-outline"></ion-icon> Upcoming Booking</h2>
+            <h2 class="section-title">
+                <ion-icon name="calendar-outline"></ion-icon>
+                Upcoming Booking
+            </h2>
 
             {% if scheduled_upnext %}
             <div class="booking-card">
+                <div class="booking-header">
+                    <div class="booking-status active">
+                        <ion-icon name="time-outline"></ion-icon>
+                        Upcoming
+                    </div>
+                    <div class="booking-id">#{{ scheduled_upnext.id }}</div>
+                </div>
+
                 <div class="booking-info">
                     <div class="info-row">
-                        <span class="label">Vehicle:</span>
-                        <span class="value">{{ scheduled_upnext.vehicle.vehicle_name }} ({{
-                            scheduled_upnext.vehicle.license_plate }})</span>
+                        <ion-icon name="car-sport-outline" class="row-icon"></ion-icon>
+                        <div class="info-content">
+                            <span class="label">Vehicle:</span>
+                            <span class="value">{{ scheduled_upnext.vehicle.vehicle_name }} ({{
+                                scheduled_upnext.vehicle.license_plate }})</span>
+                        </div>
                     </div>
+
                     <div class="info-row">
-                        <span class="label">Location:</span>
-                        <span class="value">{{ scheduled_upnext.spot.lot.prime_location_name }}</span>
+                        <ion-icon name="location-outline" class="row-icon"></ion-icon>
+                        <div class="info-content">
+                            <span class="label">Location:</span>
+                            <span class="value">{{ scheduled_upnext.spot.lot.prime_location_name }}</span>
+                        </div>
                     </div>
+
                     <div class="info-row">
-                        <span class="label">Spot Number:</span>
-                        <span class="value">#{{ scheduled_upnext.spot.spot_number }}</span>
+                        <ion-icon name="pricetag-outline" class="row-icon"></ion-icon>
+                        <div class="info-content">
+                            <span class="label">Spot Number:</span>
+                            <span class="value">#{{ scheduled_upnext.spot.spot_number }}</span>
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <span class="label">Arrival Time:</span>
-                        <span class="value">{{ scheduled_upnext.expected_arrival.strftime('%I:%M %p') }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Departure Time:</span>
-                        <span class="value">{{ scheduled_upnext.expected_departure.strftime('%I:%M %p') }}</span>
+
+                    <div class="time-container">
+                        <div class="time-block">
+                            <ion-icon name="arrow-forward-circle-outline"></ion-icon>
+                            <div>
+                                <div class="time-label">Arrival</div>
+                                <div class="time-value">{{ scheduled_upnext.expected_arrival.strftime('%I:%M %p') }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-block">
+                            <ion-icon name="arrow-back-circle-outline"></ion-icon>
+                            <div>
+                                <div class="time-label">Departure</div>
+                                <div class="time-value">{{ scheduled_upnext.expected_departure.strftime('%I:%M %p') }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="booking-actions">
                     <form action="{{ url_for('user.park', booking_id=scheduled_upnext.id) }}" method="POST">
                         <button type="submit" class="park-btn">
-                            <ion-icon name="car-outline"></ion-icon> Park
+                            <ion-icon name="car-outline"></ion-icon>
+                            Start Parking
                         </button>
                     </form>
                 </div>
             </div>
             {% else %}
             <div class="no-booking">
+                <ion-icon name="calendar-clear-outline" class="empty-icon"></ion-icon>
                 <p>No upcoming bookings</p>
+                <a href="#" class="find-parking-btn">
+                    <ion-icon name="search-outline"></ion-icon>
+                    Find Parking
+                </a>
             </div>
             {% endif %}
         </div>
-
     </div>
 
 

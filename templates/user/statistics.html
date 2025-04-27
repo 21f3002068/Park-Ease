@@ -134,12 +134,12 @@
     var statusData = {{ status_data | tojson }};
 
     // Prepare the labels and data for the pie chart
-    var labels = ["Pending", "Confirmed", "Completed", "Cancelled"];
+    var labels = ["Pending", "Confirmed", "Parked Out", "Cancelled or Rejected"];
     var data = [
         statusData.pending,
         statusData.confirmed,
-        statusData.completed,
-        statusData.cancelled
+        statusData.parked_out,
+        statusData.cancelled_rejected
     ];
 
     // Create the pie chart using Chart.js

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session, abort, jsonify
 from model import *
 import logging
+import uuid
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from functools import wraps
@@ -168,33 +169,33 @@ def park_out(reservation_id):
     reservation = Reservation.query.filter_by(
         id=reservation_id,
         user_id=current_user.id,
-        leaving_timestamp=None,  # Only if not already checked out
+        leaving_timestamp=None,
         status="Parked"
     ).first_or_404()
     
     try:
-        # Calculate parking duration and cost
+        # Only database operations inside try
         now = datetime.now()
         parking_duration = now - reservation.parking_timestamp
-        hours_parked = max(1, parking_duration.total_seconds() / 3600)  # Minimum 1 hour
-        
-        # Update reservation
+        hours_parked = max(1, parking_duration.total_seconds() / 3600)
+
         reservation.leaving_timestamp = now
         reservation.parking_cost = hours_parked * reservation.spot.lot.price_per_hour
         reservation.status = 'Parked Out'
-        
-        # Free up the parking spot
-        reservation.spot.status = 'A'  # Available
-        
+
+        reservation.spot.status = 'A'
+
         db.session.commit()
-        
-        flash(f'Park out successful. Total charge: ₹{reservation.parking_cost:.2f}', 'success')
-        return redirect(url_for('user.bookings'))
-    
+
     except Exception as e:
         db.session.rollback()
         flash('Error processing park out. Please try again.', 'error')
         return redirect(url_for('user.dashboard'))
+    
+    # Now safely flash success after commit
+    flash(f'Park out successful. Total charge: ₹{reservation.parking_cost:.2f}', 'success')
+    return redirect(url_for('user.add_review', reservation_id=reservation.id))
+
 
 @user_bp.route('/add_vehicle', methods=['GET', 'POST'])
 @login_required
@@ -439,6 +440,9 @@ def book_parking(lot_id):
             # Calculate parking cost
             total_hours = (expected_departure_time - expected_arrival_time).total_seconds() / 3600
             cost = parking_lot.price_per_hour * total_hours
+                        
+            vehicle_number = vehicle.license_plate[-2:].upper()  # get last 2 characters of the plate
+            booking_id = f"BK-{vehicle_number}-{current_user.id}-{uuid.uuid4().hex[:3].upper()}"
             
             # Create reservation
             reservation = Reservation(
@@ -448,7 +452,8 @@ def book_parking(lot_id):
                 expected_arrival=expected_arrival_time,
                 expected_departure=expected_departure_time,
                 parking_cost=cost,
-                status=status # Earlier it was taking status = "Confirmed" directly without any checks
+                status=status, # Earlier it was taking status = "Confirmed" directly without any checks
+                booking_id=booking_id
             )
             
             # Update spot status temporarily if you want (optional, based on your system)
@@ -458,12 +463,13 @@ def book_parking(lot_id):
             db.session.add(reservation)
             db.session.commit()
             
+            
             flash(f'Booking confirmed! Expected cost: ₹{cost:.2f}', 'success')
             return redirect(url_for('user.bookings'))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Booking failed. Please try again. Error: {str(e)}', 'error')
+            # flash(f'Booking failed. Please try again. Error: {str(e)}', 'error')
             return redirect(url_for('user.book_parking', lot_id=lot_id))
     
     # GET request - show booking form
@@ -553,13 +559,92 @@ def bookings():
 
 
 
+@user_bp.route('dashboard/bookings/booking_details:<string:booking_id>', methods=['GET', 'POST'])
+def booking_details(booking_id):
+    reservation = Reservation.query.filter_by(booking_id=booking_id).first()
+
+    if reservation:
+
+        return render_template('partials/_view_booking_details.html', reservation=reservation)
+    else:
+
+        flash('Booking not found', 'error')
+        return redirect(url_for('user.bookings')) 
 
 
-from flask_login import current_user
-from sqlalchemy import extract, func
-from collections import defaultdict
-from datetime import datetime
-import json
+
+@user_bp.route('/cancel_booking/<booking_id>')
+def cancel_booking(booking_id):
+    reservation = Reservation.query.filter_by(booking_id=booking_id, user_id=current_user.id).first()
+
+    if reservation:
+        if reservation.status in ['Confirmed', 'Pending']:
+            reservation.status = 'Cancelled'
+            reservation.cancellation_reason = "Cancelled by user."
+            db.session.commit()
+            flash('Your booking has been cancelled.', 'success')
+        else:
+            flash('Booking cannot be cancelled.', 'danger')
+    else:
+        flash('Reservation not found.', 'danger')
+
+    return redirect(url_for('user.bookings'))
+
+
+@user_bp.route('/delete_booking/<booking_id>')
+def delete_booking(booking_id):
+    reservation = Reservation.query.filter_by(booking_id=booking_id, user_id=current_user.id).first()
+
+    if reservation:
+        if reservation.status == 'Parked Out':
+            db.session.delete(reservation)
+            db.session.commit()
+            flash('Booking deleted successfully.', 'success')
+        else:
+            flash('Only completed (Parked Out) bookings can be deleted.', 'danger')
+    else:
+        flash('Reservation not found.', 'danger')
+
+    return redirect(url_for('user.bookings'))
+
+
+@user_bp.route('/add_review/<int:reservation_id>', methods=['GET', 'POST'])
+@login_required
+def add_review(reservation_id):
+    reservation = Reservation.query.get_or_404(reservation_id)
+
+    # Check if the reservation belongs to the current user
+    if reservation.user_id != current_user.id:
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('user.profile'))
+
+    # If review already exists, prevent double review
+    if reservation.review:
+        flash('Review already submitted.', 'info')
+        return redirect(url_for('user.profile'))
+
+    if request.method == 'POST':
+        rating = request.form.get('rating')
+        comment = request.form.get('comment')
+
+        if not rating:
+            flash('Rating is required!', 'danger')
+            return render_template('partials/_add_parking_review.html', reservation=reservation)
+
+        new_review = Review(
+            reservation_id=reservation.id,
+            rating=int(rating),
+            comment=comment
+        )
+
+        db.session.add(new_review)
+        db.session.commit()
+        flash('Review submitted successfully!', 'success')
+        return redirect(url_for('user.profile'))
+
+    return render_template('partials/_add_parking_review.html', reservation=reservation)
+
+
 
 
 @user_bp.route('/stats', methods=['GET'])
@@ -567,14 +652,20 @@ import json
 def statistics():
     pending_count = Reservation.query.filter_by(status='Pending').count()
     confirmed_count = Reservation.query.filter_by(status='Confirmed').count()
-    completed_count = Reservation.query.filter_by(status='Completed').count()
-    cancelled_count = Reservation.query.filter_by(status='Cancelled').count()
+    parked_out_count = Reservation.query.filter_by(status='Parked Out').count()
+    combined_count = Reservation.query.filter(
+        or_(
+            Reservation.status == 'Cancelled',
+            Reservation.status == 'Rejected'
+        )
+    ).count()
 
     status_data = {
         'pending': pending_count,
         'confirmed': confirmed_count,
-        'completed': completed_count,
-        'cancelled': cancelled_count
+        'parked_out': parked_out_count,
+        'cancelled_rejected': combined_count
+        
     }
     
     spending_data = db.session.query(

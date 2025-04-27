@@ -82,6 +82,8 @@ class ParkingSpot(db.Model):
 
 class Reservation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.String(50), unique=True, nullable=False)
+
     spot_id = db.Column(db.Integer, db.ForeignKey('parking_spot.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicle.id'))

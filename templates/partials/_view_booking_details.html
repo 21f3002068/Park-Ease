@@ -1,0 +1,112 @@
+<link rel="stylesheet" href="{{url_for('static', filename='/style/partials/_view_booking_details.css')}}">
+<link href="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.min.css" rel="stylesheet">
+
+
+
+{% block content %}
+<div class="booking-container">
+    <div class="booking-header">
+        <h2 class="booking-title">
+            <ion-icon name="receipt-outline" class="header-icon"></ion-icon>
+            Booking ID #{{ reservation.booking_id }}
+        </h2>
+        <div class="status-badge status-{{ reservation.status|lower }}">
+            {{ reservation.status }}
+        </div>
+    </div>
+
+    <div class="booking-card">
+        <div class="booking-section">
+            <h3 class="section-title">
+                <ion-icon name="information-circle-outline"></ion-icon>
+                Booking Information
+            </h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Booking ID:</span>
+                    <span class="detail-value">{{ reservation.booking_id }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Spot Number:</span>
+                    <span class="detail-value">{{ reservation.spot.spot_number }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">{{ reservation.status }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Parking Cost:</span>
+                    <span class="detail-value">₹{{ reservation.parking_cost }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="booking-section">
+            <h3 class="section-title">
+                <ion-icon name="time-outline"></ion-icon>
+                Time Details
+            </h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Expected Arrival:</span>
+                    <span class="detail-value">{{ reservation.expected_arrival.strftime('%d %b %Y, %I:%M %p') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Expected Departure:</span>
+                    <span class="detail-value">{{ reservation.expected_departure.strftime('%d %b %Y, %I:%M %p') }}</span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="booking-section">
+            <h3 class="section-title">
+                <ion-icon name="person-circle-outline"></ion-icon>
+                User & Vehicle
+            </h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">User:</span>
+                    <span class="detail-value">{{ reservation.user.username }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Vehicle Model:</span>
+                    <span class="detail-value">{{ reservation.vehicle.vehicle_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">License Plate:</span>
+                    <span class="detail-value">{{ reservation.vehicle.license_plate }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        {% if reservation.status == "Cancelled" or reservation.status == "Rejected" %}
+        <a href="{{ url_for('user.book_parking', lot_id=reservation.spot.lot.id) }}" class="btn btn-secondary">
+            <ion-icon name="book-outline"></ion-icon>
+            Rebook
+        </a>
+        {% elif reservation.status == "Confirmed" or reservation.status == "Pending" %}
+        <a href="{{ url_for('user.cancel_booking', booking_id=reservation.booking_id) }}"  class="btn btn-danger">
+            <ion-icon name="cancel-outline"></ion-icon>
+            Cancel Booking
+        </a>        
+        {% elif reservation.status == "Parked Out" %}
+        <a href="{{ url_for('user.delete_booking', booking_id=reservation.booking_id) }}" class="btn btn-super-danger">
+            <ion-icon name="trash-outline"></ion-icon> 
+            Delete Booking
+        </a>                
+        {% endif %}
+        <a href="#" class="btn btn-secondary">
+            <ion-icon name="print-outline"></ion-icon>
+            Print Receipt
+        </a>
+        <a href="{{ url_for('user.bookings') }}" class="btn btn-primary">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+            Back to Bookings
+        </a>
+    </div>
+    
+</div>
+{% endblock %}
