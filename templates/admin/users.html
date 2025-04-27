@@ -80,7 +80,7 @@
                             <button class="unflag-btn">UnFlag</button>
                         </a>
                         {% else %}
-                        <a href="{{ url_for('admin.flag_user_confirmation', user_type='user', user_id=user.id) }}">
+                        <a href="{{ url_for('admin.flag_user_confirmation', id=user.id) }}">
                             <button class="flag-btn">Flag</button>
                         </a>
                         {% endif %}

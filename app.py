@@ -15,7 +15,7 @@ config.configure_app(app)
 db.init_app(app)
 
 app.register_blueprint(admin_bp, url_prefix='/admin')
-app.register_blueprint(user_bp, url_prefix='/customer')
+app.register_blueprint(user_bp, url_prefix='/user')
 
 with app.app_context():
     # db.drop_all()

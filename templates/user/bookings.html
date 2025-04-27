@@ -219,10 +219,11 @@
                                     {% if history.review %}
                                     {{ history.review.rating }}★
                                     {% else %}
-                                    <a href="{{ url_for('user.add_review', reservation_id=history.id) }}" class="review-btn">
-                                        Add Review
-                                    </a>
-                                    
+                                    <a href="{{ url_for('user.add_review', reservation_id=history.id) }}" 
+                                    class="review-btn minimalist">
+                                    <ion-icon name="create-outline"></ion-icon>
+                                    Add Review
+                                 </a>
                                     {% endif %}
                                 </small>
                             </td>

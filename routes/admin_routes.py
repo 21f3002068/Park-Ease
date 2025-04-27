@@ -524,9 +524,9 @@ def delete_parking(lot_id):
 
 
 
-@admin_bp.route('/admin/flag_user_confirmation/', methods=['GET', 'POST'])
-def flag_user_confirmation():
-    return render_template('partials/_flag_user_confirmation.html')
+@admin_bp.route('/admin/flag_user_confirmation/<id>', methods=['GET', 'POST'])
+def flag_user_confirmation(id):
+    return render_template('partials/_flag_user_confirmation.html', user=id)
 
 
 

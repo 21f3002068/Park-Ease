@@ -221,7 +221,6 @@ body {
     /* overflow: hidden; */
     transition: all 0.2s ease;
     border: 1px solid #f0f0f0;
-    /* border: 1px solid red; */
     padding: 0px;
     display: block;
 }
@@ -240,6 +239,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+#fav-head{
+    height: 60px;
 }
 
 .card-header h3 {

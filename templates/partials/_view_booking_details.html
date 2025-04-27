@@ -1,5 +1,7 @@
 <link rel="stylesheet" href="{{url_for('static', filename='/style/partials/_view_booking_details.css')}}">
 <link href="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 
 
 
@@ -36,7 +38,7 @@
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Parking Cost:</span>
-                    <span class="detail-value">₹{{ reservation.parking_cost }}</span>
+                    <span class="detail-value">₹{{ reservation.parking_cost| int }}</span>
                 </div>
             </div>
         </div>
@@ -53,8 +55,20 @@
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Expected Departure:</span>
-                    <span class="detail-value">{{ reservation.expected_departure.strftime('%d %b %Y, %I:%M %p') }}</span>
+                    <span class="detail-value">{{ reservation.expected_departure.strftime('%d %b %Y, %I:%M %p')
+                        }}</span>
                 </div>
+
+                {% if reservation.status == 'Parked Out' %}
+                <div class="detail-item">
+                    <span class="detail-label">Parking Timestamp:</span>
+                    <span class="detail-value">{{ reservation.parking_timestamp.strftime('%d %b %Y, %I:%M %p') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Leaving Timestamp:</span>
+                    <span class="detail-value">{{ reservation.leaving_timestamp.strftime('%d %b %Y, %I:%M %p') }}</span>
+                </div>
+                {% endif %}
 
             </div>
         </div>
@@ -77,6 +91,14 @@
                     <span class="detail-label">License Plate:</span>
                     <span class="detail-value">{{ reservation.vehicle.license_plate }}</span>
                 </div>
+                {% if reservation.status == 'Parked Out' %}
+                <div class="detail-item">
+                    <span class="detail-label">User Review:</span>
+                    <span class="detail-value"> {{ reservation.review.rating}} 
+                        <i class="fas fa-star"></i>
+                        | {{ reservation.review.comment }}</span>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -88,15 +110,15 @@
             Rebook
         </a>
         {% elif reservation.status == "Confirmed" or reservation.status == "Pending" %}
-        <a href="{{ url_for('user.cancel_booking', booking_id=reservation.booking_id) }}"  class="btn btn-danger">
+        <a href="{{ url_for('user.cancel_booking', booking_id=reservation.booking_id) }}" class="btn btn-danger">
             <ion-icon name="cancel-outline"></ion-icon>
             Cancel Booking
-        </a>        
+        </a>
         {% elif reservation.status == "Parked Out" %}
         <a href="{{ url_for('user.delete_booking', booking_id=reservation.booking_id) }}" class="btn btn-super-danger">
-            <ion-icon name="trash-outline"></ion-icon> 
+            <ion-icon name="trash-outline"></ion-icon>
             Delete Booking
-        </a>                
+        </a>
         {% endif %}
         <a href="#" class="btn btn-secondary">
             <ion-icon name="print-outline"></ion-icon>
@@ -107,6 +129,6 @@
             Back to Bookings
         </a>
     </div>
-    
+
 </div>
 {% endblock %}

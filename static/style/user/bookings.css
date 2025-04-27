@@ -122,6 +122,36 @@ button {
 
 
 
+.review-btn.minimalist {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: transparent;
+    color: #3498db;
+    border: 1px solid #3498db;
+    border-radius: 4px;
+    font-size: 11px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.review-btn.minimalist:hover {
+    background: #f0f8ff;
+    box-shadow: 0 2px 6px rgba(52, 152, 219, 0.2);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 /* Flash message container */
 .flash-messages {
     position: fixed;

@@ -36,7 +36,7 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Pin Code:</span>
-                    <span class="info-value">{{ lot.pin_code }}</span>
+                    <span class="info-value">{{ lot.location_ref.pin_code }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Location:</span>
@@ -53,7 +53,7 @@
                 </div>
                 <div class="info-item full-width">
                     <span class="info-label">Available Spots:</span>
-                    <span class="info-value">{{ spots_count.get(lot.id, 0) }}/{{ lot.number_of_spots }}</span>
+                    <span class="info-value">{{ spots_count.get(lot.id, 0) }}/{{ lot.available_spots}}</span>
                 </div>
                 <div class="info-item full-width">
                     <span class="info-label">Admin Notes:</span>

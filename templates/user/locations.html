@@ -78,11 +78,15 @@
                     </a>
 
                     <!-- Favorite Button -->
+                    <!-- Favorite Button -->
                     <button class="action-btn favorite-btn" title="Add to Favorites"
                         onclick="toggleFavorite({{ lot.id }})">
-                        <ion-icon name="heart-outline" id="fav-icon-{{ lot.id }}"></ion-icon>
+                        <ion-icon id="fav-icon-{{ lot.id }}"
+                            name="{% if lot.id in favorite_lot_ids %}heart{% else %}heart-outline{% endif %}">
+                        </ion-icon>
                         <span class="action-label">Save</span>
                     </button>
+
                 </div>
             </div>
             {% endfor %}
@@ -93,7 +97,7 @@
 
 <div class="find-parking">
 
-    <a href="#" class="find-parking-btn">
+    <a href="{{url_for('user.search')}}" class="find-parking-btn">
         <ion-icon name="search-outline"></ion-icon> Find Parking Near Me
     </a>
 </div>

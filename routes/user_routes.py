@@ -261,10 +261,41 @@ def add_vehicle():
 
 
 
-@user_bp.route('/search', methods=['GET', 'POST'])
+@user_bp.route('/search', methods=['GET'])
 def search():
-    return render_template('user/search.html')
-
+    query = request.args.get('query', '').strip()
+    
+    # Initialize empty results
+    locations = []
+    parking_lots = []
+    
+    if query:
+        # Search locations by name, address, or pin code
+        locations = Location.query.filter(
+            db.or_(
+                Location.name.ilike(f'%{query}%'),
+                Location.address.ilike(f'%{query}%'),
+                Location.pin_code.ilike(f'%{query}%')
+            )
+        ).options(db.joinedload(Location.parking_lots)).all()
+        
+        # Search parking lots by name
+        parking_lots = ParkingLot.query.filter(
+            ParkingLot.prime_location_name.ilike(f'%{query}%'),
+            ParkingLot.is_active == True
+        ).all()
+        
+        # Calculate available spots for each parking lot
+        for lot in parking_lots:
+            lot.available_count = ParkingSpot.query.filter_by(
+                lot_id=lot.id,
+                status='A'
+            ).count()
+    
+    return render_template('user/search.html',
+                         query=query,
+                         locations=locations,
+                         parking_lots=parking_lots)
 
 
 
@@ -287,6 +318,12 @@ def locations():
         ParkingSpot.status == 'A'
     ).group_by(ParkingSpot.lot_id).all())
     
+    favorite_lot_ids = set()
+    if current_user.is_authenticated:
+        favorite_lot_ids = set(
+            fav.lot_id for fav in Favorite.query.filter_by(user_id=current_user.id).all()
+        )
+    
     # Calculate total parking spots for each location
     location_data = []
     for loc in all_locations:
@@ -303,7 +340,8 @@ def locations():
     return render_template('user/locations.html',
                            location_data=location_data,
                            spots_count=spots_count,
-                           available_spots_count=lambda lot: spots_count.get(lot.id, 0))
+                           available_spots_count=lambda lot: spots_count.get(lot.id, 0),
+                           favorite_lot_ids=favorite_lot_ids)
         
 
 def available_spots_count(lot):
@@ -481,10 +519,32 @@ def book_parking(lot_id):
 
 
 @user_bp.route('/favorites/<int:lot_id>', methods=['POST', 'DELETE'])
-def manage_favorites(lot_id):
-    # Favorite management endpoint
-    return None
-
+@login_required
+def favorites(lot_id):
+    if request.method == 'POST':
+        existing_fav = Favorite.query.filter_by(user_id=current_user.id, lot_id=lot_id).first()
+        if not existing_fav:
+            favorite = Favorite(user_id=current_user.id, lot_id=lot_id)
+            db.session.add(favorite)
+            try:
+                db.session.commit()
+                return jsonify(success=True)
+            except Exception as e:
+                db.session.rollback()
+                return jsonify(success=False, error=str(e)), 500
+        return jsonify(success=True)
+    
+    elif request.method == 'DELETE':
+        favorite = Favorite.query.filter_by(user_id=current_user.id, lot_id=lot_id).first()
+        if favorite:
+            db.session.delete(favorite)
+            try:
+                db.session.commit()
+                return jsonify(success=True)
+            except Exception as e:
+                db.session.rollback()
+                return jsonify(success=False, error=str(e)), 500
+        return jsonify(success=True)
 
 from sqlalchemy import or_
 

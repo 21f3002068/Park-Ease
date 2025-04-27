@@ -1,13 +1,18 @@
 {% extends 'user/udash_base.html' %}
 
 
+
 {% block title %}
 Search results
 {% endblock %}
 
+{% block custom_styles %}
 
+<link rel="stylesheet" href="{{url_for('static', filename='style/user/search.css')}}">
+{% endblock %}
 
 {% block body %}
+
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 <ul class="flash-messages">
@@ -17,7 +22,98 @@ Search results
 </ul>
 {% endif %}
 {% endwith %}
+
 {% block content %}
+
+<div class="search-page">
+    <!-- Search Box (consistent with other pages) -->
+    <div class="search-container">
+        <form action="{{ url_for('user.search') }}" method="GET" class="search-form">
+            <input type="text" class="search-input" name="query" value="{{ query }}" 
+                   placeholder="Search locations or parking..." aria-label="Search">
+            <button class="search-btn" type="submit" aria-label="Submit search">
+                <ion-icon name="search-outline" class="search-icon"></ion-icon>
+            </button>
+        </form>
+    </div>
+
+    <!-- Results Section -->
+    <div class="search-results">
+        {% if query %}
+            <h2 class="results-header">Search Results for "{{ query }}"</h2>
+            
+            {% if not locations and not parking_lots %}
+                <div class="no-results">
+                    <ion-icon name="alert-circle-outline"></ion-icon>
+                    <p>No results found. Try different keywords.</p>
+                </div>
+            {% endif %}
+
+            <!-- Location Results -->
+            {% if locations %}
+            <section class="results-section">
+                <h3><ion-icon name="location-outline"></ion-icon> Locations</h3>
+                <div class="location-cards">
+                    {% for location in locations %}
+                    <div class="location-card">
+                        <div class="location-header">
+                            <h4>{{ location.name }}</h4>
+                            <span class="pin-code">{{ location.pin_code }}</span>
+                        </div>
+                        <p class="location-address">
+                            <ion-icon name="navigate-outline"></ion-icon>
+                            {{ location.address }}
+                        </p>
+                        <div class="parking-info">
+                            <span>
+                                <ion-icon name="car-sport-outline"></ion-icon>
+                                {{ location.parking_lots|length }} parking lots
+                            </span>
+
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- Parking Lot Results -->
+            {% if parking_lots %}
+            <section class="results-section">
+                <h3><ion-icon name="car-outline"></ion-icon> Parking Lots</h3>
+                <div class="lot-cards">
+                    {% for lot in parking_lots %}
+                    <div class="lot-card">
+                        <div class="lot-header">
+                            <h4>{{ lot.prime_location_name }}</h4>
+                            <span class="price">₹{{ lot.price_per_hour }}/hr</span>
+                        </div>
+                        <div class="lot-details">
+                            <span class="availability">
+                                <ion-icon name="time-outline"></ion-icon>
+                                {{ lot.available_from.strftime('%I:%M %p') }} - {{ lot.available_to.strftime('%I:%M %p') }}
+                            </span>
+                            <span class="spots">
+                                <ion-icon name="pricetag-outline"></ion-icon>
+                                {{ lot.available_count }} available spots
+                            </span>
+                        </div>
+                        <a href="{{ url_for('user.view_parking_details', lot_id=lot.id) }}" class="view-btn">
+                            View Availability
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+            
+        {% else %}
+            <div class="search-prompt">
+                <ion-icon name="search-outline"></ion-icon>
+                <p>Enter keywords to search for parking locations</p>
+            </div>
+        {% endif %}
+   
 
 {% endblock %}
 {% endblock %}
