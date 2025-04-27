@@ -45,8 +45,8 @@
         <h2>Welcome to ParkEase</h2>
         <p>Don't have an account?</p>
         <a href="{{ url_for('user.user_signup') }}" class="signup-btn">Sign Up here!</a>
-        <img src="static/assets/pexels-pavel-danilyuk-8438927.jpg" alt="Sign Up Image">
-        <a href="{{ url_for('admin.admin_login') }}" class="signup-btn">I am admin! Let meee innnn</a>
+        <img src="{{ url_for('static', filename='image/image.png') }}" alt="Sign Up Image">
+        <a href="{{ url_for('admin.admin_login') }}" class="admin-login">I am admin</a>
 
     </div>
 

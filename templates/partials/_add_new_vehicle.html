@@ -9,6 +9,16 @@
 
 
 
+{% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash-messages">
+    {% for category, message in messages %}
+    <li class="flash {{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 {% block content %}
 <div class="vehicle-form-container">
     <h2>Add Your Vehicle</h2>
@@ -47,4 +57,5 @@
         {% endif %}
     </form>
 </div>
+{% endblock %}
 {% endblock %}

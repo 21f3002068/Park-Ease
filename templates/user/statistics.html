@@ -81,6 +81,18 @@
 </style>
 {% endblock %}
 
+
+
+{% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash-messages">
+    {% for category, message in messages %}
+    <li class="flash {{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 {% block content %}
 
 
@@ -360,4 +372,5 @@
 
 
 
+{% endblock %}
 {% endblock %}

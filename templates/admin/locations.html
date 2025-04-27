@@ -8,6 +8,15 @@
 {% endblock%}
 
 {% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash-messages">
+    {% for category, message in messages %}
+    <li class="flash {{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 {% block content %}
 
 <div class="locations-wrapper">
@@ -26,37 +35,69 @@
 
         <p class="location-address">
             <ion-icon name="location-outline"></ion-icon>
-            {{ item.location.address }} | Max Spots: {{ item.location.max_parking_spots }}
+            {{ item.location.address }}, {{ item.location.pin_code }} | Total Available Parking Spots: {{ item.total_available_spots }}
         </p>
+
+
         <div class="lot-cards">
             {% for lot in item.lots %}
             <div class="lot-card">
-                <div class="status-dot {% if lot.is_active %}active{% else %}inactive{% endif %}"></div>
-                
-                <h3>{{ lot.prime_location_name }}</h3>
-                <p><strong>Pin Code:</strong> {{ lot.pin_code }}</p>
-                <p><strong>Price/hr:</strong> ₹{{ lot.price_per_hour }}</p>
-                <p><strong>Spots:</strong> {{ lot.number_of_spots }}</p>
-                <p><strong>Time:</strong> {{ lot.available_from }} - {{ lot.available_to }}</p>
-                
-                <!-- Action buttons in bottom right corner -->
+                <!-- Status indicator and main content container -->
+                <div class="lot-content">
+                    <div class="status-indicator">
+                        <div class="status-dot {% if lot.is_active %}active{% else %}inactive{% endif %}"></div>
+                        <span class="status-text">{% if lot.is_active %}Available{% else %}Closed{% endif %}</span>
+                    </div>
+
+                    <div class="lot-details">
+                        <h3 class="lot-title">{{ lot.prime_location_name }}</h3>
+
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <ion-icon name="pricetag-outline" class="detail-icon"></ion-icon>
+                                <span class="detail-label">Price:</span>
+                                <span class="detail-value">₹{{ lot.price_per_hour }}/hr</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <ion-icon name="car-sport-outline" class="detail-icon"></ion-icon>
+                                <span class="detail-label">Spots:</span>
+                                <span class="detail-value">{{ lot.available_spots }}</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <ion-icon name="time-outline" class="detail-icon"></ion-icon>
+                                <span class="detail-label">Hours:</span>
+                                <span class="detail-value">
+                                    {{ lot.available_from.strftime('%I:%M %p') }} - {{ lot.available_to.strftime('%I:%M
+                                    %p') }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
                 <div class="card-actions">
-                    <!-- Edit button remains a regular link -->
-                    <a href="{{ url_for('admin.edit_parking', lot_id=lot.id) }}" class="action-btn edit-btn" title="Edit">
+                    <a href="{{ url_for('admin.edit_parking', lot_id=lot.id) }}" class="action-btn edit-btn"
+                        title="Edit">
                         <ion-icon name="create-outline"></ion-icon>
+                        <span class="btn-tooltip">Edit</span>
                     </a>
-                    
-                    <!-- Delete button becomes a form -->
-                    <form action="{{ url_for('admin.delete_parking', lot_id=lot.id) }}" method="POST" class="delete-form"
-                    onsubmit="return confirm('Are you sure you want to delete this parking lot?');">
-                        <button type="submit" class="action-btn delete-btn" title="Delete">
+
+                    <form action="{{ url_for('admin.delete_parking', lot_id=lot.id) }}" method="POST"
+                        class="delete-form">
+                        <button type="submit" class="action-btn delete-btn" title="Delete"
+                            onclick="return confirm('Are you sure you want to delete this parking lot?');">
                             <ion-icon name="trash-outline"></ion-icon>
+                            <span class="btn-tooltip">Delete</span>
                         </button>
                     </form>
                 </div>
             </div>
             {% endfor %}
-        </div>    </div>
+        </div>
+    </div>
     {% endfor %}
 </div>
 

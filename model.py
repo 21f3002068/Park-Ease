@@ -14,17 +14,17 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(200), nullable=False)
 
     # Extra Profile Info
-    firstname = db.Column(db.String(100), nullable=False)
-    lastname = db.Column(db.String(100), nullable=False)
-    gender = db.Column(db.String(10), nullable=False)
-    phone = db.Column(db.String(15), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    pin = db.Column(db.String(10), nullable=False)
+    firstname = db.Column(db.String(100))
+    lastname = db.Column(db.String(100))
+    gender = db.Column(db.String(10))
+    phone = db.Column(db.String(15))
+    address = db.Column(db.String(200))
+    pin = db.Column(db.String(10))
 
     registration_date = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
 
-    vehicles = db.relationship('Vehicle', backref='owner', lazy=True)
+    vehicles = db.relationship('Vehicle', backref='owner', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -34,7 +34,7 @@ class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     address = db.Column(db.String(200), nullable=False)
-    max_parking_spots = db.Column(db.Integer, nullable=False)
+    pin_code = db.Column(db.String(10))
     
     # Define parking_lots relationship
     parking_lots = db.relationship('ParkingLot', backref='location_ref', lazy=True)
@@ -47,18 +47,19 @@ class Location(db.Model):
 class ParkingLot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     prime_location_name = db.Column(db.String(100))
-    address = db.Column(db.String(200))
-    pin_code = db.Column(db.String(10))
     price_per_hour = db.Column(db.Float)
-    number_of_spots = db.Column(db.Integer, nullable=False)
+    
+    max_parking_spots = db.Column(db.Integer, nullable=False)
+    available_spots = db.Column(db.Integer, nullable=False)
+    
     available_from = db.Column(db.Time)
     available_to = db.Column(db.Time)
+    
     is_active = db.Column(db.Boolean, default=True)
     
-    # Foreign key to Location
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'), nullable=False)
         
-    # Not using these rn
+    # Not using these as of now
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     image_url = db.Column(db.String)
@@ -85,6 +86,9 @@ class Reservation(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicle.id'))
 
+    expected_arrival = db.Column(db.DateTime, nullable=False)
+    expected_departure = db.Column(db.DateTime, nullable=False)
+
     parking_timestamp = db.Column(db.DateTime)
     leaving_timestamp = db.Column(db.DateTime)
     parking_cost = db.Column(db.Float)
@@ -94,7 +98,7 @@ class Reservation(db.Model):
     # Define relationships - removed backref from vehicle
     spot = db.relationship('ParkingSpot', backref='reservations')
     user = db.relationship('User', backref='reservations')
-    vehicle = db.relationship('Vehicle')  # No backref here
+    vehicle = db.relationship('Vehicle')  
 
 class Vehicle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -108,6 +112,17 @@ class Vehicle(db.Model):
 
     def __repr__(self):
         return f'<Vehicle {self.license_plate}>'
+
+
+class Favorite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)  
+
+    user = db.relationship('User', backref='favorites')
+    lot = db.relationship('ParkingLot', backref='favorites')
+
 
 
 class Review(db.Model):

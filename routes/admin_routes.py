@@ -55,7 +55,7 @@ def admin_dashboard():
 
     for lot in lots:
         occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
-        total = lot.number_of_spots or 1
+        total = lot.available_spots or 1
 
         total_occupied_spots += occupied_count
         total_spots += total
@@ -64,7 +64,7 @@ def admin_dashboard():
         parking_lots.append({
             'id': lot.id,
             'prime_location_name': lot.prime_location_name,
-            'number_of_spots': lot.number_of_spots,
+            'available_spots': lot.available_spots,
             'occupied_spots': occupied_count,
             'utilization_rate': round(utilization, 1)
         })
@@ -93,9 +93,18 @@ def locations():
 
     for loc in all_locations:
         lots = ParkingLot.query.filter_by(location_id=loc.id).all()
+        
+        # Calculate total available spots for the current location
+        total_available_spots = 0
+        for lot in lots:
+            # Get count of available spots in each lot
+            available_spots = ParkingSpot.query.filter_by(lot_id=lot.id, status='A').count()
+            total_available_spots += available_spots
+        
         location_data.append({
             "location": loc,
-            "lots": lots
+            "lots": lots,
+            "total_available_spots": total_available_spots  # Add the total available spots
         })
     
     today = datetime.today().date()
@@ -109,7 +118,7 @@ def locations():
 
     for lot in lots:
         occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
-        total = lot.number_of_spots or 1
+        total = lot.available_spots or 1
         
         total_occupied_spots += occupied_count
         total_spots += total
@@ -119,7 +128,8 @@ def locations():
         parking_lots.append({
             'id': lot.id,
             'prime_location_name': lot.prime_location_name,
-            'number_of_spots': lot.number_of_spots,
+            'available_spots': lot.available_spots,
+            'max_parking_spots': lot.max_parking_spots,
             'occupied_spots': occupied_count,
             'utilization_rate': round(utilization, 1)
         })
@@ -133,7 +143,6 @@ def locations():
     selected_location_id = request.args.get('location_id', type=int)
     selected_location = Location.query.get(selected_location_id) if selected_location_id else None
 
-    
     return render_template('admin/locations.html',
                            active_users=active_users,
                            parking_lots=parking_lots, 
@@ -161,7 +170,7 @@ def admin_users():
 
     for lot in lots:
         occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
-        total = lot.number_of_spots or 1
+        total = lot.available_spots or 1
         
         total_occupied_spots += occupied_count
         total_spots += total
@@ -171,7 +180,7 @@ def admin_users():
         parking_lots.append({
             'id': lot.id,
             'prime_location_name': lot.prime_location_name,
-            'number_of_spots': lot.number_of_spots,
+            'available_spots': lot.available_spots,
             'occupied_spots': occupied_count,
             'utilization_rate': round(utilization, 1)
         })
@@ -229,7 +238,7 @@ def activity_log():
 
     for lot in lots:
         occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
-        total = lot.number_of_spots or 1
+        total = lot.available_spots or 1
         
         total_occupied_spots += occupied_count
         total_spots += total
@@ -239,7 +248,7 @@ def activity_log():
         parking_lots.append({
             'id': lot.id,
             'prime_location_name': lot.prime_location_name,
-            'number_of_spots': lot.number_of_spots,
+            'available_spots': lot.available_spots,
             'occupied_spots': occupied_count,
             'utilization_rate': round(utilization, 1)
         })
@@ -274,7 +283,7 @@ def statistics():
 
     for lot in lots:
         occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
-        total = lot.number_of_spots or 1
+        total = lot.available_spots or 1
         
         total_occupied_spots += occupied_count
         total_spots += total
@@ -284,7 +293,7 @@ def statistics():
         parking_lots.append({
             'id': lot.id,
             'prime_location_name': lot.prime_location_name,
-            'number_of_spots': lot.number_of_spots,
+            'available_spots': lot.available_spots,
             'occupied_spots': occupied_count,
             'utilization_rate': round(utilization, 1)
         })
@@ -356,12 +365,12 @@ def add_location():
     if request.method == 'POST':
         name = request.form['name']
         address = request.form['address']
-        max_parking_spots = int(request.form['max_parking_spots'])
+        pin_code = int(request.form['pin_code'])
 
         new_location = Location(
             name=name,
             address=address,
-            max_parking_spots=max_parking_spots
+            pin_code=pin_code
         )
 
         db.session.add(new_location)
@@ -380,9 +389,9 @@ def add_location():
 def add_parking_lot():
     if request.method == 'POST':
         prime_location_name = request.form['prime_location_name']
-        pin_code = request.form['pin_code']
         price_per_hour = float(request.form['price_per_hour'])
-        number_of_spots = int(request.form['number_of_spots'])
+        available_spots = int(request.form['available_spots'])
+        max_parking_spots = int(request.form['max_parking_spots'])
         is_active = request.form['is_active'] == 'true'
 
         available_from_str = request.form.get('available_from')
@@ -395,9 +404,9 @@ def add_parking_lot():
         # Create new ParkingLot object
         new_parking_lot = ParkingLot(
             prime_location_name=prime_location_name,
-            pin_code=pin_code,
             price_per_hour=price_per_hour,
-            number_of_spots=number_of_spots,
+            available_spots=available_spots,
+            max_parking_spots=max_parking_spots,
             available_from=available_from,
             available_to=available_to,
             is_active=is_active,
@@ -409,7 +418,7 @@ def add_parking_lot():
         db.session.commit()
 
         # ✅ Create parking spots
-        for i in range(new_parking_lot.number_of_spots):
+        for i in range(new_parking_lot.available_spots):
             spot = ParkingSpot(lot_id=new_parking_lot.id, spot_number=i + 1)
             db.session.add(spot)
         db.session.commit()
@@ -448,8 +457,8 @@ def delete_spot(spot_id):
     parking_lot = ParkingLot.query.get(spot.lot_id)
 
     # Decrement the number of spots in the parking lot
-    if parking_lot.number_of_spots > 0:
-        parking_lot.number_of_spots -= 1
+    if parking_lot.available_spots > 0:
+        parking_lot.available_spots -= 1
 
     db.session.delete(spot)
     db.session.commit()
@@ -478,7 +487,7 @@ def edit_parking(lot_id):
         parking_lot.address = request.form['address']
         parking_lot.pin_code = request.form['pin_code']
         parking_lot.price_per_hour = float(request.form['price_per_hour'])
-        parking_lot.number_of_spots = int(request.form['number_of_spots'])
+        parking_lot.available_spots = int(request.form['available_spots'])
 
         # Convert to datetime.time
         parking_lot.available_from = parse_time_string(request.form['available_from'])

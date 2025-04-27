@@ -54,7 +54,7 @@
         <div class="form-container">
             <div class="form-content">
                 <h2>Add New Parking Lot</h2>
-                <form action="{{ url_for('admin.add_parking_lot') }}" method="POST">
+                <form action="{{ url_for('admin.add_parking_lot') }}" method="POST" onsubmit="return validateSpots()">
                     <!-- Prime Location Name -->
                     <div class="form-group">
                         <label for="prime_location_name">Parking Name</label>
@@ -64,7 +64,7 @@
                     <!-- Location Select Dropdown -->
                     <div class="form-group">
                         <label for="location_id">Location</label>
-                        <select name="location_id" required>
+                        <select name="location_id" id="location_id" required>
                             {% for location in locations %}
                             <option value="{{ location.id }}" {% if selected_location_id and
                                 location.id==selected_location_id %} selected {% endif %}>
@@ -72,30 +72,26 @@
                             </option>
                             {% endfor %}
                         </select>
-
                     </div>
 
-                    <!-- Pin Code -->
+                    <!-- Parking Limit -->
                     <div class="form-group">
-                        <label for="pin_code">Pin Code</label>
-                        <input type="text" id="pin_code" name="pin_code" required>
+                        <label for="max_parking_spots">Parking Limit: </label>
+                        <input type="number" id="max_parking_spots" name="max_parking_spots" min="1"
+                            placeholder="e.g., 100" required>
+                    </div>
+
+                    <!-- Number of Available Spots -->
+                    <div class="form-group">
+                        <label for="available_spots">Available Spots</label>
+                        <input type="number" id="available_spots" name="available_spots" min="0" placeholder="e.g., 50"
+                            required> 
                     </div>
 
                     <!-- Price per Hour -->
                     <div class="form-group">
                         <label for="price_per_hour">Price per Hour</label>
-                        <input type="number" id="price_per_hour" name="price_per_hour" step="0.01" required>
-                    </div>
-
-                    <!-- Number of Spots -->
-                    <div class="form-group">
-                        <label for="number_of_spots">No. of Spots
-                            {% if selected_location %}
-                            (Max: {{ selected_location.max_parking_spots }})
-                            {% endif %}
-                        </label>
-                        <input type="number" id="number_of_spots" name="number_of_spots" required {% if
-                            selected_location %} max="{{ selected_location.max_parking_spots }}" {% endif %}>
+                        <input type="number" id="price_per_hour" name="price_per_hour" step="0.01" min="0" required>
                     </div>
 
                     <!-- Available From (Time) -->
@@ -123,12 +119,85 @@
                         <a href="{{ url_for('admin.admin_dashboard') }}" class="cancel-btn">Cancel</a>
                         <button type="submit" class="submit-btn">Add Parking Lot</button>
                     </div>
-
                 </form>
             </div>
         </div>
     </div>
 
+
+    <script>
+        function validateSpots() {
+            const maxSpots = parseInt(document.getElementById('max_parking_spots').value);
+            const availableSpots = parseInt(document.getElementById('available_spots').value);
+
+            if (isNaN(maxSpots) || maxSpots <= 0) {
+                alert("Please enter a valid parking limit (minimum 1)");
+                return false;
+            }
+
+            if (isNaN(availableSpots) || availableSpots < 0) {
+                alert("Please enter a valid number of available spots");
+                return false;
+            }
+
+            if (availableSpots > maxSpots) {
+                alert(`Available spots (${availableSpots}) cannot exceed parking limit (${maxSpots})`);
+                return false;
+            }
+            return true;
+        }
+
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set initial max value for available spots
+            const maxInput = document.getElementById('max_parking_spots');
+            const availableInput = document.getElementById('available_spots');
+            if (maxInput.value) {
+                availableInput.max = maxInput.value;
+            }
+
+            // Add the change event listener
+            maxInput.addEventListener('input', function () {
+                const maxSpots = parseInt(this.value) || 1;
+                availableInput.max = maxSpots;
+                if (parseInt(availableInput.value) > maxSpots) {
+                    availableInput.value = maxSpots;
+                }
+            });
+        });
+
+
+
+        function validateTimes() {
+            const fromTime = document.getElementById('available_from').value;
+            const toTime = document.getElementById('available_to').value;
+
+            if (fromTime && toTime && fromTime >= toTime) {
+                alert("Closing time must be after opening time");
+                return false;
+            }
+            return true;
+        }
+
+        // Update your form onsubmit:
+        onsubmit = "return validateSpots() && validateTimes()"
+
+
+
+
+        function validatePrice() {
+            const price = parseFloat(document.getElementById('price_per_hour').value);
+            if (isNaN(price) || price <= 0) {
+                alert("Please enter a valid price per hour");
+                return false;
+            }
+            return true;
+        }
+
+        // Update your form onsubmit:
+        onsubmit = "return validateSpots() && validateTimes() && validatePrice()"
+    </script>
 </body>
 
 </html>

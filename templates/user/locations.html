@@ -7,6 +7,15 @@
 {% endblock%}
 
 {% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash-messages">
+    {% for category, message in messages %}
+    <li class="flash {{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 {% block content %}
 
 <div class="locations-wrapper">
@@ -21,18 +30,34 @@
 
         <p class="location-address">
             <ion-icon name="location-outline"></ion-icon>
-            {{ item.location.address }} | Max Spots: {{ item.location.max_parking_spots }}
+            {{ item.location.address }}, {{ item.location.pin_code }} | Total Available Parking Spots: {{
+            item.total_parking_spots }}
+
         </p>
         <div class="lot-cards">
             {% for lot in item.lots %}
             <div class="lot-card">
-                <div class="status-dot {% if lot.is_active %}active{% else %}inactive{% endif %}"></div>
 
-                <h3>{{ lot.prime_location_name }}</h3>
-                <p><strong>Pin Code:</strong> {{ lot.pin_code }}</p>
-                <p><strong>Price/hr:</strong> ₹{{ lot.price_per_hour }}</p>
-                <p><strong>Available Spots:</strong> {{ spots_count.get(lot.id, 0) }}/{{ lot.number_of_spots }}</p>
-                <p><strong>Time:</strong> {{ lot.available_from }} - {{ lot.available_to }}</p>
+                <h3>
+                    {{ lot.prime_location_name }}
+
+                    <div class="status-dot {% if lot.is_active %}active{% else %}inactive{% endif %}"></div>
+
+                </h3>
+                <div class="card-details">
+
+                    <p><strong>
+                            <ion-icon name="pricetag-outline" class="detail-icon"></ion-icon>
+                            Price/hr:</strong> ₹{{ lot.price_per_hour }}</p>
+                    <p><strong>
+                            <ion-icon name="car-sport-outline" class="detail-icon"></ion-icon>
+                            Available Spots:</strong> {{ spots_count.get(lot.id, 0) }}/{{ lot.max_parking_spots }}</p>
+                    <p><strong>
+                            <ion-icon name="time-outline" class="detail-icon"></ion-icon>
+                            Time:</strong>
+                        {{ lot.available_from.strftime('%I:%M %p') }} - {{ lot.available_to.strftime('%I:%M %p') }}
+                    </p>
+                </div>
 
                 <!-- User Actions -->
                 <div class="card-actions">
@@ -66,19 +91,20 @@
     {% endfor %}
 </div>
 
-<a href="#" class="find-parking-btn">
-    <ion-icon name="search-outline"></ion-icon> Find Parking Near Me
-</a>
+<div class="find-parking">
+
+    <a href="#" class="find-parking-btn">
+        <ion-icon name="search-outline"></ion-icon> Find Parking Near Me
+    </a>
+</div>
 
 
 <script>
     function toggleFavorite(lotId) {
         const icon = document.getElementById(`fav-icon-${lotId}`);
 
-        // Toggle between heart outline and heart filled
         if (icon.getAttribute('name') === 'heart-outline') {
             icon.setAttribute('name', 'heart');
-            // Call API to add to favorites
             fetch(`/user/favorites/${lotId}`, { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
@@ -88,7 +114,6 @@
                 });
         } else {
             icon.setAttribute('name', 'heart-outline');
-            // Call API to remove from favorites
             fetch(`/user/favorites/${lotId}`, { method: 'DELETE' })
                 .then(response => response.json())
                 .then(data => {
@@ -99,9 +124,19 @@
         }
     }
 
+    function removeFavorite(lotId) {
+        fetch(`/user/favorites/${lotId}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // refresh the page to reflect removal
+                }
+            });
+    }
+
+
     function showToast(message) {
-        // Implement your toast notification here
-        console.log(message); // Replace with actual toast implementation
+        console.log(message);
     }
 </script>
 

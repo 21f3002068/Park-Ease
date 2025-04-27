@@ -11,6 +11,15 @@ Profile
 {% endblock %}
 
 {% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash-messages">
+    {% for category, message in messages %}
+    <li class="flash {{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 {% block content %}
 
 <div class="container">
@@ -21,16 +30,54 @@ Profile
         </div>
         <div class="profile-info">
             <h1 class="profile-name">
+                {% if user.firstname or user.lastname %}
                 {{ user.firstname }} {{ user.lastname }}
+                {% else %}
+                <i>
+
+                    [No Name Provided]
+                </i>
+                {% endif %}
                 <a href="{{ url_for('user.edit_profile') }}" class="edit-profile-link" title="Edit Profile">
                     <i class="fas fa-edit"></i>
                 </a>
             </h1>
-            
-            <p><i class="fas fa-user"></i> {{ user.username }}</p>
-            <p><i class="fas fa-envelope"></i> {{ user.email }}</p>
-            <p><i class="fas fa-phone"></i> {{ user.phone }}</p>
-            <p><i class="fas fa-map-marker-alt"></i> {{ user.address }}, {{ user.pin }}</p>
+
+            <p><i class="fas fa-user"></i> @{{ user.username }}</p>
+
+            <p><i class="fas fa-envelope"></i>
+                {{ user.email if user.email else '[Email not provided]' }}
+            </p>
+
+            <p><i class="fas fa-phone"></i>
+                {% if user.phone %}
+                {{ user.phone }}
+                {% else %}
+                <span class="text-muted">
+                    <i>
+
+                        [Phone number not added]
+                    </i>
+                </span>
+                {% endif %}
+            </p>
+
+            <p><i class="fas fa-map-marker-alt"></i>
+                {% if user.address and user.pin %}
+                {{ user.address }}, {{ user.pin }}
+                {% elif user.address %}
+                {{ user.address }} [No PIN]
+                {% elif user.pin %}
+                [No address], {{ user.pin }}
+                {% else %}
+                <span class="text-muted">
+                <i>
+
+                    [Address not provided]
+                </i>
+                </span>
+                {% endif %}
+            </p>
             <span class="status-badge {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
                 {% if user.is_active %}Active{% else %}Inactive{% endif %}
             </span>
@@ -97,8 +144,8 @@ Profile
                 <i class="fas fa-heart"></i>
                 <h3>No Saved Parking Lots</h3>
                 <p>Save your favorite parking lots for quick access when booking</p>
-                <a href="#" class="btn btn-primary">
-                    <i class="fas fa-search"></i> Find Parking
+                <a href="{{ url_for('user.locations') }}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Explore Parkings
                 </a>
             </div>
             {% endif %}
@@ -168,7 +215,7 @@ Profile
             <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Reservation History</h2>
         </div>
 
-        {% if user.reservations %}
+        {% if user.reservations %} 
         <table>
             <thead>
                 <tr>
@@ -188,12 +235,12 @@ Profile
                     <td>{{ reservation.spot.lot.prime_location_name }}</td>
                     <td>{{ reservation.spot.spot_number }}</td>
                     <td>{{ reservation.vehicle.license_plate }}</td>
-                    <td>{{ reservation.parking_timestamp.strftime('%b %d, %Y %I:%M %p') }}</td>
+                    <td>{{ reservation.parking_timestamp.strftime('%I:%M %p') }}</td>
                     <td>
                         {% if reservation.leaving_timestamp %}
-                        {{ reservation.leaving_timestamp.strftime('%b %d, %Y %I:%M %p') }}
+                            {{ reservation.leaving_timestamp.strftime('%I:%M %p') }}
                         {% else %}N/A{% endif %}
-                    </td>
+                    </td>                    
                     <td>${{ "%.2f"|format(reservation.parking_cost) }}</td>
                     <td class="status-{{ reservation.status|lower }}">
                         {{ reservation.status }}
@@ -223,8 +270,8 @@ Profile
             <i class="fas fa-calendar-times"></i>
             <h3>No Reservations Yet</h3>
             <p>Book your first parking spot to see your reservation history here</p>
-            <a href="{{ url_for('user.find_parking') }}" class="btn btn-primary">
-                <i class="fas fa-search"></i> Find Parking
+            <a href="{{ url_for('user.locations') }}" class="btn btn-primary">
+                <i class="fas fa-calendar-alt"></i> Book a parking
             </a>
         </div>
         {% endif %}
@@ -279,6 +326,38 @@ Profile
         {% endif %}
     </div>
 
+    <div class="danger-zone">
+        <h4 class="danger-zone-title">
+            <i class="fas fa-exclamation-triangle"></i> Danger Zone
+        </h4>
+        <div class="danger-zone-content">
+            <p class="danger-zone-warning">
+                <strong>Warning:</strong> Deleting your account is permanent and cannot be undone.
+                All your data, vehicles, and history will be permanently removed.
+            </p>
+
+            <button class="btn-delete-account" id="deleteAccountBtn">
+                <i class="fas fa-trash-alt"></i> Delete My Account
+            </button>
+
+            <!-- Confirmation Modal (hidden by default) -->
+            <div class="delete-confirm-modal" id="deleteConfirmModal">
+                <div class="modal-content">
+                    <h5>Confirm Account Deletion</h5>
+                    <p>Are you absolutely sure you want to delete your account? This action cannot be undone.</p>
+                    <div class="modal-actions">
+                        <button class="btn-cancel" id="cancelDeleteBtn">Cancel</button>
+                        <form action="{{ url_for('user.delete_account') }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn-confirm-delete">
+                                <i class="fas fa-trash-alt"></i> Yes, Delete My Account
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -313,6 +392,24 @@ Profile
             // In a real implementation, this would make an API call
         }
     }
+
+
+    document.getElementById('deleteAccountBtn').addEventListener('click', function () {
+        document.getElementById('deleteConfirmModal').style.display = 'flex';
+    });
+
+    document.getElementById('cancelDeleteBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        document.getElementById('deleteConfirmModal').style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function (event) {
+        const modal = document.getElementById('deleteConfirmModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 
 </script>
 

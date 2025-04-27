@@ -1,155 +1,390 @@
-/* Reset & base styles */
-* {
+/* static/style/user/user_login.css */
+
+/* Base Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
     display: flex;
-    flex-direction: row;
     min-height: 100vh;
-    background: #f3f4f6;
-    color: #333;
+    background-color: #c6c4ff;
+    color: #932626;
 }
 
-/* Login Form Section */
+/* Layout */
 .login-form {
     flex: 1;
-    max-width: 450px;
-    margin: auto;
-    padding: 40px;
-    background-color: #fff;
+    max-width: 400px;
+    padding: 3rem 2rem;
+    background: white;
     border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    /* max-width: 500px; */
+    flex-direction: column;
+    position: relative;
+    /* align-items: center; */
+    /* margin: 1.55rem 0.5rem 1rem 1rem; */
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-left: auto;
+    margin-right: 1rem;
+    
+    /* border: 2px solid red; */
+    justify-content: center;
 }
-
-.login-form h2 {
-    text-align: center;
-    margin-bottom: 24px;
-    font-size: 28px;
-    color: #0f172a;
-}
-
-.login-form label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.login-form input[type="text"],
-.login-form input[type="password"] {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    transition: border-color 0.3s;
-}
-
-.login-form input:focus {
-    border-color: #3b82f6;
-    outline: none;
-}
-
-.login-form .btn {
-    width: 100%;
-    padding: 12px;
-    background: #3b82f6;
+/* Carousel Container */
+.carousel-container {
+    background: linear-gradient(135deg, #4a6baf, #3a5a9f);
     color: white;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s;
+    padding: 0.4rem 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* border: 2px solid red; */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+    max-width: 500px;
+
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-left: 1rem;
+    margin-right: auto;
+    }
+    
+    /* Background Decoration */
+    .carousel-container::before {
+        content: '';
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 150px;
+        height: 150px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    
+    .carousel-container::after {
+        content: '';
+        position: absolute;
+        bottom: -30px;
+        left: -30px;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    
+    /* Typography */
+
+    
+    .carousel-container p {
+        font-size: 0.8rem;
+        /* margin-bottom: 1rem; */
+        position: relative;
+        z-index: 2;
+        opacity: 0.9;
+    }
+    
+    /* Buttons */
+    /* .signup-btn {
+        display: inline-block;
+        padding: 0.8rem 2rem;
+        border: 2px solid red;
+        background-color: white; 
+        color: #4a6baf;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        margin: 0.5rem 0;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .signup-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        background-color: #f8f9fa;
+    } */
+
+    /* Admin Link */
+    .carousel-container a[href*="admin"] {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        margin-top: 1rem;
+    }
+
+    .carousel-container a[href*="admin"]:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: white;
+    }
+
+    /* Image */
+    /* .carousel-container img {
+        max-width: 80%;
+        height: auto;
+        margin: 2rem 0;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 2;
+        border: 4px solid white;
+    } */
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .carousel-container {
+            padding: 2rem 1.5rem;
+            margin: 1rem;
+        }
+        
+        .carousel-container h2 {
+            font-size: 1.8rem;
+        }
+        
+        .carousel-container img {
+            max-width: 100%;
+        }
+    }
+/* Form Elements */
+.login-form h2 {
+    color: #535353;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    text-align: center;
 }
 
-.login-form .btn:hover {
-    background: #2563eb;
+.username, .password {
+    margin-bottom: 1.5rem;
 }
 
-/* Remember and Forgot */
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.form-control {
+    width: 93%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #4a6baf;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 107, 175, 0.2);
+}
+
+/* Remember Me & Forgot Password */
 .remember-forget {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 1.5rem;
+}
+
+.control {
+    display: block;
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.control input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.control__indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.control:hover input ~ .control__indicator {
+    background: #f1f1f1;
+}
+
+.control input:checked ~ .control__indicator {
+    background: #4a6baf;
+    border-color: #4a6baf;
 }
 
 .forgot-pass {
-    font-size: 14px;
-    color: #2563eb;
+    color: #4a6baf;
     text-decoration: none;
+    font-size: 0.9rem;
 }
 
 .forgot-pass:hover {
     text-decoration: underline;
 }
 
-/* Flash messages */
-.flash-messages {
-    list-style: none;
-    padding: 12px 24px;
-    background: #fef3c7;
-    color: #92400e;
-    margin: 10px;
-    border-radius: 8px;
+/* Login Button */
+.btn {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #4a6baf;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-.flash.error {
-    background: #fee2e2;
-    color: #991b1b;
+.btn:hover {
+    background-color: #3a5a9f;
 }
 
-.flash.success {
-    background: #dcfce7;
-    color: #166534;
-}
-
-/* Carousel Container */
-.carousel-container {
-    flex: 1;
-    background: #e0f2fe;
-    padding: 60px 40px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
+/* Carousel Content */
 
 .carousel-container h2 {
-    font-size: 32px;
-    color: #1e3a8a;
-    margin-bottom: 16px;
+    font-size: 1.5rem;
+    margin-bottom: 0px;
+    position: relative;
+    z-index: 2;
+    /* border: 2px solid red; */
+    position: relative;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 .carousel-container p {
-    font-size: 18px;
-    margin-bottom: 24px;
-    color: #334155;
+    /* margin-bottom: 0.5rem; */
+    /* border: 2px solid red; */
+    margin-top: 0px;
+    position: relative;
+    z-index: 2;
 }
 
 .signup-btn {
     display: inline-block;
-    margin: 12px 0;
-    padding: 10px 24px;
-    background: #1d4ed8;
+    /* margin: 1rem 0; */
+    padding: 0.4rem 1rem;
+    background-color: rgba(255, 255, 255, 0.2);
     color: white;
-    border-radius: 8px;
+    border: 1px solid white;
+    border-radius: 30px;
+    margin-top: 1rem;
     text-decoration: none;
-    transition: background 0.3s;
+    font-weight: 100;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
 }
 
 .signup-btn:hover {
-    background: #2563eb;
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 .carousel-container img {
-    margin-top: 30px;
-    width: 80%;
-    max-width: 400px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 70%;
+    height: auto;
+    border-radius: 10px;
+    margin-top: 0.6rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 2;
+}
+
+.admin-login {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    color: #4a6baf;
+    text-decoration: none;
+    font-size: 0.9rem;
+    border: 2px solid red;
+    font-weight: 500;
+    border: 1px solid #4a6baf;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    background-color: transparent;
+}
+
+.admin-login:hover {
+    background-color: rgba(74, 107, 175, 0.1);
+    text-decoration: none;
+}
+
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Admin Link */
+.carousel-container a[href*="admin"] {
+    margin-top: 1rem;
+    background-color: transparent;
+    border: none;
+    text-decoration: underline;
+    padding: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+    
+    .login-form, .carousel-container {
+        padding: 2rem 1.5rem;
+    }
+    
+    .carousel-container img {
+        max-width: 100%;
+    }
+}
+
+
+/* Flash Messages */
+.flash-messages {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    z-index: 1000;
+}
+
+.flash {
+    padding: 0.8rem 1.2rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    color: white;
+    animation: slideIn 0.3s ease-out;
+}
+
+.flash.success {
+    background-color: #28a745;
+}
+
+.flash.error {
+    background-color: #dc3545;
+}
+
+.flash.warning {
+    background-color: #ffc107;
+    color: #333;
 }

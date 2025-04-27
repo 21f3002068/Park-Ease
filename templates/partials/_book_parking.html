@@ -4,8 +4,20 @@
 
 {% block custom_styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='style/partials/_book_parking.css') }}">
-
 {% endblock %}
+
+
+
+{% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash-messages">
+    {% for category, message in messages %}
+    <li class="flash {{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 
 {% block content %}
 <div class="booking-container">
@@ -15,6 +27,7 @@
         <p><strong>Address:</strong> {{ parking_lot.location_ref.address }}</p>
         <p><strong>Price per hour:</strong> ₹{{ parking_lot.price_per_hour }}</p>
         <p><strong>Available spots:</strong> {{ available_spots_count }}</p>
+        <p><strong>Available Time:</strong> {{ parking_lot.available_from.strftime('%I:%M %p') }} - {{ parking_lot.available_to.strftime('%I:%M %p') }}</p>
     </div>
     
     <form method="POST" class="booking-form">
@@ -28,10 +41,15 @@
                 {% endfor %}
             </select>
         </div>
+
+        <div class="form-group">
+            <label for="expected_arrival">Expected Arrival Time:</label>
+            <input type="time" name="expected_arrival" id="expected_arrival" required>
+        </div>
         
         <div class="form-group">
-            <label for="hours">Duration (hours):</label>
-            <input type="number" name="hours" id="hours" min="1" max="24" value="1" required>
+            <label for="expected_departure">Expected Departure Time:</label>
+            <input type="time" name="expected_departure" id="expected_departure" required>
         </div>
         
         <div class="form-group">
@@ -40,4 +58,5 @@
         </div>
     </form>
 </div>
+{% endblock %}
 {% endblock %}

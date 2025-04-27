@@ -9,7 +9,15 @@
 
 
 {% block body %}
-
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash-messages">
+    {% for category, message in messages %}
+    <li class="flash {{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 {% block content %}
 
 
@@ -43,10 +51,10 @@
                 </div>
             </div>
 
-            <p class="slot-info">{{ lot.occupied_spots or 0 }} / {{ lot.number_of_spots }} slots occupied</p>
+            <p class="slot-info">{{ lot.occupied_spots or 0 }} / {{ lot.available_spots }} slots occupied</p>
 
             <div class="slot-boxes">
-                {% for i in range(lot.number_of_spots) %}
+                {% for i in range(lot.available_spots) %}
                 <a href="{{ url_for('admin.view_spot', lot_id=lot.id, spot_number=i+1) }}"
                     class="slot-box {% if i < (lot.occupied_spots or 0) %}occupied{% endif %}" title="Spot {{ i + 1 }}"></a>
                 {% endfor %}

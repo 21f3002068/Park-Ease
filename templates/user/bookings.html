@@ -11,13 +11,34 @@
 
 {% block body %}
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash-messages">
+    {% for category, message in messages %}
+    <li class="flash {{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
 {% block user_greeting %}
 <div class="user-greeting">
-    {% if current_user %}
-    Hi, {{ current_user.firstname }}!
-    {% else %}
-    Hi, Guest!
+
+    {% if current_parking %}
+    Your vehicle {{ current_parking.vehicle.vehicle_name }}
+    ({{current_parking.vehicle.license_plate }}) is currently parked at {{ current_parking.spot.lot.prime_location_name
+    }}.
+    <div class="parkout-btn">
+        <div class="parking-actions">
+            <form action="{{ url_for('user.park_out', reservation_id=current_parking.id) }}" method="POST">
+                <button type="submit" class="park-out-btn">
+                    <ion-icon name="exit-outline"></ion-icon> Park Out
+                </button>
+            </form>
+        </div>
+    </div>
     {% endif %}
+
 </div>
 {% endblock %}
 
@@ -28,18 +49,17 @@
     <div class="dashboard-grid">
         <!-- Current Bookings -->
         <div class="panel current-bookings">
-            <h3 class="panel-heading">Active Parking Bookings</h3>
+            <h3 class="panel-heading">Confirmed Bookings</h3>
             <div class="table-container">
                 <table class="parking-table">
                     <thead>
                         <tr>
-                            <th>Booking ID</th>
+                            <th>B. ID</th>
                             <th>Parking Lot</th>
                             <th>Spot #</th>
                             <th>Vehicle</th>
-                            <th>Entry Time</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th>Scheduled</th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -49,13 +69,7 @@
                             <td>{{ booking.spot.lot.prime_location_name }}</td>
                             <td>{{ booking.spot.spot_number }}</td>
                             <td>{{ booking.vehicle.license_plate }}</td>
-                            <td>{{ booking.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td><span class="status active">Active</span></td>
-                            <td>
-                                <button class="checkout-btn" data-booking-id="{{ booking.id }}">
-                                    Check Out
-                                </button>
-                            </td>
+                            <td>{{ booking.expected_arrival.strftime('%I:%M %p') }}</td>
                         </tr>
                         {% else %}
                         <tr class="empty">
@@ -69,17 +83,15 @@
 
         <!-- Pending Requests -->
         <div class="panel pending-requests">
-            <h3 class="panel-heading">Pending Parking Requests</h3>
+            <h3 class="panel-heading">Pending Requests</h3>
             <div class="table-container">
                 <table class="parking-table">
                     <thead>
                         <tr>
-                            <th>Request ID</th>
+                            <th>B. ID</th>
                             <th>Parking Lot</th>
                             <th>Vehicle</th>
                             <th>Requested Time</th>
-                            <th>Status</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -96,21 +108,10 @@
                                 {% endif %}
                             </td>
                             <td>{{ request.vehicle.license_plate }}</td>
-                            <td>{{ request.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td><span class="status pending">Pending</span></td>
-                            <td>
-                                <form action="{{ url_for('user.cancel_booking', request_id=request.id) }}" method="POST"
-                                    style="display: inline;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="cancel-btn"
-                                        onclick="return confirm('Are you sure you want to cancel this booking?');">
-                                        Cancel
-                                    </button>
-                                </form>
-                            </td>
+                            <td>{{ request.parking_timestamp.strftime('%I:%M %p') }}</td>
                         </tr>
                         {% else %}
-                        <tr>
+                        <tr class="empty">
                             <td colspan="6">No pending requests</td>
                         </tr>
                         {% endfor %}
@@ -126,10 +127,8 @@
                 <table class="parking-table">
                     <thead>
                         <tr>
-                            <th>Booking ID</th>
+                            <th>B. ID</th>
                             <th>Parking Lot</th>
-                            <th>Vehicle</th>
-                            <th>Requested Time</th>
                             <th>Status</th>
                             <th>Reason</th>
                         </tr>
@@ -139,8 +138,6 @@
                         <tr>
                             <td>#CAN{{ booking.id }}</td>
                             <td>{{ booking.spot.lot.prime_location_name }}</td>
-                            <td>{{ booking.vehicle.license_plate }}</td>
-                            <td>{{ booking.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td><span class="status cancelled">{{ booking.status }}</span></td>
                             <td>{{ booking.cancellation_reason or "User cancelled" }}</td>
                         </tr>
@@ -161,9 +158,7 @@
                 <table class="parking-table">
                     <thead>
                         <tr>
-                            <th>Booking ID</th>
-                            <th>Parking Lot</th>
-                            <th>Vehicle</th>
+                            <th>B. ID</th>
                             <th>Entry Time</th>
                             <th>Exit Time</th>
                             <th>Amount</th>
@@ -174,13 +169,11 @@
                         {% for history in parking_history %}
                         <tr>
                             <td>#HIS{{ history.id }}</td>
-                            <td>{{ history.spot.lot.prime_location_name }}</td>
-                            <td>{{ history.vehicle.license_plate }}</td>
-                            <td>{{ history.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>{{ history.leaving_timestamp.strftime('%Y-%m-%d %H:%M') if history.leaving_timestamp
+                            <td>{{ history.parking_timestamp.strftime('%I:%M %p') }}</td>
+                            <td>{{ history.leaving_timestamp.strftime('%I:%M %p') if history.leaving_timestamp
                                 else 'N/A' }}</td>
-                            <td>₹{{ history.parking_cost }}</td>
-                            <td>
+                                <td>₹{{ history.parking_cost|int }}</td>
+                                <td>
                                 {% if history.review %}
                                 {{ history.review.rating }}★
                                 {% else %}

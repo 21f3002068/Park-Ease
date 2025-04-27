@@ -8,7 +8,15 @@
     <title>Edit Profile</title>
 </head>
 <body>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flash-messages">
+        {% for category, message in messages %}
+        <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
 <div class="edit-profile-container">
     <h2>Edit Profile</h2>
     <form action="{{ url_for('user.edit_profile') }}" method="POST" class="edit-profile-form">
@@ -22,19 +30,19 @@
         <!-- Phone -->
         <div class="form-group">
             <label for="phone">Phone</label>
-            <input type="text" id="phone" name="phone" value="{{ user.phone }}" required>
+            <input type="text" id="phone" name="phone" value="{{ user.phone if user.phone else '' }}" required>
         </div>
 
         <!-- First Name -->
         <div class="form-group">
             <label for="firstname">First Name</label>
-            <input type="text" id="firstname" name="firstname" value="{{ user.firstname }}" required>
+            <input type="text" id="firstname" name="firstname" value="{{ user.firstname if user.firstname else '' }}" required>
         </div>
 
         <!-- Last Name -->
         <div class="form-group">
             <label for="lastname">Last Name</label>
-            <input type="text" id="lastname" name="lastname" value="{{ user.lastname }}" required>
+            <input type="text" id="lastname" name="lastname" value="{{ user.lastname if user.lastname else '' }}" required>
         </div>
 
         <!-- Password (Optional change) -->
@@ -56,13 +64,13 @@
         <!-- Address -->
         <div class="form-group">
             <label for="address">Address</label>
-            <textarea id="address" name="address" required>{{ user.address }}</textarea>
+            <textarea id="address" name="address" required>{{ user.address if user.address else '' }}</textarea>
         </div>
 
         <!-- Pin Code -->
         <div class="form-group">
             <label for="pin">Pin Code</label>
-            <input type="text" id="pin" name="pin" value="{{ user.pin }}" required>
+            <input type="text" id="pin" name="pin" value="{{ user.pin if user.pin else '' }}" required>
         </div>
 
         <div class="form-buttons">

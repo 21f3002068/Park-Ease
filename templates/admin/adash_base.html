@@ -32,6 +32,8 @@
     <div class="control-panel">
 
         <ul>
+            {% set current_path = request.path %}
+
             <li>
                 <a href="#" class="company-name">
                     <img src="{{ url_for('static', filename='/image/company_logo.png') }}" class="company-logo-img"
@@ -41,44 +43,43 @@
                 </a>
             </li>
             <li>
-                <a href="{{url_for('admin.admin_dashboard')}}" class="dashboard-option">
+                <a href="{{url_for('admin.admin_dashboard')}}"
+                    class="{% if current_path == url_for('admin.admin_dashboard') %}active{% endif %}">
                     <span class="icon"><ion-icon name="tv-outline"></ion-icon></span>
                     <span class="title">Dashboard</span>
                 </a>
             </li>
             <li>
-                <a href="{{url_for('admin.locations')}}" class="dashboard-option">
+                <a href="{{url_for('admin.locations')}}"
+                    class="{% if current_path == url_for('admin.locations') %}active{% endif %}">
                     <span class="icon"><ion-icon name="location-outline"></ion-icon></span>
                     <span class="title">Locations</span>
                 </a>
             </li>
             <li>
-                <a href="{{url_for('admin.admin_users')}}" class="requests-option">
+                <a href="{{url_for('admin.admin_users')}}"
+                    class="{% if current_path == url_for('admin.admin_users') %}active{% endif %}">
                     <span class="icon"><ion-icon name="people-outline"></ion-icon></span>
                     <span class="title">Users</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{ url_for('admin.activity_log') }}" class="settings-option">
+                <a href="{{ url_for('admin.activity_log') }}"
+                    class="{% if current_path == url_for('admin.activity_log') %}active{% endif %}">
                     <span class="icon"><ion-icon name="document-text-outline"></ion-icon></span>
                     <span class="title">Activity Log</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{ url_for('admin.statistics') }}" class="settings-option">
+                <a href="{{ url_for('admin.statistics') }}"
+                    class="{% if current_path == url_for('admin.statistics') %}active{% endif %}">
                     <span class="icon"><ion-icon name="stats-chart-outline"></ion-icon></span>
                     <span class="title">Stats</span>
                 </a>
             </li>
 
-            <li>
-                <a href="#Settings" class="settings-option">
-                    <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
-                    <span class="title">Settings</span>
-                </a>
-            </li>
             <li>
                 <a href="{{ url_for('logout') }}">
                     <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
@@ -121,7 +122,7 @@
                     <div class="cardName">Active Users</div>
                 </div>
                 <div class="iconBx">
-                    <ion-icon name="people-outline"></ion-icon>
+                    <ion-icon name="people-circle-outline"></ion-icon>
                 </div>
             </div>
             <div class="card">
@@ -130,7 +131,7 @@
                     <div class="cardName">Total Parking Lots</div>
                 </div>
                 <div class="iconBx">
-                    <ion-icon name="eye-outline"></ion-icon>
+                    <ion-icon name="storefront-outline"></ion-icon>
                 </div>
             </div>
             <div class="card">
@@ -139,7 +140,7 @@
                     <div class="cardName">Active Parking Spots</div>
                 </div>
                 <div class="iconBx">
-                    <ion-icon name="hammer-outline"></ion-icon>
+                    <ion-icon name="car-sport-outline"></ion-icon>
                 </div>
             </div>
             <div class="card">
@@ -148,23 +149,21 @@
                     <div class="cardName">Spot Utilization Rate</div>
                 </div>
                 <div class="iconBx">
-                    <ion-icon name="bookmarks-outline"></ion-icon>
+                    <ion-icon name="bar-chart-outline"></ion-icon>
                 </div>
             </div>
-            
             <div class="card">
                 <div>
                     <div class="numbers">+ {{ vehicles_parked_today }}</div>
                     <div class="cardName">Vehicles Parked Today</div>
                 </div>
                 <div class="iconBx">
-                    <img src="{{ url_for('static', filename='/icons/handshake_26dp_434343.svg') }}" alt="">
+                    <ion-icon name="car-outline"></ion-icon>
                 </div>
             </div>
-                        
         </div>
         {% endblock %}
-
+        
 
 
 
@@ -175,41 +174,8 @@
 
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="{{ url_for('static', filename='/js/adash_base.js') }}"></script>
-
-
 
     <script>
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const links = document.querySelectorAll('.control-panel a');
-
-            const activeLink = localStorage.getItem('activeLink');
-
-            links.forEach(link => {
-                if (link.getAttribute('href') === activeLink) {
-                    link.classList.add('active');
-                }
-
-                link.addEventListener('click', function (event) {
-                    links.forEach(link => link.classList.remove('active'));
-                    this.classList.add('active');
-                    localStorage.setItem('activeLink', this.getAttribute('href'));
-                });
-            });
-
-            // 🟡 Auto-dismiss flash messages
-            const flashMessages = document.querySelectorAll('.flash-messages li');
-            flashMessages.forEach(msg => {
-                setTimeout(() => {
-                    msg.style.opacity = "0";
-                    msg.style.transition = "opacity 0.5s ease";
-                    setTimeout(() => msg.remove(), 500);
-                }, 3000);
-            });
-        });
-
-
 
         let toggle = document.querySelector('.toggle');
         let controlPanel = document.querySelector('.control-panel');
@@ -219,10 +185,6 @@
             controlPanel.classList.toggle('active');
             mainSection.classList.toggle('active');
         }
-
-
-
-
     </script>
 
 

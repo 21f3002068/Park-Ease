@@ -1,9 +1,98 @@
+
+/* .locations-wrapper{
+    border: 2px solid red;
+} */
+
+
+.location-section{
+    /* border: 2px solid red; */
+    margin: 2px;
+    
+}
+
+/* .location-header{
+    border: 2px solid red;
+    
+} */
+
+
+.location-header h2{
+    border-bottom: 1px solid rgb(0, 132, 255);
+    padding-bottom: 15px;
+    margin-bottom: 0px;
+    margin-top: 40px;
+    margin-left: 10px;
+}
+
+.location-address{
+    /* border: 2px solid red; */
+    padding-bottom: 15px;
+    padding-left: 10px;
+    padding-top: 5px;
+    margin-top: 2px;
+}
+
+.lot-cards {
+    /* border: 2px solid red; */
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping to next line */
+    gap: 1rem; /* Optional: adds spacing between cards */
+}
+
+.lot-cards > * {
+    flex: 1 1 calc(25% - 1rem); /* 4 cards per row */
+    box-sizing: border-box; /* ensures padding/border don't mess up width */
+}
+
+
+
+.lot-card{
+    /* border: 2px solid red; */
+    padding: 20px;
+    padding-top: 0px;
+    background-color: #fafafa;
+    border-radius: 12px;
+    max-width: 33%;
+}
+.lot-card h3{
+    /* border: 2px solid red;    */
+    align-items: center;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+
+    
+}
+
+.card-details{
+    /* border: 2px solid red; */
+    padding-left: 15px;
+}
+.status-dot {
+    width: 12px;
+    height: 12px;
+    margin-left: 10px;
+    margin-top: 0px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.active {
+    background-color: rgba(0, 128, 0, 0.518);  /* Active parking lot (e.g., green dot) */
+}
+
+.status-dot.inactive {
+    background-color: rgba(255, 0, 0, 0.619);    /* Inactive parking lot (e.g., red dot) */
+}
+
+
 /* Action Buttons */
 .card-actions {
     display: flex;
     gap: 10px;
     margin-top: 15px;
     justify-content: flex-end;
+    /* border: 2px solid red; */
 }
 
 .action-btn {
@@ -58,6 +147,13 @@
 }
 
 /* Find Parking Button */
+
+.find-parking{
+    border-top: 1px solid rgb(123, 123, 123);
+    margin-top: 50px;
+
+}
+
 .find-parking-btn {
     display: inline-flex;
     align-items: center;

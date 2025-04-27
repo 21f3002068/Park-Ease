@@ -14,15 +14,10 @@ user_bp = Blueprint('user', __name__)
 @user_bp.route('/user_signup', methods=['GET', 'POST'])
 def user_signup():
     if request.method == 'POST':
-        firstname = request.form.get('firstname')
-        lastname = request.form.get('lastname')
+
         email = request.form.get('email')
-        gender = request.form.get('gender')
-        phone = request.form.get('phone')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
-        address = request.form.get('address')
-        pin = request.form.get('pin')
         
         if password != confirm_password:
             flash('Passwords do not match.', 'error')
@@ -34,16 +29,15 @@ def user_signup():
             flash('User already exists with this email.', 'error')
             return render_template('user/user_signup.html')
         
+        base_username = email.split('@')[0]
+        username = base_username
+        counter = 1
+
         hashed_password = generate_password_hash(password)
         new_user = User(
-            firstname=firstname,
-            lastname=lastname,
             email=email,
-            gender=gender,
-            phone=phone,
+            username=username,
             password=hashed_password,
-            address=address,
-            pin=pin
         )
 
         db.session.add(new_user)
@@ -81,18 +75,33 @@ def user_login():
 
 
 def calculate_duration(start_time):
-    now = datetime.utcnow()
+    now = datetime.now()  # not utcnow()
     delta = now - start_time
-    hours = delta.seconds // 3600
-    minutes = (delta.seconds % 3600) // 60
+    total_minutes = delta.total_seconds() // 60
+    hours = int(total_minutes // 60)
+    minutes = int(total_minutes % 60)
     return f"{hours}h {minutes}m"
 
+
+
+
 @user_bp.route('/dashboard')
+@login_required
 def dashboard():
+    now = datetime.now()
     current_parking = Reservation.query.filter_by(
         user_id=current_user.id,
-        leaving_timestamp=None
+        leaving_timestamp=None,
+        status="Parked"
     ).first()
+    
+    scheduled_upnext = Reservation.query.filter(
+        Reservation.user_id == current_user.id,
+        Reservation.parking_timestamp == None, 
+        Reservation.leaving_timestamp == None,
+        Reservation.status == "Confirmed" 
+    ).first()
+    
     
     parking_history = Reservation.query.filter_by(
         user_id=current_user.id
@@ -102,14 +111,54 @@ def dashboard():
         Reservation.parking_timestamp.desc()
     ).limit(5).all()
     
+    user = current_user
+    milestones = 5
+    completed = 0
+
+    if user.firstname and user.lastname:
+        completed += 1
+    if user.gender:
+        completed += 1
+    if user.phone:
+        completed += 1
+    if user.address and user.pin:
+        completed += 1
+    if user.vehicles and len(user.vehicles) > 0:
+        completed += 1
+
+    profile_completion = int((completed / milestones) * 100)
+    
     return render_template(
         'user/dashboard.html',
         current_parking=current_parking,
+        scheduled_upnext=scheduled_upnext,
         parking_history=parking_history,
+        profile_completion=profile_completion,
+        user=user,
         calculate_duration=calculate_duration  # Helper function you need to create
     )
 
 
+@user_bp.route('/park/<int:booking_id>', methods=['POST'])
+@login_required
+def park(booking_id):
+    booking = Reservation.query.get_or_404(booking_id)
+    current_time = datetime.now()
+
+    # Check if current time is close enough to expected arrival (say ±10 min flexibility)
+    arrival_time = booking.expected_arrival
+
+    if abs((current_time - arrival_time).total_seconds()) > 600:  # 600 seconds = 10 minutes
+        flash('Your vehicle is not expected for parking yet.', 'warning')
+        return redirect(url_for('user.dashboard'))
+
+    # Set actual parking
+    booking.parking_timestamp = current_time
+    booking.status = 'Parked'
+    db.session.commit()
+
+    flash('You have successfully parked your vehicle.', 'success')
+    return redirect(url_for('user.dashboard'))
 
 
 @user_bp.route('/park_out/<int:reservation_id>', methods=['POST'])
@@ -119,19 +168,20 @@ def park_out(reservation_id):
     reservation = Reservation.query.filter_by(
         id=reservation_id,
         user_id=current_user.id,
-        leaving_timestamp=None  # Only if not already checked out
+        leaving_timestamp=None,  # Only if not already checked out
+        status="Parked"
     ).first_or_404()
     
     try:
         # Calculate parking duration and cost
-        now = datetime.utcnow()
+        now = datetime.now()
         parking_duration = now - reservation.parking_timestamp
         hours_parked = max(1, parking_duration.total_seconds() / 3600)  # Minimum 1 hour
         
         # Update reservation
         reservation.leaving_timestamp = now
         reservation.parking_cost = hours_parked * reservation.spot.lot.price_per_hour
-        reservation.status = 'Completed'
+        reservation.status = 'Parked Out'
         
         # Free up the parking spot
         reservation.spot.status = 'A'  # Available
@@ -216,6 +266,7 @@ def search():
 
 
 
+
 @user_bp.route('/parking_locations')
 def locations():
     # Get all locations with their parking lots in one query
@@ -235,22 +286,24 @@ def locations():
         ParkingSpot.status == 'A'
     ).group_by(ParkingSpot.lot_id).all())
     
-    # Prepare data for template
+    # Calculate total parking spots for each location
     location_data = []
     for loc in all_locations:
+        # Calculate total parking spots for the location (sum of parking spots in all lots)
+        total_parking_spots = sum(lot.available_spots for lot in loc.parking_lots)
+        
         location_data.append({
             "location": loc,
             "lots": loc.parking_lots,
-            "spots_count": spots_count
+            "spots_count": spots_count,
+            "total_parking_spots": total_parking_spots  # Add the total parking spots
         })
     
     return render_template('user/locations.html',
-                         location_data=location_data,
-                         spots_count=spots_count,
-                         available_spots_count=lambda lot: spots_count.get(lot.id, 0))
-    
-    
-    
+                           location_data=location_data,
+                           spots_count=spots_count,
+                           available_spots_count=lambda lot: spots_count.get(lot.id, 0))
+        
 
 def available_spots_count(lot):
     return ParkingSpot.query.filter_by(
@@ -330,7 +383,8 @@ def book_parking(lot_id):
     if request.method == 'POST':
         # Get form data
         vehicle_id = request.form.get('vehicle_id')
-        hours = int(request.form.get('hours', 1))
+        expected_arrival = request.form.get('expected_arrival')
+        expected_departure = request.form.get('expected_departure')
         
         # Validate vehicle belongs to user
         vehicle = next((v for v in vehicles if v.id == int(vehicle_id)), None)
@@ -338,40 +392,78 @@ def book_parking(lot_id):
             flash('Invalid vehicle selected', 'error')
             return redirect(url_for('user.book_parking', lot_id=lot_id))
         
-        # Validate hours (1-24)
-        if hours < 1 or hours > 24:
-            flash('Booking duration must be between 1-24 hours', 'error')
+        
+        # Parse expected_arrival and expected_departure
+        try:
+            expected_arrival_time = datetime.strptime(expected_arrival, '%H:%M').time()
+            expected_departure_time = datetime.strptime(expected_departure, '%H:%M').time()
+        except ValueError:
+            flash('Invalid time format', 'error')
             return redirect(url_for('user.book_parking', lot_id=lot_id))
         
-        # Get first available spot
-        spot = available_spots[0]
+        
+        # Validate arrival before departure
+        if expected_arrival_time >= expected_departure_time:
+            flash('Departure time must be after arrival time.', 'error')
+            return redirect(url_for('user.book_parking', lot_id=lot_id))
+        
+        if (expected_arrival_time < parking_lot.available_from or
+            expected_departure_time > parking_lot.available_to):
+            flash(f'Booking must be between {parking_lot.available_from.strftime("%I:%M %p")} and {parking_lot.available_to.strftime("%I:%M %p")}.', 'error')
+            return redirect(url_for('user.book_parking', lot_id=lot_id))
+
+        today = datetime.today().date()
+        
+        expected_arrival_time = datetime.combine(today, expected_arrival_time)
+        expected_departure_time = datetime.combine(today, expected_departure_time)
+
+        conflict_found = False
+        for spot in available_spots:
+            for reservation in spot.reservations:
+                if reservation.status != 'Cancelled':
+                    # Overlapping check
+                    if not (expected_departure_time <= reservation.parking_timestamp or expected_arrival_time >= reservation.leaving_timestamp):
+                        conflict_found = True
+                        break
+            if not conflict_found:
+                # Found an available spot without conflict
+                available_spot = spot
+                status = "Confirmed"  #I added this line
+                break
+        
+        if conflict_found or not available_spots:
+            flash('No available spots for the selected time range. Your booking is pending.', 'error')
+            status="Pending" # And I added this line
         
         try:
             # Calculate parking cost
-            cost = parking_lot.price_per_hour * hours
+            total_hours = (expected_departure_time - expected_arrival_time).total_seconds() / 3600
+            cost = parking_lot.price_per_hour * total_hours
             
             # Create reservation
             reservation = Reservation(
-                spot_id=spot.id,
+                spot_id=available_spot.id,
                 user_id=current_user.id,
                 vehicle_id=vehicle.id,
-                parking_timestamp=datetime.utcnow(),
-                parking_cost=cost
+                expected_arrival=expected_arrival_time,
+                expected_departure=expected_departure_time,
+                parking_cost=cost,
+                status=status # Earlier it was taking status = "Confirmed" directly without any checks
             )
             
-            # Update spot status
-            spot.status = 'O'  # Occupied
+            # Update spot status temporarily if you want (optional, based on your system)
+            available_spot.status = 'O'  # 'O' for Occupied, assuming that's your status convention
             
             # Commit to database
             db.session.add(reservation)
             db.session.commit()
             
-            flash(f'Booking confirmed for {hours} hour(s). Total: ₹{cost:.2f}', 'success')
+            flash(f'Booking confirmed! Expected cost: ₹{cost:.2f}', 'success')
             return redirect(url_for('user.bookings'))
             
         except Exception as e:
             db.session.rollback()
-            flash('Booking failed. Please try again.', 'error')
+            flash(f'Booking failed. Please try again. Error: {str(e)}', 'error')
             return redirect(url_for('user.book_parking', lot_id=lot_id))
     
     # GET request - show booking form
@@ -397,23 +489,30 @@ from sqlalchemy import or_, and_
 @user_bp.route('/bookings', methods=['GET', 'POST'])
 @login_required
 def bookings():
-    now = datetime.utcnow()
-    
+    now = datetime.now()
+    current_parking = Reservation.query.filter_by(
+        user_id=current_user.id,
+        leaving_timestamp=None,
+        status="Parked" 
+    ).first()
     # 1. Active Bookings (currently parked vehicles)
     active_bookings = Reservation.query.filter(
         Reservation.user_id == current_user.id,
-        Reservation.parking_timestamp <= now,
-        Reservation.leaving_timestamp == None
+        Reservation.parking_timestamp == None, 
+        Reservation.leaving_timestamp == None,
+        Reservation.status == "Confirmed" 
     ).options(
         joinedload(Reservation.spot).joinedload(ParkingSpot.lot),
         joinedload(Reservation.vehicle)
     ).all()
     
-    # 2. Pending Requests (future bookings)
+    # 2. Pending Requests 
     pending_requests = Reservation.query.filter(
         Reservation.user_id == current_user.id,
         Reservation.parking_timestamp > now,
-        Reservation.spot_id == None  # Not assigned a spot yet
+        Reservation.spot_id == None,  # Not assigned a spot yet
+        Reservation.status == "Pending"
+
     ).options(
         joinedload(Reservation.vehicle)
     ).all()
@@ -436,7 +535,8 @@ def bookings():
     # 4. Parking History (completed bookings)
     parking_history = Reservation.query.filter(
         Reservation.user_id == current_user.id,
-        Reservation.leaving_timestamp != None
+        Reservation.leaving_timestamp != None,
+        Reservation.status == "Parked Out"
     ).options(
         joinedload(Reservation.spot).joinedload(ParkingSpot.lot),
         joinedload(Reservation.vehicle),
@@ -448,6 +548,7 @@ def bookings():
         pending_requests=pending_requests,
         cancelled_bookings=cancelled_bookings,
         parking_history=parking_history,
+        current_parking=current_parking,
         now=now)
 
 
@@ -555,7 +656,14 @@ def profile():
         .order_by(Review.created_at.desc())
         .all()
     )
-    return render_template('user/profile.html', user=current_user, user_reviews=user_reviews)
+    
+    favorite_lots = (
+        db.session.query(ParkingLot)
+        .join(Favorite, Favorite.lot_id == ParkingLot.id)
+        .filter(Favorite.user_id == current_user.id)
+        .all()
+    )
+    return render_template('user/profile.html', user=current_user, user_reviews=user_reviews, favorites=favorite_lots)
 
 
 @user_bp.route('/profile/edit', methods=['GET', 'POST'])
@@ -627,3 +735,15 @@ def delete_vehicle(vehicle_id):
     db.session.commit()
     flash('Vehicle deleted successfully', 'success')
     return redirect(url_for('user.profile'))
+
+
+
+@user_bp.route('/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+
+    db.session.delete(current_user)
+    db.session.commit()
+    logout_user()
+    flash('Your account has been permanently deleted', 'info')
+    return redirect(url_for('user.user_signup'))
