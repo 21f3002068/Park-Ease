@@ -1,4 +1,4 @@
-{% extends 'admin/adash_base.html' %}  <!-- Assuming you have a base admin template -->
+{% extends 'admin/adash_base.html' %} <!-- Assuming you have a base admin template -->
 
 {% block custom_styles %}
 <link rel="stylesheet" href="{{url_for('static', filename='style/partials/_view_user_details.css' )}}">
@@ -122,45 +122,52 @@
                     <tbody>
                         {% for reservation in user.reservations %}
                         <tr>
-                            <td>{{ reservation.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ reservation.booking_timestamp.strftime('%d-%m-%Y') }}</td>
                             <td>
-                                {% if reservation.vehicle and reservation.vehicle.spot and reservation.vehicle.spot.lot %}
-                                    {{ reservation.vehicle.spot.lot.prime_location_name }}
+                                {% if reservation.vehicle and reservation.vehicle.spot and reservation.vehicle.spot.lot%}
+                                
+                                {{ reservation.vehicle.spot.lot.prime_location_name }}
+                                
+                                {% elif reservation.vehicle and reservation.vehicle.spot%}
+
+                                {{ reservation.lot.prime_location_name }}
+                                
                                 {% else %}
-                                    N/A
+                                N/A
                                 {% endif %}
                             </td>
                             <td>
                                 {% if reservation.vehicle %}
-                                    {{ reservation.vehicle.license_plate }}
+                                {{ reservation.vehicle.license_plate }}
                                 {% else %}
-                                    N/A
+                                N/A
                                 {% endif %}
                             </td>
                             <td>
                                 {% if reservation.spot %}
-                                    Spot #{{ reservation.spot.spot_number }}
+                                Spot #{{ reservation.spot.spot_number }}
                                 {% else %}
-                                    N/A
+                                N/A
                                 {% endif %}
                             </td>
                             <td>
                                 {% if reservation.leaving_timestamp %}
-                                    {{ (reservation.leaving_timestamp - reservation.parking_timestamp).seconds // 3600 }}h
+                                {{ (reservation.leaving_timestamp - reservation.parking_timestamp).seconds // 3600 }}h
                                 {% else %}
-                                    Ongoing
+                                Ongoing
                                 {% endif %}
                             </td>
                             <td>
                                 {% if reservation.parking_cost %}
-                                    ${{ "%.2f"|format(reservation.parking_cost) }}
+                                ${{ "%.2f"|format(reservation.parking_cost) }}
                                 {% else %}
-                                    Pending
+                                Pending
                                 {% endif %}
                             </td>
                             <td>
-                                <span class="status-badge {% if reservation.leaving_timestamp %}completed{% else %}active{% endif %}">
-                                    {% if reservation.leaving_timestamp %}Completed{% else %}Active{% endif %}
+                                <span
+                                    class="status-badge {% if reservation.leaving_timestamp %}completed{% else %}active{% endif %}">
+                                    {% if reservation.leaving_timestamp %}Parked Out{% else %}Parked{% endif %}
                                 </span>
                             </td>
                         </tr>
@@ -176,14 +183,25 @@
 
     <div class="user-actions">
         {% if user.is_active %}
-        <a href="{{ url_for('admin.flag_user_confirmation', user_type='user', user_id=user.id) }}" class="btn btn-warning">Flag User</a>
+        <a href="{{ url_for('admin.flag_user_confirmation', id=user.id) }}" class="btn btn-warning">Flag User</a>
         {% else %}
-        <a href="#" class="btn btn-success">Activate User</a>
+        <form action="{{ url_for('admin.unflag_user', id=user.id) }}" method="POST" style="display:inline;">
+            <button type="submit" class="btn btn-success">Activate User</button>
+        </form>
         {% endif %}
-        <a href="#" class="btn btn-danger">Delete User</a>
+        <form action="{{ url_for('admin.delete_user', id=user.id) }}" method="POST" style="display:inline;"
+            onsubmit="return confirmDelete()">
+            <button type="submit" class="btn btn-danger">Delete User</button>
+        </form>
         <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
     </div>
 </div>
+
+<script>
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this user? This action cannot be undone.");
+    }
+</script>
 
 
 {% endblock %}

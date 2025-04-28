@@ -157,7 +157,7 @@ Profile
             <div class="section-header-1">
                 <h2 class="section-title-1"><i class="fas fa-car"></i> My Vehicles</h2>
                 <div class="add-vehicle-btn">
-                    <button class="btn btn-primary" onclick="showAddVehicleForm()">
+                    <button class="btn btn-primary">
                         <i class="fas fa-plus"></i>
                         <a href="{{url_for('user.add_vehicle')}}" class="add-vehicle-link">
 
@@ -202,8 +202,12 @@ Profile
                 <i class="fas fa-car"></i>
                 <h3>No Vehicles Registered</h3>
                 <p>Add your first vehicle to get started with parking reservations</p>
-                <button class="btn btn-primary" onclick="showAddVehicleForm()">
-                    <i class="fas fa-plus"></i> Add Vehicle
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 
+                    <a href="{{url_for('user.add_vehicle')}}" class="add-vehicle-link">
+
+                        Add Vehicle
+                    </a>
                 </button>
             </div>
             {% endif %}

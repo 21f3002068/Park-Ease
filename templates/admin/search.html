@@ -1,0 +1,98 @@
+{% extends '/admin/adash_base.html' %}
+
+{% block custom_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style/admin/search.css') }}">
+{% endblock %}
+
+
+
+{% block title %}
+Search Result
+{% endblock %}
+
+{% block body %}
+
+{% block cards %}
+{% endblock %}
+
+{% block content %}
+
+<div class="search-results">
+    <h2>Search Results for "{{ query }}"</h2>
+
+    {% if results %}
+        <!-- Customers Section -->
+        <div class="results-category">
+            <h3>Users ({{ results|selectattr('entity', 'equalto', 'users')|list|length }})</h3>
+            <ul>
+                {% for item in results %}
+                    {% if item.entity == 'users' %}
+                        <li>
+                            <a href="{{url_for('admin.user_detail', user_id=item.result.id)}}" style="text-decoration: none; color: antiquewhite;">
+
+                                {{ item.result.firstname }} {{ item.result.lastname }} 
+                            </a>
+                            
+                            - {{ item.result.email }} - 
+                            Phone: {{ item.result.phone }}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Professionals Section -->
+        <div class="results-category">
+            <h3>Locations ({{ results|selectattr('entity', 'equalto', 'location')|list|length }})</h3>
+            <ul>
+                {% for item in results %}
+                    {% if item.entity == 'location' %}
+                    <li>
+                        <div class="professional-info">
+                            <span>
+                                <strong>{{ item.result.name }}</strong>
+                            </span>
+                            <span class="service">{{ item.result.address }}</span>
+                            <span>{{ item.result.pin_code }}</span>
+                        </div>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Services Section -->
+        <div class="results-category">
+            <h3>Parking Lots ({{ results|selectattr('entity', 'equalto', 'parkinglot')|list|length }})</h3>
+            <ul>
+                {% for item in results %}
+                    {% if item.entity == 'parkinglot' %}
+                        <li>
+                            {{ item.result.prime_location_name }} - ${{ item.result.price_per_hour }}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Bookings Section -->
+        <div class="results-category">
+            <h3>Reservations ({{ results|selectattr('entity', 'equalto', 'reservations')|list|length }})</h3>
+            <ul>
+                {% for item in results %}
+                    {% if item.entity == 'reservations' %}
+                        <li>
+                            Booking ID: {{ item.result.booking_id }} - {{ item.result.status }}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+    {% else %}
+        <p>No results found.</p>
+    {% endif %}
+</div>
+
+{% endblock %}
+{% endblock %}

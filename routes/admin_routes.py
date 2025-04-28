@@ -3,7 +3,7 @@ from model import *
 import logging
 from functools import wraps
 from datetime import datetime, timedelta
-from sqlalchemy import extract
+from sqlalchemy import extract, or_
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -34,6 +34,81 @@ def admin_login():
             return redirect(url_for('admin.admin_login'))
 
     return render_template('admin/admin_login.html')
+
+
+
+
+
+@admin_bp.route('/dashboard/search', methods=['GET'])
+def admin_search():
+    query = request.args.get('query')
+
+    # Convert the query to lowercase to make the search case-insensitive
+    query_lower = query.lower()
+    
+    locations = Location.query.all()
+    location_count = Location.query.count()
+    
+    total_users = User.query.count()
+    
+
+    reservation_count = Reservation.query.count()
+    reservations = Reservation.query.all()
+    
+    pending_bookings = Reservation.query.filter_by(status='Pending').count()
+    confirmed_bookings = Reservation.query.filter_by(status='Confirmed').count()
+    cancelled_rejected_bookings = Reservation.query.filter(
+        or_(Reservation.status == 'Reject', Reservation.status == 'Cancelled')
+    ).count()    
+    parked_out = Reservation.query.filter_by(status='Parked Out').count()
+
+    results = {
+        'users': User.query.filter(
+            (User.firstname.ilike(f'%{query}%')) |
+            (User.lastname.ilike(f'%{query}%')) |
+            (User.email.ilike(f'%{query}%')) |
+            (User.username.ilike(f'%{query}%')) |
+            (User.phone.ilike(f'%{query}%'))
+        ).all(),
+
+        'location': Location.query.filter(
+            (Location.name.ilike(f'%{query}%')) |
+            (Location.address.ilike(f'%{query}%'))    # Searching by service as wellUs
+        ).all(),
+
+        'parkinglot': ParkingLot.query.filter(
+            (ParkingLot.prime_location_name.ilike(f'%{query}%')) 
+            # (ParkingLot.description.ilike(f'%{query}%'))  # Adding description to search
+        ).all(),
+
+        'reservations': Reservation.query.filter(
+            (Reservation.id == query) |
+            (Reservation.status.ilike(f'%{query}%'))
+        ).all(),
+    }
+
+    # Flatten the results and include more context
+    flat_results = []
+    for entity, items in results.items():
+        for item in items:
+            flat_results.append({
+                'entity': entity,
+                'result': item
+            })
+
+    return render_template('admin/search.html',
+                           results=flat_results,
+                           query=query,
+                           locations=locations,
+                           location_count=location_count,
+                           total_users=total_users,
+                           reservations=reservations,
+                           reservation_count=reservation_count,
+                           pending_bookings=pending_bookings,
+                           confirmed_bookings=confirmed_bookings,
+                           cancelled_rejected_bookings=cancelled_rejected_bookings,
+                           parked_out=parked_out)
+
 
 
 
@@ -200,7 +275,7 @@ def admin_users():
                            vehicles_parked_today=vehicles_parked_today)
 
 
-@admin_bp.route('/admin_dashboard/users/view_user/<int:user_id>')
+@admin_bp.route('/users/view_user/<int:user_id>')
 def user_detail(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('partials/_view_user_details.html', user=user)
@@ -219,9 +294,7 @@ def user_detail(user_id):
 #         return redirect(url_for('admin.admin_dashboard'))
 
 
-@admin_bp.route('/search', methods=['GET', 'POST'])
-def admin_search():
-    return render_template('admin/search.html')
+
 
 
 @admin_bp.route('/activity_log', methods=['GET', 'POST'])
@@ -229,6 +302,7 @@ def activity_log():
     users = User.query.all()
     today = datetime.today().date()
     lots = ParkingLot.query.all()
+    reservations=Reservation.query.all()
 
     vehicles_parked_today = Reservation.query.filter(Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())).count()
     parking_lots = []
@@ -264,7 +338,21 @@ def activity_log():
                            active_parkings=active_parkings, 
                            total_parking_lots=total_parking_lots,
                            utilization_rate=overall_utilization,
-                           vehicles_parked_today=vehicles_parked_today)
+                           vehicles_parked_today=vehicles_parked_today,
+                           reservations=reservations)
+
+
+@admin_bp.route('/reservations/booking_details/<string:booking_id>', methods=['GET', 'POST'])
+def booking_details(booking_id):
+    reservation = Reservation.query.filter_by(booking_id=booking_id).first()
+
+    if reservation:
+
+        return render_template('partials/_admin_views_booking_details.html', reservation=reservation)
+    else:
+
+        flash('Booking not found', 'error')
+        return redirect(url_for('user.bookings')) 
 
 
 
@@ -524,12 +612,62 @@ def delete_parking(lot_id):
 
 
 
-@admin_bp.route('/admin/flag_user_confirmation/<id>', methods=['GET', 'POST'])
+@admin_bp.route('/admin/flag_user_confirmation/<int:id>', methods=['GET', 'POST'])
 def flag_user_confirmation(id):
-    return render_template('partials/_flag_user_confirmation.html', user=id)
+
+    user = User.query.get_or_404(id)
+
+    if request.method == 'POST':
+
+        reason = request.form['reason']
+        
+        new_flag = Flag(user_id=user.id, reason=reason, flag_date=datetime.now())
+        
+        db.session.add(new_flag)
+        db.session.commit()
+        
+        user.is_active = False  
+        db.session.commit()
+
+        return redirect(url_for('admin.flagged_users'))
+
+    return render_template('partials/_flag_user_confirmation.html', user=user)
+
+
+
+@admin_bp.route('/admin/users/flagged')
+def flagged_users():
+    flagged_users = Flag.query.all()
+    return render_template('admin/flagged_users.html', flagged_users=flagged_users)
+
+
+@admin_bp.route('/admin/unflag_user/<int:id>', methods=['POST'])
+def unflag_user(id):
+    user = User.query.get_or_404(id)
+    flag = Flag.query.filter_by(user_id=user.id).first()  # Assuming you want to remove only the first flag
+
+    if flag:
+        db.session.delete(flag)  # Delete the flag
+        db.session.commit()
+
+    user.is_active = True  # Set the user back to active
+    db.session.commit()
+
+    return redirect(url_for('admin.flagged_users'))
 
 
 
 
+@admin_bp.route('/admin/users/delete/<int:id>', methods=['POST'])
+def delete_user(id):
+    user = User.query.get_or_404(id) 
 
+    try:
+        db.session.delete(user)  
+        db.session.commit()  
+        flash('User has been deleted successfully!', 'success')  
+    except Exception as e:
+        db.session.rollback()  
+        flash(f'Error deleting user: {str(e)}', 'danger')
 
+    return redirect(url_for('admin.admin_users'))  

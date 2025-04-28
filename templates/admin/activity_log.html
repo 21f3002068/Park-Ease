@@ -1,9 +1,181 @@
 {% extends 'admin/adash_base.html' %}
 
-
 {% block title %}Activity Log{% endblock %}
 
+{% block custom_styles %}
+<style>
+    .dashboard-container {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        height: calc(100vh - 100px);
+        /* Adjust based on your header height */
+    }
 
+    .panel {
+        width: 48%;
+        background-color: #f6f6f6;
+        border-radius: 8px;
+        /* border: 2px solid red; */
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-height: 450px;
+        overflow-y: auto;
+    }
+
+
+    /* Left Panel - 60% width */
+    .panel-left {
+        width: 100%;
+        background-color: #f6f6f6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-height: 450px;
+        overflow-y: auto;
+    }
+
+    /* Right Panel - 40% width */
+    .panel-right {
+        width: 40%;
+        background-color: #f6f6f6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-height: 450px;
+        overflow-y: auto;
+    }
+
+    .panel-header {
+        color: #287bff;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #3a3a3a;
+        font-size: 1.2rem;
+        font-weight: 500;
+    }
+
+    /* Reservations Table Styles */
+    .reservations-table {
+        width: 100%;
+        /* width: 900px; */
+        border-collapse: collapse;
+    }
+
+    .reservations-table th {
+        text-align: left;
+        padding: 0.75rem;
+        background-color: #287bff;
+        color: #ffffff;
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+
+    .reservations-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #2d2d2d;
+        font-size: 0.85rem;
+    }
+
+    .reservations-table tr:hover {
+        background-color: #e7e7e7;
+        /* color: #f6f6f6; */
+    }
+
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: capitalize;
+        color: white;
+        text-align: center;
+        min-width: 80px;
+    }
+
+    .status-pending {
+        background-color: #FFC107;
+        /* Yellow */
+    }
+
+    .status-confirmed {
+        background-color: #2196F3;
+        /* Blue */
+    }
+
+    .status-parked {
+        background-color: #4CAF50;
+        /* Green */
+    }
+
+    .status-parked_out {
+        background-color: #9E9E9E;
+        /* Grey */
+    }
+
+    .status-cancelled {
+        background-color: #FF9800;
+        /* Orange */
+    }
+
+    .status-rejected {
+        background-color: #F44336;
+        /* Red */
+    }
+
+    /* Activity Log Styles */
+    .activity-log {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .activity-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid #2d2d2d;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-time {
+        color: #a0a0a0;
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .activity-message {
+        color: #e0e0e0;
+    }
+
+    /* Flash Messages */
+    .flash-messages {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .flash {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 4px;
+    }
+
+    .flash.success {
+        background-color: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .flash.error {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
 
 {% block body %}
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -15,14 +187,67 @@
 </ul>
 {% endif %}
 {% endwith %}
-{% block content %}
 
-<div> Recent Activity Log
-    “User X parked at Lot A, Spot 12 at 3:45 PM”
-    
-    “Admin deleted Lot B”
-    
-    “User Y released Spot 7 in Lot C at 10:12 AM”</div>
+{% block content %}
+<div class="dashboard-container">
+    <!-- Left Panel - Reservations -->
+    <div class="panel panel-left">
+        <h3 class="panel-header">Recent Reservations | {{ reservations|length}} </h3>
+        <table class="reservations-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Spot @ Lot</th>
+                    <th>Time (Arr--Dep)</th>
+                    <th>Time (Park--Release)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in reservations %}
+                <tr>
+                    <td>
+                        <small>
+                            <a href="{{ url_for('admin.booking_details', booking_id=booking.booking_id) }}"
+                                class="bid-link">
+                                {{ booking.booking_id }}
+                            </a>
+
+                        </small>
+                    </td>
+                    <td>{{ booking.user.firstname }} {{ booking.user.lastname }}</td>
+                    <td>
+                        {% if booking.spot %}
+                        #{{ booking.spot.spot_number }} @{{ booking.spot.lot.prime_location_name }}
+                        {% else %}
+                        No Spot Assigned
+                        {% endif %}
+                    </td>
+                    <td>{{ booking.expected_arrival.strftime('%I:%M %p') }} -- {{
+                        booking.expected_departure.strftime('%I:%M %p') }}</td>
+                    <td>
+                        {% if booking.parking_timestamp and booking.leaving_timestamp %}
+                        {{ booking.parking_timestamp.strftime('%I:%M %p') }} - {{
+                        booking.leaving_timestamp.strftime('%I:%M %p') }}
+                        {% elif booking.parking_timestamp %}
+                        {{ booking.parking_timestamp.strftime('%I:%M %p') }} -- N/A
+                        {% else %}
+                        NA - NA
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ booking.status.lower().replace(' ', '_') }}">
+                            {{ booking.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
 
 {% endblock %}
 {% endblock %}

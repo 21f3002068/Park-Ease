@@ -167,8 +167,10 @@
                                 </small>
                             </td>
                             <td>{{ booking.spot.lot.prime_location_name }}</td>
-                            <td><span class="status cancelled">{{ booking.status }}</span></td>
                             <td>
+                                <span class="status {{ booking.status|lower }}">{{ booking.status }}</span>
+                            </td>
+                                                        <td>
                                 <small>
 
                                     {{ booking.cancellation_reason or "User cancelled" }}

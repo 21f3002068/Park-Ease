@@ -21,7 +21,7 @@ class User(db.Model, UserMixin):
     address = db.Column(db.String(200))
     pin = db.Column(db.String(10))
 
-    registration_date = db.Column(db.DateTime, default=datetime.utcnow)
+    registration_date = db.Column(db.DateTime, default=datetime.now)
     is_active = db.Column(db.Boolean, default=True)
 
     vehicles = db.relationship('Vehicle', backref='owner', cascade='all, delete-orphan')
@@ -83,7 +83,9 @@ class ParkingSpot(db.Model):
 class Reservation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.String(50), unique=True, nullable=False)
+    booking_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+    lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id'), nullable=False)
     spot_id = db.Column(db.Integer, db.ForeignKey('parking_spot.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicle.id'))
@@ -96,11 +98,13 @@ class Reservation(db.Model):
     parking_cost = db.Column(db.Float)
     status = db.Column(db.String(20), default='Pending')
     cancellation_reason = db.Column(db.String(200))
-    
-    # Define relationships - removed backref from vehicle
-    spot = db.relationship('ParkingSpot', backref='reservations')
-    user = db.relationship('User', backref='reservations')
-    vehicle = db.relationship('Vehicle')  
+
+    lot = db.relationship('ParkingLot')
+    spot = db.relationship('ParkingSpot', backref=db.backref('reservations', lazy='dynamic'))
+    user = db.relationship('User')
+    vehicle = db.relationship('Vehicle')
+
+
 
 class Vehicle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -135,3 +139,13 @@ class Review(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     reservation = db.relationship('Reservation', backref=db.backref('review', uselist=False))
+    
+    
+    
+class Flag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    reason = db.Column(db.String(200))
+    flag_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', backref='flags')

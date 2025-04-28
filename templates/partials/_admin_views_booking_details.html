@@ -1,0 +1,216 @@
+<style>
+    :root {
+        --blue: #287bff;
+        --white: #fff;
+        --grey: #f5f5f5;
+        --black1: #222;
+        --black2: #999;
+    }
+
+    .reservation-details {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--black1);
+        background: var(--white);
+        padding: 20px;
+        margin: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-height: 95vh;
+        max-width: 70vw;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        overflow: hidden;
+    }
+
+    .reservation-details h3 {
+        grid-column: 1 / -1;
+        color: var(--blue);
+        margin: 15px 0 0 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--grey);
+    }
+
+    .section {
+        background: var(--grey);
+        padding: 15px;
+        padding-left: 30px;
+        border-radius: 6px;
+        /* margin-bottom: 10px; */
+    }
+
+    .section h4 {
+        margin: 0 0 10px 0;
+        padding: 0 0 10px 0;
+        border-bottom: 1px solid rgb(0, 81, 255);
+        color: var(--blue);
+        font-size: 0.95rem;
+    }
+
+    .section p {
+        margin: 5px 0;
+        border-bottom: 1px solid rgb(217, 217, 217);
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .section p:last-child {
+        border: none;
+    }
+
+    .section strong {
+        display: inline-block;
+        width: 120px;
+        color: var(--black2);
+    }
+
+    .action-buttons {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--grey);
+        margin-top: auto;
+    }
+
+    .action-buttons button {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: var(--blue);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--black2);
+        color: white;
+    }
+
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .action-buttons button:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            font-size: 12px !important;
+        }
+
+        .reservation-details {
+            max-width: 100% !important;
+            max-height: none !important;
+            padding: 10px !important;
+            box-shadow: none !important;
+            grid-template-columns: 1fr !important;
+            break-inside: avoid;
+        }
+
+        .section {
+            page-break-inside: avoid;
+            margin-bottom: 10px !important;
+            padding: 10px !important;
+        }
+
+        .section h4 {
+            font-size: 13px !important;
+            margin-bottom: 8px !important;
+        }
+
+        .section p {
+            font-size: 11px !important;
+            padding: 2px 0 !important;
+            margin: 2px 0 !important;
+        }
+
+        .section strong {
+            width: 100px !important;
+        }
+
+        .action-buttons {
+            display: none !important;
+        }
+
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+    }
+</style>
+
+<div class="reservation-details">
+    <h3>Reservation Details (ID: {{ reservation.booking_id }})</h3>
+
+    <div class="section">
+        <h4>Status</h4>
+        <p><strong>Status:</strong> {{ reservation.status }}</p>
+        <p><strong>Expected Arrival:</strong> {{ reservation.expected_arrival.strftime('%b %d, %Y %I:%M %p') }}</p>
+        <p><strong>Expected Departure:</strong> {{ reservation.expected_departure.strftime('%b %d, %Y %I:%M %p') }}</p>
+        {% if reservation.parking_timestamp %}
+        <p><strong>Actual Check-in:</strong> {{ reservation.parking_timestamp.strftime('%b %d, %Y %I:%M %p') }}</p>
+        {% endif %}
+        {% if reservation.leaving_timestamp %}
+        <p><strong>Actual Check-out:</strong> {{ reservation.leaving_timestamp.strftime('%b %d, %Y %I:%M %p') }}</p>
+        {% endif %}
+        <p><strong>Total Cost:</strong> ${{ "%.2f"|format(reservation.parking_cost) if reservation.parking_cost else
+            'Not calculated' }}</p>
+        {% if reservation.cancellation_reason %}
+        <p><strong>Cancellation Reason:</strong> {{ reservation.cancellation_reason }}</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h4>User Information</h4>
+        <p><strong>Name:</strong> {{ reservation.user.firstname }} {{ reservation.user.lastname }}</p>
+        <p><strong>Username:</strong> {{ reservation.user.username }}</p>
+        <p><strong>Email:</strong> {{ reservation.user.email }}</p>
+        <p><strong>Phone:</strong> {{ reservation.user.phone }}</p>
+        <p><strong>Registered Since:</strong> {{ reservation.user.registration_date.strftime('%b %d, %Y') }}</p>
+    </div>
+
+    <div class="section">
+        <h4>Vehicle Information</h4>
+        <p><strong>License Plate:</strong> {{ reservation.vehicle.license_plate }}</p>
+        <p><strong>Vehicle Name:</strong> {{ reservation.vehicle.vehicle_name }}</p>
+        <p><strong>Color:</strong> {{ reservation.vehicle.color }}</p>
+    </div>
+
+    <div class="section">
+        <h4>Parking Spot Details</h4>
+        <p><strong>Spot Number:</strong> #{{ reservation.spot.spot_number }}</p>
+        <p><strong>Status:</strong> {{ 'Occupied' if reservation.spot.status == 'O' else 'Available' }}</p>
+        <p><strong>Parking Lot:</strong> {{ reservation.spot.lot.prime_location_name }}</p>
+        <p><strong>Price/Hour:</strong> ${{ "%.2f"|format(reservation.spot.lot.price_per_hour) }}</p>
+        <p><strong>Location:</strong> {{ reservation.spot.lot.location_ref.name }}</p>
+        <p><strong>Address:</strong> {{ reservation.spot.lot.location_ref.address }}</p>
+        <p><strong>Capacity:</strong> {{ reservation.spot.lot.max_parking_spots }} spots</p>
+        <p><strong>Available Now:</strong> {{ reservation.spot.lot.available_spots }} spots</p>
+    </div>
+
+    <div class="action-buttons">
+
+        {% if reservation.status == 'Parked Out' %}
+
+        <button class="btn-secondary" onclick="window.print()">Print Booking Record</button>
+
+        {% endif %}
+
+
+        <button class="btn-danger">
+            <a href="{{ url_for('admin.activity_log') }}" style="text-decoration: none; color: whitesmoke;"> Back to
+                Reservations </a>
+        </button>
+    </div>
+</div>

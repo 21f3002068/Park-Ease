@@ -72,9 +72,15 @@
 }
 
 .status.cancelled {
-    background: #f8d7da;
-    color: #721c24;
+    background: #fbe7c6;  
+    color: #8a4b08;       
 }
+
+.status.rejected {
+    background: #f8d7da;  
+    color: #721c24;       
+}
+
 
 button {
     padding: 6px 12px;

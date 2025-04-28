@@ -114,7 +114,7 @@
             {% else %}
             <div class="no-parking">
                 <p>No active parking session</p>
-                <a href="{{url_for('user.search')}}" class="find-parking-btn">
+                <a href="{{url_for('user.locations')}}" class="find-parking-btn">
                     <ion-icon name="search-outline"></ion-icon> Find Parking
                 </a>
             </div>
@@ -197,7 +197,7 @@
             <div class="no-booking">
                 <ion-icon name="calendar-clear-outline" class="empty-icon"></ion-icon>
                 <p>No upcoming bookings</p>
-                <a href="{{url_for('user.search')}}" class="find-parking-btn">
+                <a href="{{url_for('user.locations')}}" class="find-parking-btn">
                     <ion-icon name="search-outline"></ion-icon>
                     Find Parking
                 </a>

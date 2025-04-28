@@ -69,13 +69,22 @@
                     </a>
 
                     <!-- Book Now Button -->
-                    <a href="{{ url_for('user.book_parking', lot_id=lot.id) }}"
-                        class="action-btn book-btn {% if not lot.is_active or available_spots_count(lot) == 0 %}disabled{% endif %}"
-                        title="Book Now" {% if not lot.is_active or available_spots_count(lot)==0 %}aria-disabled="true"
-                        {% endif %}>
+                    <a href="{{ url_for('user.book_parking', lot_id=lot.id) }}" class="action-btn book-btn 
+                    {% if not lot.is_active %} 
+                    
+                    disabled
+                    
+                    {% endif %}" {% if not lot.is_active %} aria-disabled="true" {%endif %} {% if
+                        available_spots_count(lot)==0 %} title="Request" {% else %} title="Book Now" {%endif %}>
+
                         <ion-icon name="calendar-outline"></ion-icon>
-                        <span class="action-label">Book</span>
+                        {% if available_spots_count(lot) == 0 %}
+                        Request
+                        {% else %}
+                        Book
+                        {% endif %} 
                     </a>
+
 
                     <!-- Favorite Button -->
                     <!-- Favorite Button -->

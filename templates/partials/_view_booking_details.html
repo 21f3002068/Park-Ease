@@ -120,10 +120,9 @@
             Delete Booking
         </a>
         {% endif %}
-        <a href="#" class="btn btn-secondary">
-            <ion-icon name="print-outline"></ion-icon>
-            Print Receipt
-        </a>
+
+        <button class="btn btn-secondary" onclick="window.print()">Print Booking Record</button>
+
         <a href="{{ url_for('user.bookings') }}" class="btn btn-primary">
             <ion-icon name="arrow-back-outline"></ion-icon>
             Back to Bookings

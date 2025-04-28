@@ -1,20 +1,124 @@
+<style>
+    body{
+        background-color:#252525;
+    }
+    .flag-confirmation {
+        max-width: 600px;
+        margin: 7rem auto;
+        padding: 2rem;
+        background-color: #1e1e1e;
+        align-content: center;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        color: #e0e0e0;
+        font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+    }
+    
+    .flag-confirmation h2 {
+        color: #ff6b6b;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        border-bottom: 1px solid #3a3a3a;
+        padding-bottom: 0.5rem;
+    }
+    
+    .flag-confirmation p {
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+    
+    .flag-confirmation label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #a0a0a0;
+    }
+    
+    .flag-confirmation textarea {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #252525;
+        border: 1px solid #3a3a3a;
+        border-radius: 4px;
+        color: #e0e0e0;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .flag-confirmation textarea:focus {
+        outline: none;
+        border-color: #ff6b6b;
+        box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: 4px;
+        font-weight: 500;
+        border: 5px solid red;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        font-size: 0.9rem;
+    }
+    
+    .btn-danger {
+        margin-top: 30px;
+        background-color: #af2c2c;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background-color: #ff5252;
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background-color: #3a3a3a;
+        /* border: 2px solid red; */
+        color: #e0e0e0;
+        margin-left: 0.75rem;
+    }
+
+    .btn-secondary:hover {
+        background-color: #4a4a4a;
+    }
+
+    @media (max-width: 640px) {
+        .flag-confirmation {
+            margin: 1rem;
+            padding: 1.5rem;
+        }
+        
+        .btn {
+            width: 100%;
+            margin-bottom: 0.75rem;
+        }
+        
+        .btn-secondary {
+            margin-left: 0;
+        }
+    }
+</style>
 
 {% block body %}
 {% block content %}
 
 <div class="flag-confirmation">
-        <h2>Flag: {{ user.first_name }} {{ user.last_name }}</h2>
-        <p>Are you sure you want to flag this user?</p>
+    <h2>Flag: {{ user.first_name }} {{ user.last_name }}</h2>
+    <p>Are you sure you want to flag this user? This action will be recorded.</p>
+    
+    <form method="POST">
+        <label for="reason">Reason for flagging:</label>
+        <textarea name="reason" id="reason" required placeholder="Please provide specific details..."></textarea>
         
-        <form method="POST">
-            <label for="reason">Reason for flagging:</label><br>
-            <textarea name="reason" id="reason" rows="4" cols="50" required></textarea><br><br>
-            
+        <div class="button-group">
             <button type="submit" class="btn btn-danger">Confirm Flag</button>
             <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
-        </form>
-    </div>
-
+        </div>
+    </form>
+</div>
 
 {% endblock %}
 {% endblock %}

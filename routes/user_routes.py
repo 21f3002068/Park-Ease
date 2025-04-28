@@ -63,15 +63,27 @@ def user_login():
             (User.email == username_or_email) | (User.username == username_or_email)
         ).first()
 
-        if user and check_password_hash(user.password, password):
-            # Store user info in session or however you manage auth
-            login_user(user)
-            return redirect(url_for('user.dashboard'))  # Redirect to user dashboard or homepage
+        if user:
+            # Check if the user is active
+            if not user.is_active:
+                flash('Your account has been flagged and is currently inactive. Please contact the admin.', 'error')
+                return render_template('user/user_login.html')
+
+            # Check password
+            if check_password_hash(user.password, password):
+                # Store user info in session or however you manage auth
+                login_user(user)
+                return redirect(url_for('user.dashboard'))  # Redirect to user dashboard or homepage
+            else:
+                flash('Invalid credentials. Please try again.', 'error')
+                return render_template('user/user_login.html')
+
         else:
             flash('Invalid credentials. Please try again.', 'error')
             return render_template('user/user_login.html')
 
     return render_template('user/user_login.html')
+
 
 
 
@@ -140,20 +152,34 @@ def dashboard():
     )
 
 
+
+
+
+
+
+
 @user_bp.route('/park/<int:booking_id>', methods=['POST'])
 @login_required
 def park(booking_id):
     booking = Reservation.query.get_or_404(booking_id)
     current_time = datetime.now()
-
-    # Check if current time is close enough to expected arrival (say ±10 min flexibility)
     arrival_time = booking.expected_arrival
 
-    if abs((current_time - arrival_time).total_seconds()) > 600:  # 600 seconds = 10 minutes
-        flash('Your vehicle is not expected for parking yet.', 'warning')
+    time_diff = (current_time - arrival_time).total_seconds()
+
+    if time_diff > 600:  # More than 10 minutes **late**
+        # No Show
+        booking.status = 'Rejected'
+        booking.cancellation_reason = 'Showed up too late.'
+        db.session.commit()
+        flash('You have missed your parking time. Booking rejected.', 'warning')
+        return redirect(url_for('user.bookings'))
+    
+    elif time_diff < -600:  # More than 10 minutes **early**
+        flash('Your vehicle is not expected for parking yet. Please come closer to your booking time.', 'warning')
         return redirect(url_for('user.dashboard'))
 
-    # Set actual parking
+    # Within ±10 mins => Allow Parking
     booking.parking_timestamp = current_time
     booking.status = 'Parked'
     db.session.commit()
@@ -391,48 +417,37 @@ def view_parking_details(lot_id):
 
 
 
-
 @user_bp.route('/book/<int:lot_id>', methods=['GET', 'POST'])
 @login_required
 def book_parking(lot_id):
-    # Get the parking lot with available spots
     parking_lot = ParkingLot.query.options(
         joinedload(ParkingLot.spots)
     ).get_or_404(lot_id)
     
-    # Check if parking lot is active
     if not parking_lot.is_active:
         flash('This parking lot is currently unavailable', 'error')
         return redirect(url_for('user.locations'))
     
-    # Get user's vehicles
     vehicles = current_user.vehicles
-    
     if not vehicles:
         flash('You need to add a vehicle before booking', 'error')
         return redirect(url_for('user.add_vehicle'))
     
-    # Find available spots
     available_spots = [spot for spot in parking_lot.spots if spot.status == 'A']
-    
     if not available_spots:
         flash('No available spots in this parking lot', 'error')
         return redirect(url_for('user.locations'))
     
     if request.method == 'POST':
-        # Get form data
         vehicle_id = request.form.get('vehicle_id')
         expected_arrival = request.form.get('expected_arrival')
         expected_departure = request.form.get('expected_departure')
         
-        # Validate vehicle belongs to user
         vehicle = next((v for v in vehicles if v.id == int(vehicle_id)), None)
         if not vehicle:
             flash('Invalid vehicle selected', 'error')
             return redirect(url_for('user.book_parking', lot_id=lot_id))
         
-        
-        # Parse expected_arrival and expected_departure
         try:
             expected_arrival_time = datetime.strptime(expected_arrival, '%H:%M').time()
             expected_departure_time = datetime.strptime(expected_departure, '%H:%M').time()
@@ -440,8 +455,6 @@ def book_parking(lot_id):
             flash('Invalid time format', 'error')
             return redirect(url_for('user.book_parking', lot_id=lot_id))
         
-        
-        # Validate arrival before departure
         if expected_arrival_time >= expected_departure_time:
             flash('Departure time must be after arrival time.', 'error')
             return redirect(url_for('user.book_parking', lot_id=lot_id))
@@ -452,70 +465,68 @@ def book_parking(lot_id):
             return redirect(url_for('user.book_parking', lot_id=lot_id))
 
         today = datetime.today().date()
-        
-        expected_arrival_time = datetime.combine(today, expected_arrival_time)
-        expected_departure_time = datetime.combine(today, expected_departure_time)
+        expected_arrival_dt = datetime.combine(today, expected_arrival_time)
+        expected_departure_dt = datetime.combine(today, expected_departure_time)
 
-        conflict_found = False
+        available_spot = None
+        status = "Pending"  
+        
+        # Find first available spot without time conflicts
         for spot in available_spots:
+            conflict = False
             for reservation in spot.reservations:
-                if reservation.status != 'Cancelled':
-                    # Overlapping check
-                    if not (expected_departure_time <= reservation.parking_timestamp or expected_arrival_time >= reservation.leaving_timestamp):
-                        conflict_found = True
+                if reservation.status not in ['Cancelled', 'Parked Out']:
+                    if not (expected_departure_dt <= reservation.parking_timestamp or 
+                           expected_arrival_dt >= reservation.leaving_timestamp):
+                        conflict = True
                         break
-            if not conflict_found:
-                # Found an available spot without conflict
+            if not conflict:
                 available_spot = spot
-                status = "Confirmed"  #I added this line
+                status = "Confirmed"
                 break
-        
-        if conflict_found or not available_spots:
-            flash('No available spots for the selected time range. Your booking is pending.', 'error')
-            status="Pending" # And I added this line
-        
+
+        if not available_spot:
+            flash('No available spots for the selected time range. Your booking is pending.', 'warning')
+            available_spot = available_spots[0]
+
         try:
-            # Calculate parking cost
-            total_hours = (expected_departure_time - expected_arrival_time).total_seconds() / 3600
+            total_hours = (expected_departure_dt - expected_arrival_dt).total_seconds() / 3600
             cost = parking_lot.price_per_hour * total_hours
                         
-            vehicle_number = vehicle.license_plate[-2:].upper()  # get last 2 characters of the plate
+            vehicle_number = vehicle.license_plate[-2:].upper()
             booking_id = f"BK-{vehicle_number}-{current_user.id}-{uuid.uuid4().hex[:3].upper()}"
             
-            # Create reservation
             reservation = Reservation(
                 spot_id=available_spot.id,
                 user_id=current_user.id,
                 vehicle_id=vehicle.id,
-                expected_arrival=expected_arrival_time,
-                expected_departure=expected_departure_time,
+                booking_timestamp=datetime.now(),
+                expected_arrival=expected_arrival_dt,
+                expected_departure=expected_departure_dt,
                 parking_cost=cost,
-                status=status, # Earlier it was taking status = "Confirmed" directly without any checks
-                booking_id=booking_id
+                status=status,
+                booking_id=booking_id,
+                lot_id=lot_id
             )
             
-            # Update spot status temporarily if you want (optional, based on your system)
-            available_spot.status = 'O'  # 'O' for Occupied, assuming that's your status convention
+            if status == "Confirmed":
+                available_spot.status = 'O'
             
-            # Commit to database
             db.session.add(reservation)
             db.session.commit()
             
-            
-            flash(f'Booking confirmed! Expected cost: ₹{cost:.2f}', 'success')
+            flash(f'Booking {"confirmed" if status == "Confirmed" else "pending"}! Expected cost: ₹{cost:.2f}', 'success')
             return redirect(url_for('user.bookings'))
             
         except Exception as e:
             db.session.rollback()
-            # flash(f'Booking failed. Please try again. Error: {str(e)}', 'error')
+            flash(f'Booking failed. Please try again. Error: {str(e)}', 'error')
             return redirect(url_for('user.book_parking', lot_id=lot_id))
     
-    # GET request - show booking form
     return render_template('partials/_book_parking.html',
                          parking_lot=parking_lot,
                          vehicles=vehicles,
                          available_spots_count=len(available_spots))
-
 
 
 @user_bp.route('/favorites/<int:lot_id>', methods=['POST', 'DELETE'])

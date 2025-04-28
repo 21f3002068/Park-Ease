@@ -22,44 +22,47 @@
 
 
 <div class="parking-dashboard">
+    {% set sorted_parking_lots = parking_lots | sort(attribute='occupied_spots', reverse=True) %}
+
     {% for lot in parking_lots %}
-        {% set occupied_spots = false %}
-        {% for spot in lot.spots %}
-            {% if not occupied_spots and spot.status != 'A' %}
-                {% set occupied_spots = true %}
-            {% endif %}
-        {% endfor %}
+    {% set occupied_spots = false %}
+    {% for spot in lot.spots %}
+    {% if not occupied_spots and spot.status != 'A' %}
+    {% set occupied_spots = true %}
+    {% endif %}
+    {% endfor %}
 
-        <div class="parking-card">
-            <div class="card-header">
-                <h3>{{ lot.prime_location_name }}</h3>
-                <div class="dropdown">
-                    <button class="three-dots">⋮</button>
-                    <div class="dropdown-menu">
-                        <a href="{{ url_for('admin.edit_parking', lot_id=lot.id) }}">Edit</a>
+    <div class="parking-card">
+        <div class="card-header">
+            <h3>{{ lot.prime_location_name }}</h3>
+            <div class="dropdown">
+                <button class="three-dots">⋮</button>
+                <div class="dropdown-menu">
+                    <a href="{{ url_for('admin.edit_parking', lot_id=lot.id) }}">Edit</a>
 
-                        {% if not occupied_spots %}
-                            <form action="{{ url_for('admin.delete_parking', lot_id=lot.id) }}" method="POST"
-                                style="display: inline;"
-                                onsubmit="return confirm('Are you sure you want to delete this parking lot?');">
-                                <button type="submit" class="dropdown-item delete-btn">Delete</button>
-                            </form>
-                        {% else %}
-                            <button class="dropdown-item delete-btn" disabled title="Cannot delete: Some spots are occupied">Delete</button>
-                        {% endif %}
-                    </div>
+                    {% if not occupied_spots %}
+                    <form action="{{ url_for('admin.delete_parking', lot_id=lot.id) }}" method="POST"
+                        style="display: inline;"
+                        onsubmit="return confirm('Are you sure you want to delete this parking lot?');">
+                        <button type="submit" class="dropdown-item delete-btn">Delete</button>
+                    </form>
+                    {% else %}
+                    <button class="dropdown-item delete-btn" disabled
+                        title="Cannot delete: Some spots are occupied">Delete</button>
+                    {% endif %}
                 </div>
             </div>
-
-            <p class="slot-info">{{ lot.occupied_spots or 0 }} / {{ lot.available_spots }} slots occupied</p>
-
-            <div class="slot-boxes">
-                {% for i in range(lot.available_spots) %}
-                <a href="{{ url_for('admin.view_spot', lot_id=lot.id, spot_number=i+1) }}"
-                    class="slot-box {% if i < (lot.occupied_spots or 0) %}occupied{% endif %}" title="Spot {{ i + 1 }}"></a>
-                {% endfor %}
-            </div>
         </div>
+
+        <p class="slot-info">{{ lot.occupied_spots or 0 }} / {{ lot.available_spots }} slots occupied</p>
+
+        <div class="slot-boxes">
+            {% for i in range(lot.available_spots) %}
+            <a href="{{ url_for('admin.view_spot', lot_id=lot.id, spot_number=i+1) }}"
+                class="slot-box {% if i < (lot.occupied_spots or 0) %}occupied{% endif %}" title="Spot {{ i + 1 }}"></a>
+            {% endfor %}
+        </div>
+    </div>
     {% endfor %}
 </div>
 

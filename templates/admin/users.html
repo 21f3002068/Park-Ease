@@ -43,15 +43,15 @@
                     <td>
                         {% if not user.is_active %}
                         <div class="flag-indicator">
-                            {{ user.id }}
-                            <img src="{{ url_for('static', filename='/icons/flag_26dp_EA3323.svg') }}" alt="Flagged">
+                        {{ user.id }}
+                            <img src="{{ url_for('static', filename='/icon/flag_26dp_EA3323.svg') }}" alt="Flagged">
                         </div>
                         {% else %}
                         {{ user.id }}
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="view-btn">
+                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="view-btn" style="text-decoration: none; color: blue; background-color: rgb(215, 241, 250); padding: 2px 5px; border-radius: 5px;"> 
                             {{ user.firstname }} {{ user.lastname }}
                         </a>
                     </td>
@@ -76,9 +76,9 @@
                     </td>
                     <td>
                         {% if user.is_active == False %}
-                        <a href="#">
-                            <button class="unflag-btn">UnFlag</button>
-                        </a>
+                        <form action="{{ url_for('admin.unflag_user', id=user.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="unflag-btn">Unflag</button>
+                        </form>
                         {% else %}
                         <a href="{{ url_for('admin.flag_user_confirmation', id=user.id) }}">
                             <button class="flag-btn">Flag</button>
