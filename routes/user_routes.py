@@ -432,12 +432,11 @@ def book_parking(lot_id):
     if not vehicles:
         flash('You need to add a vehicle before booking', 'error')
         return redirect(url_for('user.add_vehicle'))
-    
-    available_spots = [spot for spot in parking_lot.spots if spot.status == 'A']
-    if not available_spots:
-        flash('No available spots in this parking lot', 'error')
-        return redirect(url_for('user.locations'))
-    
+
+
+    all_spots = parking_lot.spots
+    available_spots = [spot for spot in all_spots if spot.status == 'A']
+        
     if request.method == 'POST':
         vehicle_id = request.form.get('vehicle_id')
         expected_arrival = request.form.get('expected_arrival')
@@ -486,8 +485,28 @@ def book_parking(lot_id):
                 break
 
         if not available_spot:
-            flash('No available spots for the selected time range. Your booking is pending.', 'warning')
-            available_spot = available_spots[0]
+            occupied_spots = [spot for spot in all_spots if spot.status == 'O']
+            for spot in occupied_spots:
+                # Check if the spot will be free during requested time
+                will_be_free = True
+                for reservation in spot.reservations:
+                    if reservation.status not in ['Cancelled', 'Parked Out']:
+                        # Compare with the reservation's EXPECTED times
+                        if not (expected_departure_dt <= reservation.expected_arrival or 
+                            expected_arrival_dt >= reservation.expected_departure):
+                            will_be_free = False
+                            break
+                if will_be_free:
+                    available_spot = spot
+                    break
+                
+            if not available_spot:
+                # No spots available at all - assign to first spot anyway as pending
+                available_spot = all_spots[0] if all_spots else None
+        
+        if not available_spot:
+            flash('This parking lot has no spots configured', 'error')
+            return redirect(url_for('user.locations'))
 
         try:
             total_hours = (expected_departure_dt - expected_arrival_dt).total_seconds() / 3600
@@ -586,7 +605,7 @@ def bookings():
     # 2. Pending Requests 
     pending_requests = Reservation.query.filter(
         Reservation.user_id == current_user.id,
-        Reservation.parking_timestamp > now,
+        Reservation.expected_arrival > now,
         Reservation.spot_id == None,  # Not assigned a spot yet
         Reservation.status == "Pending"
 
