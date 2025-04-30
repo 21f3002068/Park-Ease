@@ -78,7 +78,6 @@ def admin_search():
 
         'parkinglot': ParkingLot.query.filter(
             (ParkingLot.prime_location_name.ilike(f'%{query}%')) 
-            # (ParkingLot.description.ilike(f'%{query}%'))  # Adding description to search
         ).all(),
 
         'reservations': Reservation.query.filter(
@@ -130,6 +129,8 @@ def admin_dashboard():
 
     for lot in lots:
         occupied_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').count()
+        spots = ParkingSpot.query.filter_by(lot_id=lot.id).order_by(ParkingSpot.spot_number).all()
+
         total = lot.available_spots or 1
 
         total_occupied_spots += occupied_count
@@ -138,6 +139,7 @@ def admin_dashboard():
         utilization = (occupied_count / total) * 100
         parking_lots.append({
             'id': lot.id,
+            'spots': spots,
             'prime_location_name': lot.prime_location_name,
             'available_spots': lot.available_spots,
             'occupied_spots': occupied_count,

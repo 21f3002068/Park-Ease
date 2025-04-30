@@ -7,6 +7,9 @@ from sqlalchemy import func
 from functools import wraps
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
+from sqlalchemy import or_, and_
+
 
 user_bp = Blueprint('user', __name__)
 
@@ -154,10 +157,6 @@ def dashboard():
 
 
 
-
-
-
-
 @user_bp.route('/park/<int:booking_id>', methods=['POST'])
 @login_required
 def park(booking_id):
@@ -176,12 +175,13 @@ def park(booking_id):
         return redirect(url_for('user.bookings'))
     
     elif time_diff < -600:  # More than 10 minutes **early**
-        flash('Your vehicle is not expected for parking yet. Please come closer to your booking time.', 'warning')
+        flash('Your vehicle is not expected for parking yet. Please come closer to your expected arrival time.', 'warning')
         return redirect(url_for('user.dashboard'))
 
     # Within ±10 mins => Allow Parking
     booking.parking_timestamp = current_time
     booking.status = 'Parked'
+    booking.spot.status = 'O'
     db.session.commit()
 
     flash('You have successfully parked your vehicle.', 'success')
@@ -325,59 +325,202 @@ def search():
 
 
 
+# @user_bp.route('/parking_locations')
+# def locations():
+#     now = datetime.now()
+    
+#     # Get all locations with their parking lots
+#     all_locations = Location.query.options(
+#         joinedload(Location.parking_lots)
+#     ).all()
+    
+#     # Get all lot IDs
+#     lot_ids = [lot.id for loc in all_locations for lot in loc.parking_lots]
+    
+#     # Count truly available spots (not just status 'A')
+#     spots_count = {}
+#     for lot_id in lot_ids:
+#         # Get all spots in this lot
+#         spots = ParkingSpot.query.filter_by(lot_id=lot_id).all()
+        
+#         available_count = 0
+#         for spot in spots:
+#             # Check if spot is marked available
+#             if spot.status == 'A':
+#                 # Additional check for time-based reservations
+#                 conflicting_reservation = Reservation.query.filter(
+#                     Reservation.spot_id == spot.id,
+#                     Reservation.status == 'Confirmed',
+#                     Reservation.expected_arrival <= now,
+#                     Reservation.expected_departure >= now
+#                 ).first()
+                
+#                 if not conflicting_reservation:
+#                     available_count += 1
+        
+#         spots_count[lot_id] = available_count
+    
+#     favorite_lot_ids = set()
+#     if current_user.is_authenticated:
+#         favorite_lot_ids = set(
+#             fav.lot_id for fav in Favorite.query.filter_by(user_id=current_user.id).all()
+#         )
+    
+#         # Calculate total parking spots for each location
+#     location_data = []
+#     for loc in all_locations:
+#         # Calculate total parking spots for the location (sum of parking spots in all lots)
+#         total_parking_spots = sum(lot.available_spots for lot in loc.parking_lots)
+        
+#         location_data.append({
+#             "location": loc,
+#             "lots": loc.parking_lots,
+#             "spots_count": spots_count,
+#             "total_parking_spots": total_parking_spots  # Add the total parking spots
+#         })
+    
+#     return render_template('user/locations.html',
+#                          location_data=all_locations,
+#                          spots_count=spots_count,
+#                          available_spots_count=lambda lot: spots_count.get(lot.id, 0),
+#                          favorite_lot_ids=favorite_lot_ids)   
+
+# @user_bp.route('/parking_locations')
+# def locations():
+#     now = datetime.now()
+    
+#     # Get all locations with their parking lots
+#     all_locations = Location.query.options(
+#         joinedload(Location.parking_lots)
+#     ).all()
+    
+#     # Get all lot IDs
+#     lot_ids = [lot.id for loc in all_locations for lot in loc.parking_lots]
+    
+#     # Count truly available spots
+#     spots_count = {}
+#     for   in lot_ids:
+#         spots = ParkingSpot.query.filter_by(lot_id=lot_id).all()
+#         available_count = 0
+#         for spot in spots:
+#             if spot.status == 'A':
+#                 conflict = Reservation.query.filter(
+#                     Reservation.spot_id == spot.id,
+#                     Reservation.status == 'Confirmed',
+#                     Reservation.expected_arrival <= now,
+#                     Reservation.expected_departure >= now
+#                 ).first()
+#                 if not conflict:
+#                     available_count += 1
+#         spots_count[lot_id] = available_count
+    
+#     favorite_lot_ids = set()
+#     if current_user.is_authenticated:
+#         favorite_lot_ids = set(
+#             fav.lot_id for fav in Favorite.query.filter_by(user_id=current_user.id).all()
+#         )
+    
+#     # Prepare location data with all needed information
+#     location_data = []
+#     for loc in all_locations:
+#         location_data.append({
+#             "location": loc,  # The Location object
+#             "lots": loc.parking_lots,
+#             "spots_count": spots_count,
+#             "total_parking_spots": sum(lot.max_parking_spots for lot in loc.parking_lots)
+#         })
+    
+#     return render_template('user/locations.html',
+#                          loc_data=location_data,
+#                          spots_count=spots_count,
+#                          available_spots_count=lambda lot: spots_count.get(lot.id, 0),
+#                          favorite_lot_ids=favorite_lot_ids)
+
+
 @user_bp.route('/parking_locations')
 def locations():
-    # Get all locations with their parking lots in one query
-    all_locations = Location.query.options(
-        joinedload(Location.parking_lots)
-    ).all()
+    now = datetime.now()  
+
+    locations = Location.query.options(
+        joinedload(Location.parking_lots).joinedload(ParkingLot.spots)
+    ).filter(Location.parking_lots.any(ParkingLot.is_active == True)).all()
     
-    # Get all lot IDs in one list
-    lot_ids = [lot.id for loc in all_locations for lot in loc.parking_lots]
-    
-    # Count available spots per lot in one query
-    spots_count = dict(db.session.query(
-        ParkingSpot.lot_id,
-        func.count(ParkingSpot.id)
-    ).filter(
-        ParkingSpot.lot_id.in_(lot_ids),
-        ParkingSpot.status == 'A'
-    ).group_by(ParkingSpot.lot_id).all())
-    
-    favorite_lot_ids = set()
-    if current_user.is_authenticated:
-        favorite_lot_ids = set(
-            fav.lot_id for fav in Favorite.query.filter_by(user_id=current_user.id).all()
-        )
-    
-    # Calculate total parking spots for each location
     location_data = []
-    for loc in all_locations:
-        # Calculate total parking spots for the location (sum of parking spots in all lots)
-        total_parking_spots = sum(lot.available_spots for lot in loc.parking_lots)
+    
+    for location in locations:
+
+        active_lots = [lot for lot in location.parking_lots if lot.is_active]
+        
+        if not active_lots:  
+            continue
+            
+        # Calculate total and available spots for the location
+        total_spots = sum(lot.max_parking_spots for lot in active_lots)
+        available_spots = sum(lot.available_spots for lot in active_lots)  
+        
+        lot_ids = [lot.id for location in locations for lot in location.parking_lots]
+        
+        # Calculate currently available spots (not reserved)
+        currently_available = 0
+        location_lots = []
+        
+        for lot in active_lots:
+            lot_currently_available = 0
+            for spot in lot.spots:
+                if spot.status == 'A' or spot.status == 'B':  # Currently Not Occupied
+                    # Check for any conflicting reservations (both parked and upcoming)
+                    conflict = Reservation.query.filter(
+                        Reservation.spot_id == spot.id,
+                        Reservation.status == 'Confirmed',
+                        Reservation.expected_arrival >= now,
+                        Reservation.expected_departure >= now
+                    ).first()
+                    
+                    lot_currently_available += 1
+                    
+                    if not conflict:
+                        pass
+            
+            currently_available += lot_currently_available
+            
+            # Prepare lot data for template
+            location_lots.append({
+                'id': lot.id,
+                'prime_location_name': lot.prime_location_name,
+                'price_per_hour': lot.price_per_hour,
+                'available_from': lot.available_from,
+                'available_to': lot.available_to,
+                'is_active': lot.is_active,
+                'currently_available_spots': lot_currently_available,  # Actual available now
+                'available_spots': lot.available_spots,  # Admin-set available spots
+                'total_spots': lot.max_parking_spots  # Max capacity
+            })
         
         location_data.append({
-            "location": loc,
-            "lots": loc.parking_lots,
-            "spots_count": spots_count,
-            "total_parking_spots": total_parking_spots  # Add the total parking spots
+            'name': location.name,
+            'address': location.address,
+            'pin_code': location.pin_code,
+            'total_spots': total_spots,  # Total capacity
+            'available_spots': available_spots,  # Admin-set available spots
+            'currently_available_spots': currently_available,  # Actually available now
+            'lots': location_lots
         })
     
+    # Get user's favorite lot IDs if logged in
+    favorite_lot_ids = set()
+    if current_user.is_authenticated:
+        favorite_lot_ids = {f.lot_id for f in current_user.favorites}
+    
     return render_template('user/locations.html',
-                           location_data=location_data,
-                           spots_count=spots_count,
-                           available_spots_count=lambda lot: spots_count.get(lot.id, 0),
-                           favorite_lot_ids=favorite_lot_ids)
-        
+                         lot_data=location_data,
+                         favorite_lot_ids=favorite_lot_ids,
+                         now=now)
 
-def available_spots_count(lot):
-    return ParkingSpot.query.filter_by(
-        lot_id=lot.id,
-        status='A'  # 'A' for Available
-    ).count()
+
 
 @user_bp.route('/parking/<int:lot_id>')
 def view_parking_details(lot_id):
+
 
     parking_lot = ParkingLot.query.get(lot_id)
     all_locations = Location.query.options(
@@ -475,10 +618,11 @@ def book_parking(lot_id):
             conflict = False
             for reservation in spot.reservations:
                 if reservation.status not in ['Cancelled', 'Parked Out']:
-                    if not (expected_departure_dt <= reservation.parking_timestamp or 
-                           expected_arrival_dt >= reservation.leaving_timestamp):
+                    if not (expected_departure_dt <= reservation.expected_arrival or 
+                           expected_arrival_dt >= reservation.expected_departure):
                         conflict = True
                         break
+                    
             if not conflict:
                 available_spot = spot
                 status = "Confirmed"
@@ -487,7 +631,6 @@ def book_parking(lot_id):
         if not available_spot:
             occupied_spots = [spot for spot in all_spots if spot.status == 'O']
             for spot in occupied_spots:
-                # Check if the spot will be free during requested time
                 will_be_free = True
                 for reservation in spot.reservations:
                     if reservation.status not in ['Cancelled', 'Parked Out']:
@@ -516,7 +659,7 @@ def book_parking(lot_id):
             booking_id = f"BK-{vehicle_number}-{current_user.id}-{uuid.uuid4().hex[:3].upper()}"
             
             reservation = Reservation(
-                spot_id=available_spot.id,
+                spot_id=available_spot.id if status == "Confirmed" else None,
                 user_id=current_user.id,
                 vehicle_id=vehicle.id,
                 booking_timestamp=datetime.now(),
@@ -529,10 +672,17 @@ def book_parking(lot_id):
             )
             
             if status == "Confirmed":
-                available_spot.status = 'O'
-            
-            db.session.add(reservation)
-            db.session.commit()
+                available_spot.status = 'B'
+                db.session.add(reservation)
+                db.session.commit()
+                flash(f'Booking confirmed! Expected cost: ₹{cost:.2f}', 'success')
+                
+            else:
+
+                db.session.add(reservation)
+                db.session.commit()
+                flash('We will notify you when a spot becomes available.', 'info')
+                
             
             flash(f'Booking {"confirmed" if status == "Confirmed" else "pending"}! Expected cost: ₹{cost:.2f}', 'success')
             return redirect(url_for('user.bookings'))
@@ -576,11 +726,6 @@ def favorites(lot_id):
                 return jsonify(success=False, error=str(e)), 500
         return jsonify(success=True)
 
-from sqlalchemy import or_
-
-
-from datetime import datetime, timedelta
-from sqlalchemy import or_, and_
 
 @user_bp.route('/bookings', methods=['GET', 'POST'])
 @login_required
@@ -606,11 +751,12 @@ def bookings():
     pending_requests = Reservation.query.filter(
         Reservation.user_id == current_user.id,
         Reservation.expected_arrival > now,
-        Reservation.spot_id == None,  # Not assigned a spot yet
+        Reservation.spot_id.is_(None),  # Not assigned a spot yet
         Reservation.status == "Pending"
 
     ).options(
-        joinedload(Reservation.vehicle)
+        joinedload(Reservation.vehicle),
+        joinedload(Reservation.lot)
     ).all()
     
     # 3. Cancelled/Rejected Bookings
@@ -670,6 +816,8 @@ def cancel_booking(booking_id):
     if reservation:
         if reservation.status in ['Confirmed', 'Pending']:
             reservation.status = 'Cancelled'
+            if reservation.spot:
+                reservation.spot.status = 'A'
             reservation.cancellation_reason = "Cancelled by user."
             db.session.commit()
             flash('Your booking has been cancelled.', 'success')

@@ -71,6 +71,13 @@ class ParkingLot(db.Model):
     def __repr__(self):
         return f'<ParkingLot {self.prime_location_name}>'
 
+    def get_available_spots(self, when=None):
+        when = when or datetime.now()
+        return sum(
+            1 for spot in self.spots
+            if spot.status == 'A' and not spot.has_conflicting_reservation(when)
+        )
+
 
 class ParkingSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -78,7 +85,13 @@ class ParkingSpot(db.Model):
     spot_number = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(1), default='A')  # A = Available, O = Occupied
 
-
+    def has_conflicting_reservation(self, when):
+        return bool(Reservation.query.filter(
+            Reservation.spot_id == self.id,
+            Reservation.status == 'Confirmed',
+            Reservation.expected_arrival <= when,
+            Reservation.expected_departure >= when
+        ).first())
 
 class Reservation(db.Model):
     id = db.Column(db.Integer, primary_key=True)

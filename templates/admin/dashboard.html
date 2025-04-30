@@ -57,9 +57,16 @@
         <p class="slot-info">{{ lot.occupied_spots or 0 }} / {{ lot.available_spots }} slots occupied</p>
 
         <div class="slot-boxes">
-            {% for i in range(lot.available_spots) %}
-            <a href="{{ url_for('admin.view_spot', lot_id=lot.id, spot_number=i+1) }}"
-                class="slot-box {% if i < (lot.occupied_spots or 0) %}occupied{% endif %}" title="Spot {{ i + 1 }}"></a>
+            {% for spot in lot.spots %}
+            <a href="{{ url_for('admin.view_spot', lot_id=lot.id, spot_number=spot.spot_number) }}"
+                class="slot-box 
+                {% if spot.status == 'O' %}
+                    occupied
+                {% elif spot.status == 'B' %}
+                    booked
+                {% endif %}" 
+                title="Spot {{ spot.spot_number }}">
+            </a>
             {% endfor %}
         </div>
     </div>

@@ -19,31 +19,37 @@
 {% block content %}
 
 <div class="locations-wrapper">
-    {% for item in location_data %}
+    {% for item in lot_data %}
     <div class="location-section">
         <div class="location-header">
             <h2>
                 <ion-icon name="business-outline"></ion-icon>
-                {{ item.location.name }}
+                {{ item.name }}
             </h2>
         </div>
 
         <p class="location-address">
             <ion-icon name="location-outline"></ion-icon>
-            {{ item.location.address }}, {{ item.location.pin_code }} | Total Available Parking Spots: {{
-            item.total_parking_spots }}
-
+            {{ item.address }}, {{ item.pin_code }} | Currently available: {{ item.currently_available_spots }} | Total Parking Spots: {{
+            item.available_spots }} |   Max Capacity: {{item.total_spots}}
+            <!-- Total available parking spots is the sum of available parking spots for ALL parking lots of a location when admin creates a new parking lot
+             That is, this -> available_spots = db.Column(db.Integer, nullable=False)
+             -->
         </p>
         <div class="lot-cards">
             {% for lot in item.lots %}
             <div class="lot-card">
 
                 <h3>
+
+
                     {{ lot.prime_location_name }}
 
                     <div class="status-dot {% if lot.is_active %}active{% else %}inactive{% endif %}"></div>
 
                 </h3>
+
+
                 <div class="card-details">
 
                     <p><strong>
@@ -51,7 +57,11 @@
                             Price/hr:</strong> ₹{{ lot.price_per_hour }}</p>
                     <p><strong>
                             <ion-icon name="car-sport-outline" class="detail-icon"></ion-icon>
-                            Available Spots:</strong> {{ spots_count.get(lot.id, 0) }}/{{ lot.max_parking_spots }}</p>
+                            Available Spots:</strong> {{ lot.currently_available_spots }}/{{ lot.available_spots }}
+                            <!-- currently available spots are all spots that are CURRENTLY empty. That is, no car is parked rn.
+                             A lot can have 100 parking lot capacity and admin makes 60 spots available, if at current moment there is only 10 cars parked in the 
+                             parking lot then currently available spots is 50-->
+                    </p>
                     <p><strong>
                             <ion-icon name="time-outline" class="detail-icon"></ion-icon>
                             Time:</strong>
@@ -74,15 +84,11 @@
                     
                     disabled
                     
-                    {% endif %}" {% if not lot.is_active %} aria-disabled="true" {%endif %} {% if
-                        available_spots_count(lot)==0 %} title="Request" {% else %} title="Book Now" {%endif %}>
+                    {% endif %}" {% if not lot.is_active %} aria-disabled="true" {%endif %}>
+
 
                         <ion-icon name="calendar-outline"></ion-icon>
-                        {% if available_spots_count(lot) == 0 %}
-                        Request
-                        {% else %}
                         Book
-                        {% endif %} 
                     </a>
 
 

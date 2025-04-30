@@ -6,7 +6,8 @@
     --black2: #999;
     --card-bg: #5395ff;
     /* --card-bg: rgba(0, 0, 0, 0.6); */
-    --occupied: #38e474;
+    --occupied: #e1514c;
+    --booked: #36ea4b;
     --available: #d5d5d5;
 }
 
@@ -143,7 +144,17 @@
     background-color: var(--occupied);
 }
 
+.slot-box.booked {
+    background-color: var(--booked);
+    animation: pulse 2s infinite;
+}
 
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
 
 .add-parking-btn {
     position: fixed;

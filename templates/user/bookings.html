@@ -131,7 +131,7 @@
                                     {{ request.vehicle.license_plate }}
                                 </small>
                             </td>
-                            <td>{{ request.parking_timestamp.strftime('%I:%M %p') }}</td>
+                            <td>{{ request.expected_arrival.strftime('%I:%M %p') }}</td>
                         </tr>
                         {% else %}
                         <tr class="empty">
@@ -166,7 +166,7 @@
                                     </a>
                                 </small>
                             </td>
-                            <td>{{ booking.spot.lot.prime_location_name }}</td>
+                            <td>{{ booking.lot.prime_location_name }}</td>
                             <td>
                                 <span class="status {{ booking.status|lower }}">{{ booking.status }}</span>
                             </td>
