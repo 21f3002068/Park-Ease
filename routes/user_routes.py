@@ -61,22 +61,27 @@ def user_login():
         username_or_email = request.form.get('username_or_email')
         password = request.form.get('password')
 
-        # Try fetching by email or username
         user = User.query.filter(
             (User.email == username_or_email) | (User.username == username_or_email)
         ).first()
 
         if user:
+            
             # Check if the user is active
             if not user.is_active:
+                user.is_active = True 
+                db.session.commit()
+                
+            # Check if the user is active
+            if user.is_flagged:
                 flash('Your account has been flagged and is currently inactive. Please contact the admin.', 'error')
                 return render_template('user/user_login.html')
 
             # Check password
             if check_password_hash(user.password, password):
-                # Store user info in session or however you manage auth
+                # Store user info in session 
                 login_user(user)
-                return redirect(url_for('user.dashboard'))  # Redirect to user dashboard or homepage
+                return redirect(url_for('user.dashboard'))  # Redirect to user dashboard/homepage
             else:
                 flash('Invalid credentials. Please try again.', 'error')
                 return render_template('user/user_login.html')
@@ -91,7 +96,7 @@ def user_login():
 
 
 def calculate_duration(start_time):
-    now = datetime.now()  # not utcnow()
+    now = datetime.now()  
     delta = now - start_time
     total_minutes = delta.total_seconds() // 60
     hours = int(total_minutes // 60)
@@ -151,7 +156,7 @@ def dashboard():
         parking_history=parking_history,
         profile_completion=profile_completion,
         user=user,
-        calculate_duration=calculate_duration  # Helper function you need to create
+        calculate_duration=calculate_duration  
     )
 
 
@@ -325,116 +330,6 @@ def search():
 
 
 
-# @user_bp.route('/parking_locations')
-# def locations():
-#     now = datetime.now()
-    
-#     # Get all locations with their parking lots
-#     all_locations = Location.query.options(
-#         joinedload(Location.parking_lots)
-#     ).all()
-    
-#     # Get all lot IDs
-#     lot_ids = [lot.id for loc in all_locations for lot in loc.parking_lots]
-    
-#     # Count truly available spots (not just status 'A')
-#     spots_count = {}
-#     for lot_id in lot_ids:
-#         # Get all spots in this lot
-#         spots = ParkingSpot.query.filter_by(lot_id=lot_id).all()
-        
-#         available_count = 0
-#         for spot in spots:
-#             # Check if spot is marked available
-#             if spot.status == 'A':
-#                 # Additional check for time-based reservations
-#                 conflicting_reservation = Reservation.query.filter(
-#                     Reservation.spot_id == spot.id,
-#                     Reservation.status == 'Confirmed',
-#                     Reservation.expected_arrival <= now,
-#                     Reservation.expected_departure >= now
-#                 ).first()
-                
-#                 if not conflicting_reservation:
-#                     available_count += 1
-        
-#         spots_count[lot_id] = available_count
-    
-#     favorite_lot_ids = set()
-#     if current_user.is_authenticated:
-#         favorite_lot_ids = set(
-#             fav.lot_id for fav in Favorite.query.filter_by(user_id=current_user.id).all()
-#         )
-    
-#         # Calculate total parking spots for each location
-#     location_data = []
-#     for loc in all_locations:
-#         # Calculate total parking spots for the location (sum of parking spots in all lots)
-#         total_parking_spots = sum(lot.available_spots for lot in loc.parking_lots)
-        
-#         location_data.append({
-#             "location": loc,
-#             "lots": loc.parking_lots,
-#             "spots_count": spots_count,
-#             "total_parking_spots": total_parking_spots  # Add the total parking spots
-#         })
-    
-#     return render_template('user/locations.html',
-#                          location_data=all_locations,
-#                          spots_count=spots_count,
-#                          available_spots_count=lambda lot: spots_count.get(lot.id, 0),
-#                          favorite_lot_ids=favorite_lot_ids)   
-
-# @user_bp.route('/parking_locations')
-# def locations():
-#     now = datetime.now()
-    
-#     # Get all locations with their parking lots
-#     all_locations = Location.query.options(
-#         joinedload(Location.parking_lots)
-#     ).all()
-    
-#     # Get all lot IDs
-#     lot_ids = [lot.id for loc in all_locations for lot in loc.parking_lots]
-    
-#     # Count truly available spots
-#     spots_count = {}
-#     for   in lot_ids:
-#         spots = ParkingSpot.query.filter_by(lot_id=lot_id).all()
-#         available_count = 0
-#         for spot in spots:
-#             if spot.status == 'A':
-#                 conflict = Reservation.query.filter(
-#                     Reservation.spot_id == spot.id,
-#                     Reservation.status == 'Confirmed',
-#                     Reservation.expected_arrival <= now,
-#                     Reservation.expected_departure >= now
-#                 ).first()
-#                 if not conflict:
-#                     available_count += 1
-#         spots_count[lot_id] = available_count
-    
-#     favorite_lot_ids = set()
-#     if current_user.is_authenticated:
-#         favorite_lot_ids = set(
-#             fav.lot_id for fav in Favorite.query.filter_by(user_id=current_user.id).all()
-#         )
-    
-#     # Prepare location data with all needed information
-#     location_data = []
-#     for loc in all_locations:
-#         location_data.append({
-#             "location": loc,  # The Location object
-#             "lots": loc.parking_lots,
-#             "spots_count": spots_count,
-#             "total_parking_spots": sum(lot.max_parking_spots for lot in loc.parking_lots)
-#         })
-    
-#     return render_template('user/locations.html',
-#                          loc_data=location_data,
-#                          spots_count=spots_count,
-#                          available_spots_count=lambda lot: spots_count.get(lot.id, 0),
-#                          favorite_lot_ids=favorite_lot_ids)
 
 
 @user_bp.route('/parking_locations')
@@ -888,10 +783,12 @@ def add_review(reservation_id):
 @user_bp.route('/stats', methods=['GET'])
 @login_required
 def statistics():
-    pending_count = Reservation.query.filter_by(status='Pending').count()
-    confirmed_count = Reservation.query.filter_by(status='Confirmed').count()
-    parked_out_count = Reservation.query.filter_by(status='Parked Out').count()
+        
+    pending_count = Reservation.query.filter_by(user_id=current_user.id, status='Pending').count()
+    confirmed_count = Reservation.query.filter_by(user_id=current_user.id, status='Confirmed').count()
+    parked_out_count = Reservation.query.filter_by(user_id=current_user.id, status='Parked Out').count()
     combined_count = Reservation.query.filter(
+        Reservation.user_id == current_user.id,
         or_(
             Reservation.status == 'Cancelled',
             Reservation.status == 'Rejected'
@@ -903,13 +800,15 @@ def statistics():
         'confirmed': confirmed_count,
         'parked_out': parked_out_count,
         'cancelled_rejected': combined_count
-        
     }
     
     spending_data = db.session.query(
         ParkingLot.prime_location_name,
         func.sum(Reservation.parking_cost).label('total_spending')
     ).join(Reservation, ParkingLot.id == Reservation.spot_id).group_by(ParkingLot.id).all()
+
+
+
 
     # Prepare data to send to the frontend
     locations = [item[0] for item in spending_data]  # List of parking lot names
@@ -980,19 +879,28 @@ def profile():
         .options(
             joinedload(Review.reservation)
             .joinedload(Reservation.spot)
-            .joinedload(ParkingSpot.lot)  # not Spot.lot
+            .joinedload(ParkingSpot.lot)  
         )
         .order_by(Review.created_at.desc())
         .all()
     )
-    
+    reservations = Reservation.query.filter_by(
+            user_id=current_user.id
+        ).filter(
+            Reservation.leaving_timestamp.isnot(None)
+        ).order_by(
+            Reservation.parking_timestamp.desc()
+        ).limit(5).all()
+
     favorite_lots = (
         db.session.query(ParkingLot)
         .join(Favorite, Favorite.lot_id == ParkingLot.id)
         .filter(Favorite.user_id == current_user.id)
         .all()
     )
-    return render_template('user/profile.html', user=current_user, user_reviews=user_reviews, favorites=favorite_lots)
+    current_user.reservations = reservations
+    current_user.favorite_lots = favorite_lots
+    return render_template('user/profile.html', user=current_user, user_reviews=user_reviews, favorites=favorite_lots, reservations=reservations)
 
 
 @user_bp.route('/profile/edit', methods=['GET', 'POST'])
@@ -1066,6 +974,24 @@ def delete_vehicle(vehicle_id):
     return redirect(url_for('user.profile'))
 
 
+@user_bp.route('/deactivate_account', methods=['POST'])
+@login_required
+def deactivate_account():
+    current_user.is_active = False
+    db.session.commit()
+    logout_user()
+    return redirect(url_for('index'))
+
+@user_bp.route('/reactivate_account', methods=['POST'])
+def reactivate_account():
+    user = User.query.filter_by(email=request.form.get('email')).first()
+    if user:
+        user.is_active = True
+        db.session.commit()
+        flash('Your account has been reactivated', 'success')
+        return redirect(url_for('user.login'))
+    flash('Account not found', 'error')
+    return redirect(url_for('main.index'))
 
 @user_bp.route('/delete-account', methods=['POST'])
 @login_required

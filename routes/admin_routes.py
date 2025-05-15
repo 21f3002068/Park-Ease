@@ -73,7 +73,7 @@ def admin_search():
 
         'location': Location.query.filter(
             (Location.name.ilike(f'%{query}%')) |
-            (Location.address.ilike(f'%{query}%'))    # Searching by service as wellUs
+            (Location.address.ilike(f'%{query}%'))    
         ).all(),
 
         'parkinglot': ParkingLot.query.filter(
@@ -233,11 +233,23 @@ def locations():
 
 
 
+from collections import Counter
+from datetime import datetime
+
 @admin_bp.route('/users', methods=['GET', 'POST'])
 def admin_users():
     users = User.query.all()
+    user_ids = [user.id for user in users]
     today = datetime.today().date()
     lots = ParkingLot.query.all()
+
+    formatted_dates = [user.registration_date.strftime('%b %d') for user in users if user.registration_date]
+    booking_counts = [len(user.reservations) for user in users]
+
+    # Count registrations by date
+    date_counts = Counter(formatted_dates)
+    labels = list(date_counts.keys())
+    counts = list(date_counts.values())
 
     vehicles_parked_today = Reservation.query.filter(Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())).count()
     parking_lots = []
@@ -268,34 +280,25 @@ def admin_users():
     total_parking_lots = ParkingLot.query.count()
     active_parkings = ParkingLot.query.filter_by(is_active=True).count()
 
-    return render_template('admin/users.html', users=users,
+    return render_template('admin/users.html',
+                           users=users,
                            active_users=active_users,
-                           parking_lots=parking_lots, 
-                           active_parkings=active_parkings, 
+                           parking_lots=parking_lots,
+                           active_parkings=active_parkings,
                            total_parking_lots=total_parking_lots,
                            utilization_rate=overall_utilization,
-                           vehicles_parked_today=vehicles_parked_today)
+                           vehicles_parked_today=vehicles_parked_today,
+                           labels=labels,  
+                           counts=counts,
+                           user_ids=user_ids,
+                           booking_counts=booking_counts)  
 
 
 @admin_bp.route('/users/view_user/<int:user_id>')
 def user_detail(user_id):
     user = User.query.get_or_404(user_id)
+    user.reservations = Reservation.query.filter_by(user_id=user_id).all()
     return render_template('partials/_view_user_details.html', user=user)
-
-
-#A MORE COMPLETE VERSION OF THE ABOVE
-# @admin_bp.route('/admin_dashboard/users/view_user/<int:user_id>')
-# @login_required
-# def user_detail(user_id):
-#     try:
-#         user = User.query.get_or_404(user_id)
-#         return render_template('partials/_view_user_details.html', user=user)
-#     except Exception as e:
-#         current_app.logger.error(f"Error viewing user {user_id}: {str(e)}")
-#         flash('Error loading user details', 'error')
-#         return redirect(url_for('admin.admin_dashboard'))
-
-
 
 
 
@@ -391,7 +394,7 @@ def statistics():
     hourly_occupancy = [0] * 24  # Initialize for 24 hours
 
     reservations_today = Reservation.query.filter(
-        Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())
+        Reservation.expected_arrival >= datetime.combine(today, datetime.min.time())
     ).all()
 
     usage_trend = []
@@ -400,15 +403,15 @@ def statistics():
     for i in range(6, -1, -1):  # Last 7 days
         day = today - timedelta(days=i)
         count = Reservation.query.filter(
-            Reservation.parking_timestamp >= datetime.combine(day, datetime.min.time()),
-            Reservation.parking_timestamp <= datetime.combine(day, datetime.max.time())
+            Reservation.expected_arrival >= datetime.combine(day, datetime.min.time()),
+            Reservation.expected_arrival <= datetime.combine(day, datetime.max.time())
         ).count()
         
         usage_trend.append(count)
         date_labels.append(day.strftime('%b %d'))
         
     for res in reservations_today:
-        hour = res.parking_timestamp.hour
+        hour = res.expected_arrival.hour
         hourly_occupancy[hour] += 1
 
     overall_utilization = round((total_occupied_spots / total_spots) * 100, 1) if total_spots else 0
@@ -417,8 +420,50 @@ def statistics():
     total_parking_lots = ParkingLot.query.count()
     active_parkings = ParkingLot.query.filter_by(is_active=True).count()
     available_spots = total_spots - total_occupied_spots
+    print("Occupied:", total_occupied_spots, "Available:", available_spots)
 
+
+    duration_brackets = [0] * 5  # [<1h, 1-2h, 2-4h, 4-8h, 8+h]
     
+    completed_reservations = Reservation.query.filter(
+        Reservation.expected_arrival >= datetime.combine(today - timedelta(days=7), datetime.min.time()),
+        Reservation.leaving_timestamp.isnot(None)
+    ).all()
+    
+    for res in completed_reservations:
+        duration_hours = (res.leaving_timestamp - res.expected_arrival).total_seconds() / 3600
+        
+        if duration_hours < 1:
+            duration_brackets[0] += 1
+        elif 1 <= duration_hours < 2:
+            duration_brackets[1] += 1
+        elif 2 <= duration_hours < 4:
+            duration_brackets[2] += 1
+        elif 4 <= duration_hours < 8:
+            duration_brackets[3] += 1
+        else:
+            duration_brackets[4] += 1
+
+    pending_count = Reservation.query.filter_by(status='Pending').count()
+    confirmed_count = Reservation.query.filter_by(status='Confirmed').count()
+    parked_out_count = Reservation.query.filter_by(status='Parked Out').count()
+    combined_count = Reservation.query.filter(
+        or_(
+            Reservation.status == 'Cancelled',
+            Reservation.status == 'Rejected'
+        )
+    ).count()
+
+    status_data = {
+        'pending': pending_count,
+        'confirmed': confirmed_count,
+        'parked_out': parked_out_count,
+        'cancelled_rejected': combined_count
+        
+    }
+
+
+
     return render_template('admin/statistics.html',
                            active_users=active_users,
                            parking_lots=parking_lots, 
@@ -426,6 +471,11 @@ def statistics():
                            total_parking_lots=total_parking_lots,
                            utilization_rate=overall_utilization,
                            vehicles_parked_today=vehicles_parked_today,
+                           status_data=status_data,
+                           parking_durations=duration_brackets,
+                           
+
+                           occupied_spots=total_occupied_spots,
                            available_spots=available_spots,
                            hourly_occupancy=hourly_occupancy,
                            usage_trend=usage_trend,
@@ -507,7 +557,7 @@ def add_parking_lot():
         db.session.add(new_parking_lot)
         db.session.commit()
 
-        # ✅ Create parking spots
+        # Create parking spots
         for i in range(new_parking_lot.available_spots):
             spot = ParkingSpot(lot_id=new_parking_lot.id, spot_number=i + 1)
             db.session.add(spot)
@@ -602,7 +652,7 @@ def delete_parking(lot_id):
 
     if has_occupied_spots:
         flash('Cannot delete parking lot. Some spots are still occupied.', 'error')
-        return redirect(url_for('admin.admin_dashboard'))  # or wherever you want to redirect
+        return redirect(url_for('admin.admin_dashboard'))  
 
     # If all spots are empty, proceed with deletion
     db.session.delete(parking_lot)
@@ -613,28 +663,31 @@ def delete_parking(lot_id):
 
 
 
-
 @admin_bp.route('/admin/flag_user_confirmation/<int:id>', methods=['GET', 'POST'])
 def flag_user_confirmation(id):
-
     user = User.query.get_or_404(id)
-
+    
     if request.method == 'POST':
-
         reason = request.form['reason']
         
-        new_flag = Flag(user_id=user.id, reason=reason, flag_date=datetime.now())
-        
-        db.session.add(new_flag)
+        # Always create new flag
+        flag = Flag(
+            user_id=user.id,
+            reason=reason,
+            flag_date=datetime.now(),
+            is_flagged=True
+        )
+        db.session.add(flag)
         db.session.commit()
         
-        user.is_active = False  
+        user.is_active = False
         db.session.commit()
-
+        
+        flash('User flagged successfully!', 'success')
+        
         return redirect(url_for('admin.flagged_users'))
 
     return render_template('partials/_flag_user_confirmation.html', user=user)
-
 
 
 @admin_bp.route('/admin/users/flagged')
@@ -646,7 +699,7 @@ def flagged_users():
 @admin_bp.route('/admin/unflag_user/<int:id>', methods=['POST'])
 def unflag_user(id):
     user = User.query.get_or_404(id)
-    flag = Flag.query.filter_by(user_id=user.id).first()  # Assuming you want to remove only the first flag
+    flag = Flag.query.filter_by(user_id=user.id).first() 
 
     if flag:
         db.session.delete(flag)  # Delete the flag
@@ -658,7 +711,28 @@ def unflag_user(id):
     return redirect(url_for('admin.flagged_users'))
 
 
+@admin_bp.route('/admin/user_stats')
+def user_stats():
+    users = User.query.all()
 
+    # User registration stats
+    formatted_dates = [user.registration_date.strftime('%b %d') for user in users]
+    date_counts = Counter(formatted_dates)
+    labels = list(date_counts.keys())
+    counts = list(date_counts.values())
+
+    # Bookings per user
+    user_ids = [user.id for user in users]
+    booking_counts = [len(user.reservations) for user in users]  # Assuming User has a backref 'reservations'
+
+    return render_template(
+        'admin/users.html',
+        users=users,
+        labels=labels,
+        counts=counts,
+        user_ids=user_ids,
+        booking_counts=booking_counts
+    )
 
 @admin_bp.route('/admin/users/delete/<int:id>', methods=['POST'])
 def delete_user(id):

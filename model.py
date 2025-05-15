@@ -23,11 +23,18 @@ class User(db.Model, UserMixin):
 
     registration_date = db.Column(db.DateTime, default=datetime.now)
     is_active = db.Column(db.Boolean, default=True)
-
+    
+    reservations = db.relationship('Reservation', backref='user_ref', lazy=True)
     vehicles = db.relationship('Vehicle', backref='owner', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<User {self.username}>'
+
+    @property
+    def is_flagged(self):
+        latest_flag = sorted(self.flags, key=lambda f: f.flag_date, reverse=True)
+        return latest_flag[0].is_flagged if latest_flag else False
+
 
 
 class Location(db.Model):
@@ -160,5 +167,6 @@ class Flag(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     reason = db.Column(db.String(200))
     flag_date = db.Column(db.DateTime, default=datetime.utcnow)
+    is_flagged = db.Column(db.Boolean, default=False)
     
     user = db.relationship('User', backref='flags')

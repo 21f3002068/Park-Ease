@@ -778,7 +778,6 @@ table .btn {
 
 
 
-
 .danger-zone {
     background-color: #fff8f8;
     border: 1px solid #ffdddd;
@@ -825,7 +824,6 @@ table .btn {
     margin-right: 8px;
 }
 
-/* Modal Styles */
 .delete-confirm-modal {
     display: none;
     position: fixed;
@@ -880,11 +878,81 @@ table .btn {
 .btn-confirm-delete:hover {
     background-color: #b71c1c;
 }
+ 
 
 
 
+ .danger-zone {
+    border: 1px solid #ff6b6b;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    background-color: #fff5f5;
+}
 
+.danger-zone-title {
+    color: #ff6b6b;
+    margin-bottom: 1.5rem;
+}
 
+.account-action {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px dashed #ffc9c9;
+}
+
+.account-action:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.action-warning {
+    color: #666;
+    margin: 0.5rem 0 1rem;
+}
+
+.btn-deactivate {
+    background-color: #ff922b;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-deactivate:hover {
+    background-color: #f76707;
+}
+
+.btn-reactivate {
+    background-color: #51cf66;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-reactivate:hover {
+    background-color: #2f9e44;
+}
+
+.btn-delete-account {
+    background-color: #ff6b6b;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-delete-account:hover {
+    background-color: #e03131;
+}
 
 
 

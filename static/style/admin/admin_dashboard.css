@@ -40,6 +40,74 @@
     margin: 0;
 }
 
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: #f8f8f8;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin: 2rem auto;
+    min-width: 1200px;
+    min-height: 300px;
+}
+
+.empty-image {
+    width: 200px;
+    height: auto;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.empty-state .add-parking-btnn {
+    display: inline-block;
+    margin-top: 1rem;
+}
+
+.add-parking-btnn {
+    /* position: fixed; */
+    /* bottom: 2rem; */
+    /* right: 2rem; */
+    background: #0099ff;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 3px;
+    text-decoration: none;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 100;
+}
+
+.add-parking-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    background: #404040;
+}
+
+
+
+
+
+
+
+
+
 .three-dots {
     background: none;
     border: none;
