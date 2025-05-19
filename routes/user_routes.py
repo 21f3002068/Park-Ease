@@ -853,65 +853,60 @@ def statistics():
         'parked_out': parked_out_count,
         'cancelled_rejected': combined_count
     }
-    
+
+    # Spending data - now filtered by user
     spending_data = db.session.query(
         ParkingLot.prime_location_name,
         func.sum(Reservation.parking_cost).label('total_spending')
-    ).join(Reservation, ParkingLot.id == Reservation.spot_id).group_by(ParkingLot.id).all()
-
-
-
+    ).join(Reservation, ParkingLot.id == Reservation.spot_id).filter(Reservation.user_id == current_user.id).group_by(ParkingLot.id).all()
 
     # Prepare data to send to the frontend
     locations = [item[0] for item in spending_data]  # List of parking lot names
     total_spending = [item[1] for item in spending_data]  # Corresponding total spending per location
 
-    # Prepare the data to send to the template
     spending_info = {
         'locations': locations,
         'total_spending': total_spending
     }
 
+    # Frequent locations - now filtered by user
     frequent_locations = db.session.query(
         ParkingLot.prime_location_name,
         func.count(Reservation.id).label('reservation_count')
     ).join(ParkingSpot, Reservation.spot_id == ParkingSpot.id) \
-     .join(ParkingLot, ParkingSpot.lot_id == ParkingLot.id) \
-     .group_by(ParkingLot.id) \
-     .order_by(func.count(Reservation.id).desc()) \
-     .all()
-     
+    .join(ParkingLot, ParkingSpot.lot_id == ParkingLot.id) \
+    .filter(Reservation.user_id == current_user.id).group_by(ParkingLot.id) \
+    .order_by(func.count(Reservation.id).desc()) \
+    .all()
+    
     locations = [item[0] for item in frequent_locations]
     reservation_counts = [item[1] for item in frequent_locations]
 
-    # Prepare the data to send to the template
     frequent_info = {
         'locations': locations,
         'reservation_counts': reservation_counts
     }
-    
+
     user_vehicles = Vehicle.query.filter_by(user_id=current_user.id).all()
-    
-    # Query the number of reservations per vehicle
+
+    # Vehicle usage - already has user filter
     vehicle_usage = db.session.query(
         Vehicle.vehicle_name,
         func.count(Reservation.id).label('reservation_count')
     ).join(Reservation, Reservation.vehicle_id == Vehicle.id) \
-     .filter(Reservation.user_id == current_user.id) \
-     .group_by(Vehicle.id) \
-     .order_by(func.count(Reservation.id).desc()) \
-     .all()
+    .filter(Reservation.user_id == current_user.id) \
+    .group_by(Vehicle.id) \
+    .order_by(func.count(Reservation.id).desc()) \
+    .all()
 
     # Prepare data for the frontend
     vehicle_names = [item[0] for item in vehicle_usage]
     reservation_counts = [item[1] for item in vehicle_usage]
 
-    # Prepare the data to send to the template
     vehicle_info = {
         'vehicle_names': vehicle_names,
         'reservation_counts': reservation_counts
     }
-
     return render_template('user/statistics.html',
                            status_data=status_data, 
                            spending_info=spending_info, 
