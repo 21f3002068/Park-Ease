@@ -91,6 +91,8 @@ ParkEase is a comprehensive parking management solution designed to streamline p
 ## Screenshots
 ### Admin Dashboard
 ![image](https://github.com/user-attachments/assets/d2df24e1-5d4a-483e-b8b9-f366148e3230)
+![image](https://github.com/user-attachments/assets/e14b3341-6fda-4587-b98a-87ed5f7b78f7)
+
 
 ### User Dashboard
 ![image](https://github.com/user-attachments/assets/4e661102-28ff-4666-85e9-852a22d67c73)
