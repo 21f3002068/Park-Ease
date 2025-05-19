@@ -59,32 +59,46 @@ ChartJs for statistical summaries for User/Admin Dashboards
    ```bash
    python3 app.py
 
+
+
 ## Project Structure
-  ```bash
-    .
-    ├── app.py
-    ├── config.py
-    ├── dummy_data.py
-    ├── instance
-    │   └── parkease.db
-    ├── model.py
-    ├── Project Report.pdf
-    ├── README.md
-    ├── requirements.txt
-    ├── routes
-    │   ├── admin_routes.py
-    │   ├── __init__.py
-    │   └── user_routes.py
-    ├── static
-    │   ├── icon
-    │   ├── image
-    │   ├── scripts
-    │   ├── style
-    │   └── uploads
-    └── templates
-        ├── admin
-        ├── index.html
-        ├── partials
-        └── user
+   ```bash
+       .
+       ├── app.py
+       ├── config.py
+       ├── dummy_data.py
+       ├── instance
+       │   └── parkease.db
+       ├── model.py
+       ├── Project Report.pdf
+       ├── README.md
+       ├── requirements.txt
+       ├── routes
+       │   ├── admin_routes.py
+       │   ├── __init__.py
+       │   └── user_routes.py
+       ├── static
+       │   ├── icon
+       │   ├── image
+       │   ├── scripts
+       │   ├── style
+       │   └── uploads
+       └── templates
+           ├── admin
+           ├── index.html
+           ├── partials
+           └── user
+
+
+## Screenshots
+### Admin Dashboard
+
+### User Dashboard
+
+## Contact
+For questions and support, please contact:
+- Project Maintainer: Vaibhav Satish
+- Email: 21f3002068@ds.study.iitm.ac.in
+
 
 
