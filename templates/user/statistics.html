@@ -9,20 +9,24 @@
     /* Force 2x2 grid layout */
     .dashboard-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr); /* Always 2 columns */
+        grid-template-columns: repeat(2, 1fr);
+        /* Always 2 columns */
         gap: 16px;
         padding: 16px;
-        max-width: 1000px; /* Constrain total width */
+        max-width: 1000px;
+        /* Constrain total width */
         margin: 0 auto;
-        height: 90vh; /* Fill most of viewport */
-        max-height: 800px; /* But not too tall */
+        height: 90vh;
+        /* Fill most of viewport */
+        max-height: 800px;
+        /* But not too tall */
     }
 
     /* Compact grid items */
     .grid-item {
         background-color: #f8f9fa;
         border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
         padding: 12px;
         display: flex;
         flex-direction: column;
@@ -42,8 +46,10 @@
 
     /* Chart containers fill available space */
     .chart-container {
-        flex: 1; /* Fill remaining space */
-        min-height: 0; /* Allow shrinking */
+        flex: 1;
+        /* Fill remaining space */
+        min-height: 0;
+        /* Allow shrinking */
         position: relative;
     }
 
@@ -63,19 +69,23 @@
             padding: 12px;
             max-width: 95vw;
         }
+
         .grid-item {
             padding: 10px;
         }
     }
 
     @media (max-width: 600px) {
+
         /* Switch to 1x4 on very small screens */
         .dashboard-grid {
             grid-template-columns: 1fr;
             height: auto;
         }
+
         .chart-container {
-            height: 200px; /* Fixed height for mobile */
+            height: 200px;
+            /* Fixed height for mobile */
         }
     }
 </style>
@@ -103,21 +113,21 @@
             <canvas id="reservationStatusChart"></canvas>
         </div>
     </div>
-    
+
     <div class="grid-item">
         <h2>Parking Spending</h2>
         <div class="chart-container">
             <canvas id="totalSpendingChart"></canvas>
         </div>
     </div>
-    
+
     <div class="grid-item">
         <h2>Top Locations</h2>
         <div class="chart-container">
             <canvas id="frequentLocationsChart"></canvas>
         </div>
     </div>
-    
+
     <div class="grid-item">
         <h2>Vehicle Usage</h2>
         <div class="chart-container">
@@ -129,47 +139,64 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
+
 <script>
-    // Get the data from Flask template
-    var statusData = {{ status_data | tojson }};
+    const statusData = {
+        labels: ['Pending', 'Confirmed', 'Parked Out', 'Cancelled/Rejected'],
+        datasets: [{
+            data: [
+                {{ status_data.pending }},
+                {{ status_data.confirmed }},
+                {{ status_data.parked_out }},
+                {{ status_data.cancelled_rejected }}
+            ],
+            backgroundColor: [
+            'rgba(245, 158, 11, 0.4)',
+            'rgba(16, 185, 129, 0.4)',
+            'rgba(59, 130, 246, 0.4)',
+            'rgba(239, 68, 68, 0.4)'
 
-    // Prepare the labels and data for the pie chart
-    var labels = ["Pending", "Confirmed", "Parked Out", "Cancelled or Rejected"];
-    var data = [
-        statusData.pending,
-        statusData.confirmed,
-        statusData.parked_out,
-        statusData.cancelled_rejected
-    ];
+            ],
+            // borderColor: [
+            // 'rgba(245, 158, 11)',
+            // 'rgba(16, 185, 129)',
+            // 'rgba(59, 130, 246)',
+            // 'rgba(239, 68, 68)'
 
-    // Create the pie chart using Chart.js
-    var ctx = document.getElementById('reservationStatusChart').getContext('2d');
-    var reservationStatusChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Reservation Statuses',
-                data: data,
-                backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#FFC300'],
-                borderColor: ['#FF5733', '#33FF57', '#3357FF', '#FFC300'],
-                borderWidth: 1
-            }]
-        },
+            // ],
+            borderWidth: 1
+        }]
+    };
+
+    new Chart(document.getElementById('reservationStatusChart'), {
+        type: 'doughnut',  // or 'pie' if you prefer
+        data: statusData,
         options: {
             responsive: true,
+            cutout: '70%',  // For doughnut chart only
+            maintainAspectRatio: true,
+            aspectRatio: 5,
             plugins: {
                 legend: {
-                    position: 'top',
+                    position: 'bottom',
+                },
+                title: {
+                    display: true,
+                    text: 'Reservation Status Distribution'
                 },
                 tooltip: {
                     callbacks: {
-                        label: function (tooltipItem) {
-                            return tooltipItem.label + ': ' + tooltipItem.raw;
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const value = context.raw;
+                            const percentage = Math.round((value / total) * 100);
+                            return `${context.label}: ${value} (${percentage}%)`;
                         }
                     }
                 }
-            }
+            },
+            maintainAspectRatio: false
         }
     });
 
@@ -184,7 +211,7 @@
     // Create the bar chart using Chart.js
     var ctx = document.getElementById('totalSpendingChart').getContext('2d');
     var totalSpendingChart = new Chart(ctx, {
-        type: 'bar',  // You can change this to 'pie' if you want a pie chart instead
+        type: 'bar',
         data: {
             labels: locations,
             datasets: [{
@@ -243,7 +270,10 @@
             indexAxis: 'y',  // This makes the bar chart horizontal
             scales: {
                 x: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
                 },
                 y: {
                     title: {
@@ -300,6 +330,9 @@
                 },
                 y: {
                     beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
                     title: {
                         display: true,
                         text: 'Reservation Count'
@@ -370,6 +403,22 @@
 
 </script>
 
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+        // Find all flash messages
+        const flashMessages = document.querySelectorAll('.flash');
+
+        // Set a timeout to remove them after 5 seconds (5000 ms)
+        setTimeout(() => {
+            flashMessages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+            });
+        }, 5000);
+    });
+</script>
 
 
 {% endblock %}

@@ -1,70 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to ParkEase</title>
+    <title>ParkEase - Smart Parking Solutions</title>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Rubik', sans-serif;
-            background: linear-gradient(135deg, #f0f4f8, #dfefff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .container {
-            text-align: center;
-            background-color: #fff;
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #0077b6;
-        }
-
-        p {
-            font-size: 1.1rem;
-            margin: 1rem 0;
-        }
-
-        a {
-            display: inline-block;
-            margin-top: 2rem;
-            padding: 0.8rem 2rem;
-            background-color: #0077b6;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-        }
-
-        a:hover {
-            background-color: #023e8a;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/index.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to ParkEase!</h1>
+        <h1>Welcome to 
+            <span class="highlight">ParkEase</span></span>
+        </h1>
         <p>Park Smart. Park Efficient.</p>
-        <p>With our platform, you can park your 4-wheeler more efficiently, smartly, and quickly. Explore the available parking spots in your desired location.</p>
+        <p>With our platform, you can park your 4-wheeler more efficiently, smartly, and quickly. Explore the available
+            parking spots in your desired location.</p>
         <a href="{{ url_for('user.user_login') }}">Get Started!</a>
     </div>
 </body>
+
 </html>

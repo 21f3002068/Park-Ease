@@ -9,6 +9,7 @@
     --occupied: #e1514c;
     --booked: #36ea4b;
     --available: #d5d5d5;
+    --unavailable: #000000;
 }
 
 .parking-dashboard {
@@ -20,6 +21,11 @@
 
 .parking-card {
     background-color: var(--card-bg);
+    max-height: 280px;
+    overflow-y: auto;
+    /* no scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     color: var(--white);
     /* border: 2px solid red; */
     
@@ -214,6 +220,10 @@
 
 .slot-box.booked {
     background-color: var(--booked);
+    animation: pulse 2s infinite;
+}
+.slot-box.unavailable {
+    background-color: var(--unavailable);
     animation: pulse 2s infinite;
 }
 

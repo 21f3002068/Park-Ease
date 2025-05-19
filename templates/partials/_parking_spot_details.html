@@ -4,15 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spot Details</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/partials/_parking_spot_details.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #287bff;
+            --primary-dark: #1a5fd0;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --text-light: #f8f9fa;
+            --text-dark: #ffe6ac;
+            --bg-dark: #212529;
+            --card-bg: rgba(33, 37, 41, 0.9);
+        }
+
         body,
         html {
             height: 100%;
             margin: 0;
             padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-light);
             position: relative;
-            /* overflow: hidden; */
         }
 
         .background-blur {
@@ -29,12 +43,153 @@
         .content {
             position: relative;
             z-index: 1;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .spot-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .spot-card h2 {
+            margin-top: 0;
+            font-size: 1.8rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .spot-details {
+            margin: 1.5rem 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .spot-details p {
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-dark);
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .spot-details p strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--danger);
             color: white;
-            text-align: center;
-            padding-top: 100px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .restore-btn {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--success);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .delete-btn:hover:not(:disabled) {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .delete-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .flash {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .flash.success {
+            background-color: var(--success);
+        }
+
+        .flash.error {
+            background-color: var(--danger);
+        }
+
+        .flash.warning {
+            background-color: #f39c12;
+        }
+
+        @media (max-width: 576px) {
+            .content {
+                padding: 1rem;
+            }
+
+            .spot-card {
+                padding: 1.5rem;
+            }
         }
     </style>
-    <title>Spot Details</title>
 </head>
 
 <body>
@@ -47,35 +202,82 @@
     </ul>
     {% endif %}
     {% endwith %}
+
     <div class="background-blur"></div>
 
-    <div class="spot-card">
-        {% if reservation %}
-            <h2>🚗 Vehicle Parked</h2>
+    <div class="content">
+        <div class="spot-card">
+            {% if reservation %}
+            {% if spot.status == 'B' %}
+            <h2><i class="fas fa-car"></i> Spot Booked</h2>
+            {% elif spot.status == 'O' %}
+            <h2><i class="fas fa-car"></i> Spot Occupied</h2>
+            {% elif spot.status == 'X' %}
+            <h2><i class="fas fa-car"></i> Spot Unavailable</h2>
+            {% endif %}
             <div class="spot-details">
-                <p><strong>Vehicle Type:</strong> {{ vehicle.vehicle_type }}</p>
                 <p><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
                 <p><strong>Color:</strong> {{ vehicle.color }}</p>
                 <p><strong>Owner:</strong> {{ user.firstname }} {{ user.lastname }}</p>
-                <p><strong>Parked At:</strong> {{ reservation.parking_timestamp }}</p>
-                <p><strong>Leaving At:</strong> {{ reservation.leaving_timestamp or "Still parked" }}</p>
+
+                {% if spot.status == 'B' %}
+                <p><strong>Booking ID:</strong> {{ reservation.booking_id }}</p>
+                <p><strong>Booking Time:</strong> {{ reservation.booking_timestamp.strftime('%I:%M %p') }}</p>
+                <p><strong>Expected Arrival:</strong> {{ reservation.expected_arrival.strftime('%I:%M %p') }}</p>
+                <p><strong>Expected Departure:</strong> {{ reservation.expected_departure.strftime('%I:%M %p') }}</p>
+
+                {% elif spot.status == 'O' %}
+                <p><strong>Parking Time:</strong> {{ reservation.parking_timestamp.strftime('%I:%M %p') }}</p>
+                <p><strong>Leaving At:</strong>
+                    <span style="color: var(--success);">
+                        {{ reservation.leaving_timestamp or "Currently parked" }}
+                    </span>
+                </p>
+                {% endif %}
             </div>
-        {% else %}
-            <h2>✅ Spot Available</h2>
+            {% elif spot.status == 'A' %}
+            <h2><i class="fas fa-check-circle"></i> Spot Available</h2>
             <div class="spot-details">
                 <p><strong>Spot ID:</strong> {{ spot.id }}</p>
-                <p><strong>Status:</strong> Available</p>
+                <p><strong>Status:</strong> <span style="color: var(--success);">Available</span></p>
             </div>
-        {% endif %}
-    
-        <!-- Delete Button - always shown, but disabled if reservation exists -->
-        <form method="POST" action="{{ url_for('admin.delete_spot', spot_id=spot.id) }}">
-            <button type="submit" class="delete-btn" {% if reservation %}disabled{% endif %}>
-                🗑️ Delete Spot
-            </button>
-        </form>
+            <form method="POST" action="{{ url_for('admin.delete_spot', spot_id=spot.id) }}">
+                <button type="submit" class="delete-btn" {% if reservation %}disabled{% endif %}>
+                    <i class="fas fa-trash-alt"></i> Delete Spot
+                </button>
+            </form>
+            {% elif spot.status == 'X' %}
+            <h2><i class="fas fa-times-circle"></i> Spot Unavailable</h2>
+            <div class="spot-details">
+                <p><strong>Spot ID:</strong> {{ spot.id }}</p>
+                <p><strong>Status:</strong> <span style="color: var(--danger);">Unavailable</span></p>
+            </div>
+            <form method="POST" action="{{ url_for('admin.restore_spot', spot_id=spot.id) }}">
+                <button type="submit" class="restore-btn" {% if reservation %}disabled{% endif %}>
+                    <i class="fas fa-check-circle"></i> Mark Available
+                </button>
+            </form>
+            {% endif %}
+
+        </div>
     </div>
-    
+
+    <script>
+        // Wait for the page to load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Find all flash messages
+            const flashMessages = document.querySelectorAll('.flash');
+
+            // Set a timeout to remove them after 5 seconds (5000 ms)
+            setTimeout(() => {
+                flashMessages.forEach(msg => {
+                    msg.style.transition = 'opacity 0.5s ease';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+                });
+            }, 5000);
+        });
+    </script>
 </body>
 
 </html>

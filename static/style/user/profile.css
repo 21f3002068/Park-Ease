@@ -165,7 +165,12 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     /* border: 2px solid red; */
     background-color: white;
+    max-height: 350px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     padding: 25px;
+    /* border: 2px solid red; */
     flex: 1 1 48%;
     border-radius: 10px;
 }
@@ -173,6 +178,10 @@ body {
     /* border: 2px solid red; */
     border-radius: 10px;
     padding: 25px;
+    max-height: 350px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     flex: 1 1 48%;
     max-width: 48%;
     /* box-sizing: border-box; */
@@ -182,6 +191,8 @@ body {
 
 .section-header-1 {
     display: flex;
+    /* border: 2px solid red; */
+    /* position: fixed; */
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
@@ -274,7 +285,8 @@ body {
 
 /* Smaller Card Body */
 .card-body {
-    padding: 1rem;
+    padding: 0.8rem 1rem 0.4rem 1rem;
+    /* border: 2px solid red; */
 }
 
 .location {
@@ -296,7 +308,6 @@ body {
 
 .color-swatch {
     display: inline-block;
-    border: 2px solid red;
     width: 14px;
     height: 14px;
     border-radius: 3px;
@@ -311,8 +322,9 @@ body {
 /* Compact Card Actions */
 .card-actions {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+    /* border: 2px solid red; */
+    /* gap: 0.5rem; */
+    /* margin-top: 0.5rem; */
 }
 
 /* Make buttons slightly smaller */
@@ -364,6 +376,32 @@ body {
     background-color: #c0392b;
     transform: translateY(-2px);
 }
+
+
+.vehicle-info-container {
+    /* border: 2px solid red; */
+    display: flex;
+    background-color: #e7e7e760;
+    padding: 0.4rem 0rem 0rem 1rem;
+    border-radius: 5px;
+    align-items: center;
+    gap: 1rem; /* space between color and image */
+}
+
+.vehicle-color {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+
+.vehicle-image img{
+    border-radius: 10px;
+}
+
+
+
+
 
 /* .custom-empty-state {
     text-align: center;
@@ -646,7 +684,9 @@ tr:hover {
 /* Primary Button */
 .btn-primary {
     background-color: #4a6baf;
-    color: white;
+    /* border: 2px solid red; */
+    font-size: 0.8rem;
+    color: whitesmoke;
 }
 
 .btn-primary:hover {

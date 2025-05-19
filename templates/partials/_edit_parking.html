@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>ParkEase</title>
@@ -7,7 +8,8 @@
 
     <!-- Inline style using Jinja2 syntax -->
     <style>
-        body, html {
+        body,
+        html {
             height: 100%;
             margin: 0;
             padding: 0;
@@ -35,6 +37,7 @@
         }
     </style>
 </head>
+
 <body>
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -48,53 +51,46 @@
 
     <div class="background-blur"></div>
 
-    <div class="content">
+    <div class="content" style="padding: 10px 10px 0px 10px;">
         <div class="form-container">
             <div class="form-content">
                 <h2>Edit Parking Lot</h2>
-                <form action="{{ url_for('admin.edit_parking', lot_id=lot.id) }}" method="POST">
+                <form action="{{ url_for('admin.edit_parking', lot_id=lot.id) }}" method="POST" enctype="multipart/form-data"   >
                     <!-- Prime Location Name -->
                     <div class="form-group">
                         <label for="prime_location_name">Prime Location Name</label>
-                        <input type="text" id="prime_location_name" name="prime_location_name" value="{{ lot.prime_location_name }}" required>
+                        <input type="text" id="prime_location_name" name="prime_location_name"
+                            value="{{ lot.prime_location_name }}" required>
                     </div>
-    
-                    <!-- Address -->
-                    <div class="form-group">
-                        <label for="address">Address</label>
-                        <input type="text" id="address" name="address" value="{{ lot.address }}" required>
-                    </div>
-    
-                    <!-- Pin Code -->
-                    <div class="form-group">
-                        <label for="pin_code">Pin Code</label>
-                        <input type="text" id="pin_code" name="pin_code" value="{{ lot.pin_code }}" required>
-                    </div>
-    
+
                     <!-- Price per Hour -->
                     <div class="form-group">
                         <label for="price_per_hour">Price per Hour</label>
-                        <input type="number" id="price_per_hour" name="price_per_hour" value="{{ lot.price_per_hour }}" step="0.01" required>
+                        <input type="number" id="price_per_hour" name="price_per_hour" value="{{ lot.price_per_hour }}"
+                            step="0.01" required>
                     </div>
-    
+
                     <!-- Number of Spots -->
                     <div class="form-group">
                         <label for="available_spots">Available Spots</label>
-                        <input type="number" id="available_spots" name="available_spots" value="{{ lot.available_spots }}" required>
+                        <input type="number" id="available_spots" name="available_spots"
+                            value="{{ lot.available_spots }}" required>
                     </div>
-    
+
                     <!-- Available From (Time) -->
                     <div class="form-group">
                         <label for="available_from">Available From</label>
-                        <input type="time" id="available_from" name="available_from" value="{{ lot.available_from }}" required>
+                        <input type="time" id="available_from" name="available_from" value="{{ lot.available_from }}"
+                            required>
                     </div>
-    
+
                     <!-- Available To (Time) -->
                     <div class="form-group">
                         <label for="available_to">Available To</label>
-                        <input type="time" id="available_to" name="available_to" value="{{ lot.available_to }}" required>
+                        <input type="time" id="available_to" name="available_to" value="{{ lot.available_to }}"
+                            required>
                     </div>
-    
+
                     <!-- Active Status -->
                     <div class="form-group">
                         <label for="is_active">Is Active?</label>
@@ -103,16 +99,87 @@
                             <option value="false" {% if not lot.is_active %}selected{% endif %}>No</option>
                         </select>
                     </div>
-    
+
+                    <!-- Current Image Display -->
+                    {% if lot.image_url %}
+                    <div class="current-image">
+                        <p>Current Parking Lot Image</p>
+                        <img src="{{ url_for('static', filename=lot.image_url) }}" alt="Current Parking Lot Image"
+                            onclick="window.open(this.src, '_blank')">
+                    </div>
+                    {% endif %}
+
+                    <!-- File Upload -->
+                    <div class="form-group">
+                        <label style="align-self: flex-start; margin-top: 8px;">
+                            {% if lot.image_url %}Replace Image{% else %}Upload Image{% endif %}
+                        </label>
+                        <div style="flex: 1;">
+                            <label for="image" class="upload-label">
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <span class="upload-text">Click to select an image</span>
+                                <span class="upload-hint">JPG, PNG (Max 5MB)</span>
+                            </label>
+                            <input type="file" id="image" name="image" accept=".jpg,.jpeg,.png"
+                                class="form-control-file">
+                        </div>
+                    </div>
+
+                    <!-- Admin Notes -->
+                    <div class="form-group">
+                        <label for="admin_notes">Admin Notes</label>
+                        <textarea id="admin_notes" name="admin_notes" rows="4" cols="50" class="admin-notes"
+                            placeholder="Enter Admin Notes">{{ lot.admin_notes }}</textarea>
+                    </div>
+
                     <div class="button-group">
                         <a href="{{ url_for('admin.admin_dashboard') }}" class="cancel-btn">Cancel</a>
                         <button type="submit" class="submit-btn">Edit Parking Lot</button>
                     </div>
-                    
+
                 </form>
             </div>
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='script/partials/_edit_parking.js') }}"></script>
+    <script>
+
+        // File input enhancement
+        const fileInput = document.getElementById('image');
+        const uploadLabel = document.querySelector('.upload-label');
+        const uploadText = document.querySelector('.upload-text');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    uploadText.textContent = this.files[0].name;
+                    uploadLabel.style.borderColor = '#4CAF50';
+                    uploadLabel.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+                    uploadLabel.style.overflow = 'hidden';
+                    uploadLabel.style.textOverflow = 'ellipsis';
+                    uploadLabel.style.whiteSpace = 'nowrap';
+                    uploadLabel.style.maxWidth = '200px';
+                }
+            });
+        }
+
+        // Wait for the page to load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Find all flash messages
+            const flashMessages = document.querySelectorAll('.flash');
+
+            // Set a timeout to remove them after 5 seconds (5000 ms)
+            setTimeout(() => {
+                flashMessages.forEach(msg => {
+                    msg.style.transition = 'opacity 0.5s ease';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+                });
+            }, 5000);
+        });
+    </script>
+
 </body>
+
 </html>

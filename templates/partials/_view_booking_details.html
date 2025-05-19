@@ -109,19 +109,21 @@
             <ion-icon name="book-outline"></ion-icon>
             Rebook
         </a>
+        <button class="btn btn-secondary" onclick="window.print()">Print Booking Record</button>
         {% elif reservation.status == "Confirmed" or reservation.status == "Pending" %}
         <a href="{{ url_for('user.cancel_booking', booking_id=reservation.booking_id) }}" class="btn btn-danger">
             <ion-icon name="cancel-outline"></ion-icon>
             Cancel Booking
         </a>
+        <button class="btn btn-secondary" onclick="window.print()">Print Parking Ticket</button>
         {% elif reservation.status == "Parked Out" %}
         <a href="{{ url_for('user.delete_booking', booking_id=reservation.booking_id) }}" class="btn btn-super-danger">
             <ion-icon name="trash-outline"></ion-icon>
             Delete Booking
         </a>
+        <button class="btn btn-secondary" onclick="window.print()">Print Booking Record</button>
         {% endif %}
 
-        <button class="btn btn-secondary" onclick="window.print()">Print Booking Record</button>
 
         <a href="{{ url_for('user.bookings') }}" class="btn btn-primary">
             <ion-icon name="arrow-back-outline"></ion-icon>
@@ -130,4 +132,21 @@
     </div>
 
 </div>
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Find all flash messages
+      const flashMessages = document.querySelectorAll('.flash');
+  
+      // Set a timeout to remove them after 5 seconds (5000 ms)
+      setTimeout(() => {
+        flashMessages.forEach(msg => {
+          msg.style.transition = 'opacity 0.5s ease';
+          msg.style.opacity = '0';
+          setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+        });
+      }, 5000);
+    });
+  </script>
+  
 {% endblock %}

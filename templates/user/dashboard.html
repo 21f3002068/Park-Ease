@@ -134,7 +134,11 @@
                         <ion-icon name="time-outline"></ion-icon>
                         Upcoming
                     </div>
-                    <div class="booking-id">#{{ scheduled_upnext.booking_id }}</div>
+                    <div class="booking-id">
+                        <a href="{{ url_for('user.booking_details', booking_id=scheduled_upnext.booking_id) }}" class="bid-link" style="text-decoration: none; color: inherit;">
+                            #{{ scheduled_upnext.booking_id }}
+                        </a>
+                    </div>
                 </div>
 
                 <div class="booking-info">
@@ -295,5 +299,22 @@
 
 </div>
 
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Find all flash messages
+      const flashMessages = document.querySelectorAll('.flash');
+  
+      // Set a timeout to remove them after 5 seconds (5000 ms)
+      setTimeout(() => {
+        flashMessages.forEach(msg => {
+          msg.style.transition = 'opacity 0.5s ease';
+          msg.style.opacity = '0';
+          setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+        });
+      }, 5000);
+    });
+  </script>
+  
 {% endblock %}
 {% endblock %}

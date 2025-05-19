@@ -32,11 +32,10 @@
     }
 
     @media (max-width: 768px) {
-    .chart-grid {
-        grid-template-columns: 1fr;
+        .chart-grid {
+            grid-template-columns: 1fr;
+        }
     }
-}
-
 </style>
 
 {% endblock %}
@@ -77,11 +76,21 @@
     <div class="chart-section">
         <canvas id="usageTrendChart"></canvas>
     </div>
+
+    <div class="chart-section">
+        <canvas id="durationChart"></canvas>
+    </div>
+
+    <div class="chart-section">
+        <canvas id="reservationStatusChart"></canvas>
+    </div>
 </div>
 
 
 
 <script>
+    const occupiedSpots = {{ occupied_spots | tojson }};
+    const availableSpots = {{ available_spots | tojson }};
     const ctx = document.getElementById('utilizationChart');
 
     new Chart(ctx, {
@@ -89,37 +98,36 @@
         data: {
             labels: ['Occupied', 'Available'],
             datasets: [{
-                data: [{{ occupied_spots }}, {{ available_spots }}],
-        backgroundColor: ['#FF6B6B', '#4ECDC4'],
-        borderWidth: 1
-    }]
+                data: [occupiedSpots, availableSpots],
+                backgroundColor: ['#FF6B6B', '#4ECDC4'],
+                borderWidth: 1
+            }]
         },
         options: {
-        cutout: '70%',
-        responsive: true,
-        maintainAspectRatio: true,
-        aspectRatio: 2,
-        plugins: {
-            legend: {
-                position: 'bottom',
-            },
-            tooltip: {
-                callbacks: {
-                    label: function (context) {
-                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                        const value = context.raw;
-                        const percentage = ((value / total) * 100).toFixed(1);
-                        return `${context.label}: ${value} (${percentage}%)`;
+            cutout: '70%',
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            const value = context.raw;
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: ${value} (${percentage}%)`;
+                        }
                     }
+                },
+                title: {
+                    display: true,
+                    text: 'Overall Spot Utilization'
                 }
-            },
-            title: {
-                display: true,
-                text: 'Overall Spot Utilization'
             }
         }
-    }
-
     });
 </script>
 
@@ -135,8 +143,10 @@
             datasets: [{
                 label: 'Utilization (%)',
                 data: utilizationRates,
-                backgroundColor: '#5A9',
-                borderRadius: 5
+                backgroundColor: 'rgba(85, 170, 153, 0.4)',
+                borderColor: 'rgba(85, 170, 153,1)',
+                borderWidth: 1,
+                // borderRadius: 5
             }]
         },
         options: {
@@ -162,7 +172,7 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100,
+                    max: utilizationRates,
                     title: {
                         display: true,
                         text: 'Utilization (%)'
@@ -197,7 +207,7 @@
                 tension: 0.3,
                 fill: true,
                 pointRadius: 4,
-                pointHoverRadius: 6
+                pointHoverRadius: 8
             }]
         },
         options: {
@@ -289,6 +299,149 @@
     });
 </script>
 
+<script>
+    const durationData = {{ parking_durations | tojson }};
+    const durationLabels = ['<1 hour', '1-2 hours', '2-4 hours', '4-8 hours', '8+ hours'];
+
+    new Chart(document.getElementById('durationChart'), {
+        type: 'bar',
+        data: {
+            labels: durationLabels,
+            datasets: [{
+                label: 'Number of Vehicles',
+                data: durationData,
+                fill: false,
+                borderColor: '#10B981',
+                // backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                // backgroundColor: '#8B5CF6',
+                backgroundColor: 'rgba(139, 92, 246, 0.3)',
+                borderColor: 'rgba(139, 92, 246, 1)',
+                borderWidth: 1,
+                // borderRadius: 5
+
+
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Parking Duration Distribution (Last 7 Days)'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.label}: ${ctx.raw} vehicles`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Vehicles'
+                    },
+                    ticks: {
+                        callback: function (value) {
+                            // Show only whole numbers
+                            if (Number.isInteger(value)) {
+                                return value;
+                            }
+                        },
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Duration Brackets'
+                    }
+                }
+            }
+
+        }
+    });
+</script>
+
+<script>
+    const statusData = {
+        labels: ['Pending', 'Confirmed', 'Parked Out', 'Cancelled/Rejected'],
+        datasets: [{
+            data: [
+                {{ status_data.pending }},
+                {{ status_data.confirmed }},
+                {{ status_data.parked_out }},
+                {{ status_data.cancelled_rejected }}
+            ],
+            backgroundColor: [
+            'rgba(245, 158, 11, 0.4)',
+            'rgba(16, 185, 129, 0.4)',
+            'rgba(59, 130, 246, 0.4)',
+            'rgba(239, 68, 68, 0.4)'
+
+            ],
+            // borderColor: [
+            // 'rgba(245, 158, 11)',
+            // 'rgba(16, 185, 129)',
+            // 'rgba(59, 130, 246)',
+            // 'rgba(239, 68, 68)'
+
+            // ],
+            borderWidth: 1
+        }]
+    };
+
+    new Chart(document.getElementById('reservationStatusChart'), {
+        type: 'doughnut',  // or 'pie' if you prefer
+        data: statusData,
+        options: {
+            responsive: true,
+            cutout: '70%',  // For doughnut chart only
+            maintainAspectRatio: true,
+            aspectRatio: 5,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                title: {
+                    display: true,
+                    text: 'Reservation Status Distribution'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const value = context.raw;
+                            const percentage = Math.round((value / total) * 100);
+                            return `${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            maintainAspectRatio: false
+        }
+    });
+</script>
+
+
+
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+        // Find all flash messages
+        const flashMessages = document.querySelectorAll('.flash');
+
+        // Set a timeout to remove them after 5 seconds (5000 ms)
+        setTimeout(() => {
+            flashMessages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+            });
+        }, 5000);
+    });
+</script>
 
 {% endblock %}
 {% endblock %}

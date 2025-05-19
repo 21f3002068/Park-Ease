@@ -20,8 +20,8 @@
 {% endwith %}
 {% block content %}
 
-
 <div class="parking-dashboard">
+    {% if parking_lots %}
     {% set sorted_parking_lots = parking_lots | sort(attribute='occupied_spots', reverse=True) %}
 
     {% for lot in parking_lots %}
@@ -57,28 +57,38 @@
         <p class="slot-info">{{ lot.occupied_spots or 0 }} / {{ lot.available_spots }} slots occupied</p>
 
         <div class="slot-boxes">
-            {% for spot in lot.spots %}
-            <a href="{{ url_for('admin.view_spot', lot_id=lot.id, spot_number=spot.spot_number) }}"
-                class="slot-box 
-                {% if spot.status == 'O' %}
-                    occupied
-                {% elif spot.status == 'B' %}
-                    booked
-                {% endif %}" 
-                title="Spot {{ spot.spot_number }}">
+            {% for i in range(1, lot.available_spots + 1) %}
+            {% set spot = lot.spots|selectattr("spot_number", "equalto", i)|first %}
+            <a href="{{ url_for('admin.view_spot', lot_id=lot.id, spot_number=i) }}" class="slot-box 
+                       {% if spot and spot.status == 'O' %}
+                           occupied
+                       {% elif spot and spot.status == 'B' %}
+                           booked
+                       {% elif spot and spot.status == 'X' %}
+                           unavailable
+                       {% endif %}" title="Spot {{ i }} | {% if spot %}{{ spot.status }}{% else %}A{% endif %}">
             </a>
             {% endfor %}
         </div>
     </div>
     {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <!-- <img src="{{ url_for('static', filename='images/empty-parking.svg') }}" alt="No parking lots" class="empty-image"> -->
+        <h3>No Parking Lots Added Yet</h3>
+        <p>Get started by adding your first parking lot to manage</p>
+        <a href="{{ url_for('admin.add_new_parking') }}" class="add-parking-btnn">
+            + Add New Parking Lot
+        </a>
+    </div>
+    {% endif %}
 </div>
 
-
+{% if parking_lots %}
 <a href="{{ url_for('admin.add_new_parking') }}" class="add-parking-btn">
     + Add New Parking Lot
 </a>
-
-
+{% endif %}
 
 {% endblock %}
 {% endblock %}

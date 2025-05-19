@@ -93,7 +93,6 @@
 
 
                     <!-- Favorite Button -->
-                    <!-- Favorite Button -->
                     <button class="action-btn favorite-btn" title="Add to Favorites"
                         onclick="toggleFavorite({{ lot.id }})">
                         <ion-icon id="fav-icon-{{ lot.id }}"
@@ -158,6 +157,25 @@
         console.log(message);
     }
 </script>
+
+
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Find all flash messages
+      const flashMessages = document.querySelectorAll('.flash');
+  
+      // Set a timeout to remove them after 5 seconds (5000 ms)
+      setTimeout(() => {
+        flashMessages.forEach(msg => {
+          msg.style.transition = 'opacity 0.5s ease';
+          msg.style.opacity = '0';
+          setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+        });
+      }, 5000);
+    });
+  </script>
+  
 
 {% endblock %}
 {% endblock %}

@@ -21,15 +21,26 @@
 
 {% block content %}
 <div class="booking-container">
-    <h2>Book Parking at {{ parking_lot.prime_location_name }}</h2>
-    
+    <h2>Book Parking in
+        <span
+            style="text-decoration: none; color: inherit; font-weight: 600; background-color: #4a6caf4e; padding: 5px 10px 5px 10px; font-family:roboto; border-radius: 5px;">
+            {{ parking_lot.prime_location_name }} @ {{ parking_lot.location_ref.name }}
+        </span>
+    </h2>
+
     <div class="lot-info">
-        <p><strong>Address:</strong> {{ parking_lot.location_ref.address }}</p>
+        <p><strong>Address:</strong> {{ parking_lot.location_ref.address }}
+            <a href="https://www.google.com/maps/search/?api=1&query={{ parking_lot.location_ref.address|urlencode }}"
+                target="_blank" rel="noopener noreferrer"
+                style="text-decoration: none; color: inherit; font-weight: 600; background-color: #ffffe7; padding: 5px 10px 5px 10px; font-family:roboto; border-radius: 5px;">View
+                on Google Maps <i class="fas fa-external-link-alt"></i></a>
+        </p>
         <p><strong>Price per hour:</strong> ₹{{ parking_lot.price_per_hour }}</p>
         <p><strong>Available spots:</strong> {{ available_spots_count }}</p>
-        <p><strong>Available Time:</strong> {{ parking_lot.available_from.strftime('%I:%M %p') }} - {{ parking_lot.available_to.strftime('%I:%M %p') }}</p>
+        <p><strong>Available Time:</strong> {{ parking_lot.available_from.strftime('%I:%M %p') }} - {{
+            parking_lot.available_to.strftime('%I:%M %p') }}</p>
     </div>
-    
+
     <form method="POST" class="booking-form">
         <div class="form-group">
             <label for="vehicle_id">Select Vehicle:</label>
@@ -46,17 +57,35 @@
             <label for="expected_arrival">Expected Arrival Time:</label>
             <input type="time" name="expected_arrival" id="expected_arrival" required>
         </div>
-        
+
         <div class="form-group">
             <label for="expected_departure">Expected Departure Time:</label>
             <input type="time" name="expected_departure" id="expected_departure" required>
         </div>
-        
+
         <div class="form-group">
             <button type="submit" class="book-btn">Confirm Booking</button>
             <a href="{{ url_for('user.locations') }}" class="cancel-btn">Cancel</a>
         </div>
     </form>
 </div>
+
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+        // Find all flash messages
+        const flashMessages = document.querySelectorAll('.flash');
+
+        // Set a timeout to remove them after 5 seconds (5000 ms)
+        setTimeout(() => {
+            flashMessages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+            });
+        }, 5000);
+    });
+</script>
+
 {% endblock %}
 {% endblock %}

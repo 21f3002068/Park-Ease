@@ -64,13 +64,15 @@ class ParkingLot(db.Model):
     
     is_active = db.Column(db.Boolean, default=True)
     
+    image_url = db.Column(db.String)
+    admin_notes = db.Column(db.Text)
+    
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'), nullable=False)
         
     # Not using these as of now
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
-    image_url = db.Column(db.String)
-    admin_notes = db.Column(db.Text)
+    # latitude = db.Column(db.Float)
+    # longitude = db.Column(db.Float)
+    
     # In ParkingLot model
     spots = db.relationship('ParkingSpot', backref='lot', cascade='all, delete-orphan', lazy=True)
 
@@ -129,7 +131,9 @@ class Reservation(db.Model):
 class Vehicle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     vehicle_name = db.Column(db.String(100))
+    vehicle_nickname = db.Column(db.String(100))
     license_plate = db.Column(db.String(20), unique=True, nullable=False)
+    vehicle_image = db.Column(db.String)
     color = db.Column(db.String(50))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 

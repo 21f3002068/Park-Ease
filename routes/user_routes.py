@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session, abort, jsonify
 from model import *
-import logging
+import os
+from flask import current_app
+from werkzeug.utils import secure_filename
 import uuid
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
@@ -228,19 +230,24 @@ def park_out(reservation_id):
     return redirect(url_for('user.add_review', reservation_id=reservation.id))
 
 
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+
+
 @user_bp.route('/add_vehicle', methods=['GET', 'POST'])
 @login_required
 def add_vehicle():
-    # Get return_to parameter for redirect after adding
     return_to = request.args.get('return_to')
     
     if request.method == 'POST':
-        # Get form data
         vehicle_name = request.form.get('vehicle_name')
-        license_plate = request.form.get('license_plate').upper().strip()  # Normalize plate
+        license_plate = request.form.get('license_plate').upper().strip()
+        vehicle_image_file = request.files.get('vehicle_image')
         color = request.form.get('color')
         
-        # Basic validation
         errors = []
         
         if not license_plate:
@@ -248,24 +255,40 @@ def add_vehicle():
         elif len(license_plate) < 3:
             errors.append('License plate is too short')
             
-            
         if not color:
             errors.append('Color is required')
             
-        # Check if license plate already exists
         existing_vehicle = Vehicle.query.filter_by(license_plate=license_plate).first()
         if existing_vehicle:
             errors.append('This license plate is already registered')
+        
+        # Handle file upload
+        vehicle_image_path = None
+        if vehicle_image_file and vehicle_image_file.filename != '':
+            if not allowed_file(vehicle_image_file.filename):
+                errors.append('Invalid file type. Only JPG, JPEG, PNG allowed.')
+            else:
+                filename = secure_filename(vehicle_image_file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                
+                # Explicit path construction
+                upload_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'vehicles')
+                os.makedirs(upload_dir, exist_ok=True)
+                upload_path = os.path.join(upload_dir, unique_filename)
+                
+                vehicle_image_file.save(upload_path)
+                vehicle_image_path = f"vehicles/{unique_filename}"  # Store relative path
+                
         
         if errors:
             for error in errors:
                 flash(error, 'error')
         else:
             try:
-                # Create new vehicle
                 new_vehicle = Vehicle(
                     vehicle_name=vehicle_name or f"{current_user.firstname}'s Car",
                     license_plate=license_plate,
+                    vehicle_image=vehicle_image_path,  # Store the path, not the file object
                     color=color,
                     user_id=current_user.id
                 )
@@ -275,19 +298,22 @@ def add_vehicle():
                 
                 flash('Vehicle added successfully!', 'success')
                 
-                # Redirect to booking if return_to was provided
                 if return_to:
                     return redirect(url_for('user.book_parking', lot_id=return_to))
                 return redirect(url_for('user.profile'))
                 
             except Exception as e:
                 db.session.rollback()
-                flash('Error adding vehicle. Please try again.', 'error')
+                flash(f'Error adding vehicle: {str(e)}', 'error')
+                
+                # Clean up the uploaded file if there was an error
+                full_path = os.path.join(current_app.config['UPLOAD_FOLDER'], vehicle_image_path)
+                if vehicle_image_path and os.path.exists(full_path):
+                    os.remove(full_path)
+
     
-    # Render form (GET request or form errors)
     return render_template('partials/_add_new_vehicle.html',
-                         return_to=return_to,
-                         vehicle_types=['Car', 'Motorcycle', 'Truck', 'SUV', 'Van'])
+                         return_to=return_to)
 
 
 
@@ -344,7 +370,8 @@ def locations():
     
     for location in locations:
 
-        active_lots = [lot for lot in location.parking_lots if lot.is_active]
+        active_lots = [lot for lot in location.parking_lots]
+        # active_lots = [lot for lot in location.parking_lots if lot.is_active]
         
         if not active_lots:  
             continue
@@ -593,33 +620,35 @@ def book_parking(lot_id):
                          available_spots_count=len(available_spots))
 
 
-@user_bp.route('/favorites/<int:lot_id>', methods=['POST', 'DELETE'])
+@user_bp.route('/favorites/<int:lot_id>', methods=['POST'])
 @login_required
 def favorites(lot_id):
-    if request.method == 'POST':
+    method_override = request.form.get('_method', '').upper()
+
+    if method_override == 'DELETE':
+        favorite = Favorite.query.filter_by(user_id=current_user.id, lot_id=lot_id).first()
+        if favorite:
+            db.session.delete(favorite)
+            try:
+                db.session.commit()
+                flash("Removed from favorites.", "success")
+            except Exception as e:
+                db.session.rollback()
+                flash("Error removing favorite.", "danger")
+        return redirect(url_for('user.profile'))  
+
+    else:
         existing_fav = Favorite.query.filter_by(user_id=current_user.id, lot_id=lot_id).first()
         if not existing_fav:
             favorite = Favorite(user_id=current_user.id, lot_id=lot_id)
             db.session.add(favorite)
             try:
                 db.session.commit()
-                return jsonify(success=True)
+                flash("Added to favorites.", "success")
             except Exception as e:
                 db.session.rollback()
-                return jsonify(success=False, error=str(e)), 500
-        return jsonify(success=True)
-    
-    elif request.method == 'DELETE':
-        favorite = Favorite.query.filter_by(user_id=current_user.id, lot_id=lot_id).first()
-        if favorite:
-            db.session.delete(favorite)
-            try:
-                db.session.commit()
-                return jsonify(success=True)
-            except Exception as e:
-                db.session.rollback()
-                return jsonify(success=False, error=str(e)), 500
-        return jsonify(success=True)
+                flash("Error adding favorite.", "danger")
+        return redirect(url_for('user.dashboard'))
 
 
 @user_bp.route('/bookings', methods=['GET', 'POST'])

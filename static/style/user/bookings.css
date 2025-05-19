@@ -1,6 +1,12 @@
+
+:root {
+    --font-family: 'Times New Roman', Times, serif;
+}
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    font-family: var(--font-family);
     gap: 20px;
     margin: 10px -25px;
 }
@@ -33,18 +39,33 @@
     overflow-x: auto;
 }
 
+.parking-table tr {
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+/* row color different for each booking like even and odd */
+.parking-table tr:not(.empty):nth-child(even) {
+
+    background-color: #f8f9fa;
+}
+
+.parking-table tr:not(.empty):nth-child(odd) {
+    background-color: #fffeee;
+}
 .parking-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-
-.panel-current-bookings td{
+/* .panel-current-bookings td{
     border: 2px solid red;
-}
+} */
 
 .parking-table th, .parking-table td {
-    padding: 12px 15px;
+    /* padding: 12px 15px; */
+    padding-top: 12px;
+    padding-bottom: 12px;
     text-align: left;
     border-bottom: 1px solid #eee;
 }
@@ -52,6 +73,13 @@
 .parking-table th {
     background-color: #f8f9fa;
     font-weight: 600;
+}
+
+.parking-table .empty {
+    background-color: #ffffff;  /* Or any neutral background you prefer */
+    color: #999;
+    font-style: italic;
+    text-align: center;
 }
 
 .status {
@@ -120,6 +148,129 @@ button {
 
 
 
+/* Current Parking Status Styles */
+.current-parking-status {
+    background: #fff9e7;
+    border-radius: 12px;
+    padding: 15px;
+    color: black;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-family);
+    gap: 20px;
+    /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+    margin-bottom: 25px;
+}
+
+.parking-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.vehicle-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.vehicle-info h3{
+    margin: 0;
+    /* border: 2px solid red; */
+    padding-bottom: 13px;
+}
+.vehicle-name {
+    color: #208ffe;
+    /* border: 2px solid #208ffe; */
+    background-color: #208ffe4a;
+    border-radius: 5px;
+    padding: 5px;
+    font-weight: 600;
+}
+
+.vehicle-info i {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.vehicle-info h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.license-plate {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 14px;
+    letter-spacing: 1px;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+}
+
+.location-info i {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.park-out-form {
+    margin-top: 10px;
+}
+
+.park-out-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: white;
+    color: #287bff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.park-out-btn:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.park-out-btn ion-icon {
+    font-size: 20px;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    .current-parking-status {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .park-out-form {
+        margin-top: 0;
+        width: auto;
+    }
+    
+    .park-out-btn {
+        width: auto;
+        min-width: 150px;
+    }
+}
 
 
 

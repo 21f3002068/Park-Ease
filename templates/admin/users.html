@@ -24,7 +24,8 @@
     <div class="users">
         <div class="cardHeader">
             <h2>Users | {{ users|length }}</h2>
-            <a href="#" class="btn">View All</a>
+            <a href="{{url_for('admin.flagged_users')}}" class="btn"
+                style="background-color: #a32217; color !important: white;">View Flagged</a>
         </div>
         <table>
             <thead>
@@ -41,9 +42,9 @@
                 {% for user in users %}
                 <tr class="cust-row">
                     <td>
-                        {% if not user.is_active %}
+                        {% if user.is_flagged %}
                         <div class="flag-indicator">
-                        {{ user.id }}
+                            {{ user.id }}
                             <img src="{{ url_for('static', filename='/icon/flag_26dp_EA3323.svg') }}" alt="Flagged">
                         </div>
                         {% else %}
@@ -51,7 +52,8 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="view-btn" style="text-decoration: none; color: blue; background-color: rgb(215, 241, 250); padding: 2px 5px; border-radius: 5px;"> 
+                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="view-btn"
+                            style="text-decoration: none; color: blue; background-color: rgb(215, 241, 250); padding: 2px 5px; border-radius: 5px;">
                             {{ user.firstname }} {{ user.lastname }}
                         </a>
                     </td>
@@ -75,8 +77,9 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if user.is_active == False %}
-                        <form action="{{ url_for('admin.unflag_user', id=user.id) }}" method="POST" style="display:inline;">
+                        {% if user.is_flagged %}
+                        <form action="{{ url_for('admin.unflag_user', id=user.id) }}" method="POST"
+                            style="display:inline;">
                             <button type="submit" class="unflag-btn">Unflag</button>
                         </form>
                         {% else %}
@@ -138,92 +141,35 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-    const userIds = {{ users | map(attribute = 'id') | list | tojson }};
-    const bookingCounts = {{ users | map(attribute = 'bookings') | map('length') | list | tojson }}; // Count bookings per user
-
-    const bookingsData = {
-        labels: userIds,
-        datasets: [{
-            label: 'Number of Bookings per user',
-            data: bookingCounts,
-            backgroundColor: 'rgba(153, 102, 255, 0.2)',
-            borderColor: 'rgba(153, 102, 255, 1)',
-            borderWidth: 1
-        }]
-    };
-
-    // Configuring the bookings chart
-    const bookingsConfig = {
-        type: 'bar',
-        data: bookingsData,
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    };
-
-    // Rendering the bookings chart
-    const userBookingsChart = new Chart(
-        document.getElementById('userBookingsChart'),
-        bookingsConfig
-    );
-
-
-
-
-
-
-
-
-
-
-
-    // Prepare data for the chart
-    const labels = {{ users | map(attribute = 'registration_date') | list | tojson }}; // Example to get registration dates
-    const dataCount = {{ users | map(attribute = 'id') | list | length | tojson }}; // Convert to list before counting
-
-    console.log('Labels:', labels); // Log labels
-    console.log('Data Count:', dataCount); // Log data count
+    const labels = {{ labels | tojson }};
+    const counts = {{ counts | tojson }};
 
     const data = {
         labels: labels,
         datasets: [{
-            label: 'Number of users',
-            data: [dataCount], // Create an array for the data
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
+            label: 'User Registrations per Day',
+            data: counts,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1
         }]
     };
 
-    // Configuring the chart
     const config = {
         type: 'bar',
         data: data,
         options: {
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
                 }
             }
         }
     };
 
-    // Rendering the chart
     const usersChart = new Chart(
         document.getElementById('usersChart'),
         config
@@ -232,6 +178,44 @@
 
 
 
+    // Bookings per User Chart
+    {% if user_ids is defined %}
+    const userIds = {{ user_ids | tojson }};
+    {% else %}
+    const userIds = [];
+    {% endif %} const bookingCounts = {{ booking_counts | tojson }};
+
+    const bookingsData = {
+        labels: userIds,
+        datasets: [{
+            label: 'Bookings per User',
+            data: bookingCounts,
+            backgroundColor: 'rgba(153, 102, 255, 0.2)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+        }]
+    };
+
+    new Chart(document.getElementById('userBookingsChart'), {
+        type: 'bar',
+        data: bookingsData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function (value) {
+                            // Only show whole numbers
+                            if (Number.isInteger(value)) {
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
 
 
 
@@ -240,6 +224,22 @@
 
 </script>
 
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+        // Find all flash messages
+        const flashMessages = document.querySelectorAll('.flash');
+
+        // Set a timeout to remove them after 5 seconds (5000 ms)
+        setTimeout(() => {
+            flashMessages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+            });
+        }, 5000);
+    });
+</script>
 
 {% endblock %}
 {% endblock %}

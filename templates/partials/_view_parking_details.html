@@ -63,7 +63,8 @@
 
             <div class="lot-image-container">
                 {% if lot.image_url %}
-                <img src="{{ lot.image_url }}" alt="Parking Lot Image" class="parking-lot-image">
+                <img src="{{ url_for('static', filename=lot.image_url) }}" alt="Parking Lot Image"
+                    class="parking-lot-image">
                 {% else %}
                 <div class="no-image-placeholder">
                     <i class="fas fa-image"></i>
@@ -94,10 +95,8 @@
         function toggleFavorite(lotId) {
             const icon = document.getElementById(`fav-icon-${lotId}`);
 
-            // Toggle between heart outline and heart filled
             if (icon.getAttribute('name') === 'heart-outline') {
                 icon.setAttribute('name', 'heart');
-                // Call API to add to favorites
                 fetch(`/user/favorites/${lotId}`, { method: 'POST' })
                     .then(response => response.json())
                     .then(data => {
@@ -107,7 +106,6 @@
                     });
             } else {
                 icon.setAttribute('name', 'heart-outline');
-                // Call API to remove from favorites
                 fetch(`/user/favorites/${lotId}`, { method: 'DELETE' })
                     .then(response => response.json())
                     .then(data => {
@@ -118,11 +116,38 @@
             }
         }
 
+        function removeFavorite(lotId) {
+            fetch(`/user/favorites/${lotId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); // refresh the page to reflect removal
+                    }
+                });
+        }
+
+
         function showToast(message) {
-            // Implement your toast notification here
-            console.log(message); // Replace with actual toast implementation
+            console.log(message);
         }
     </script>
+    <script>
+        // Wait for the page to load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Find all flash messages
+            const flashMessages = document.querySelectorAll('.flash');
+
+            // Set a timeout to remove them after 5 seconds (5000 ms)
+            setTimeout(() => {
+                flashMessages.forEach(msg => {
+                    msg.style.transition = 'opacity 0.5s ease';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+                });
+            }, 5000);
+        });
+    </script>
+
 </body>
 
 </html>

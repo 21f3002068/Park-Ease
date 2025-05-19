@@ -22,7 +22,9 @@
     <form action="{{ url_for('user.user_signup') }}" method="POST" class="signup-form"
         onsubmit="return validatePassword()">
 
-        <h1 style="text-align: center; color: rgb(97, 97, 97); padding-bottom: 20px; border-bottom: 1px solid rgb(119, 119, 119);">User Sign Up</h1>
+        <h1
+            style="text-align: center; color: rgb(97, 97, 97); padding-bottom: 20px; border-bottom: 1px solid rgb(119, 119, 119);">
+            User Sign Up</h1>
         <!-- Email -->
         <div class="email">
             <label for="email">Email ID</label>
@@ -50,15 +52,17 @@
     </form>
 
     <div class="carousel-container">
-        <div class="background-image" style="background: url('{{ url_for('static', filename='/image/sign_up_image.jpg') }}') center/cover no-repeat;"></div>
-    
+        <div class="background-image"
+            style="background: url('{{ url_for('static', filename='/image/sign_up_image.jpg') }}') center/cover no-repeat;">
+        </div>
+
         <div class="content">
             <h2>Welcome to ParkEase</h2>
             <p>Already have an account?</p>
             <a href="{{ url_for('user.user_login') }}" class="signup-btn">Login here!</a>
         </div>
     </div>
-    
+
 
     <script>
         function validatePassword() {
@@ -72,6 +76,25 @@
             return true; // Allow form submission
         }
     </script>
+
+
+    <script>
+        // Wait for the page to load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Find all flash messages
+            const flashMessages = document.querySelectorAll('.flash');
+
+            // Set a timeout to remove them after 5 seconds (5000 ms)
+            setTimeout(() => {
+                flashMessages.forEach(msg => {
+                    msg.style.transition = 'opacity 0.5s ease';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+                });
+            }, 5000);
+        });
+    </script>
+
 </body>
 
 </html>

@@ -120,20 +120,32 @@ Profile
             {% if favorites %}
             <div class="card-container">
                 {% for lot in favorites %}
-                <div class="parking-card">
+                <div class="parking-card" data-lot-id="{{ lot.id }}">
                     <div class="card-header" id="fav-head">
                         <h3>{{ lot.prime_location_name }}</h3>
-                        <span class="price-tag">${{ "%.2f"|format(lot.price_per_hour) }}/hr</span>
+                        {% if lot.price_per_hour == 0 %}
+                        <span class="price-tag">free</span>
+                        {% else %}
+                        <span class="price-tag">₹{{ "%.2f"|format(lot.price_per_hour) }}/hr</span>
+                        {% endif %}
                     </div>
                     <div class="card-body">
-                        <p class="location"><i class="fas fa-map-marker-alt"></i> {{ lot.location_ref.name }}, {{ lot.location_ref.address }} </p>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> {{ lot.location_ref.name }}, {{
+                            lot.location_ref.address }} </p>
                         <div class="card-actions">
                             <a href="{{ url_for('user.book_parking', lot_id=lot.id) }}" class="btn btn-primary">
                                 <i class="fas fa-calendar-alt"></i>
                             </a>
-                            <button class="btn btn-outline-danger" onclick="removeFavorite({{ lot.id }})">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <form method="POST" action="{{ url_for('user.favorites', lot_id=lot.id) }}"
+                                onsubmit="return confirm('Are you sure you want to remove this parking lot from your favorites?');"
+                                style="display: inline;">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+
+
                         </div>
                     </div>
                 </div>
@@ -176,10 +188,24 @@ Profile
                         <span class="license-plate">{{ vehicle.license_plate }}</span>
                     </div>
                     <div class="card-body">
-                        <div class="vehicle-color">
-                            <span class="color-swatch" style="background-color: {{ vehicle.color }};"></span>
-                            <span class="color-value">{{ vehicle.color }}</span>
+                        <div class="vehicle-info-container">
+                            <div class="vehicle-color">
+                                <span class="color-swatch" style="background-color: {{ vehicle.color }};"></span>
+                                <span class="color-value">{{ vehicle.color }}</span>
+                            </div>
+
+                            {% if vehicle.vehicle_image %}
+                            <div class="vehicle-image">
+                                <img src="{{ url_for('static', filename='uploads/' + vehicle.vehicle_image) }}"
+                                    alt="Vehicle Image" style="width: 80px; height: 80px;">
+                            </div>
+                            {% else %}
+                            <div class="vehicle-image">
+                                <i class="fas fa-image"> image not uploaded</i>
+                            </div>
+                            {% endif %}
                         </div>
+
                         <div class="card-actions">
                             <a href="{{ url_for('user.edit_vehicle', vehicle_id=vehicle.id) }}"
                                 class="vehicle-action edit-action" title="Edit">
@@ -203,7 +229,7 @@ Profile
                 <h3>No Vehicles Registered</h3>
                 <p>Add your first vehicle to get started with parking reservations</p>
                 <button class="btn btn-primary">
-                    <i class="fas fa-plus"></i> 
+                    <i class="fas fa-plus"></i>
                     <a href="{{url_for('user.add_vehicle')}}" class="add-vehicle-link">
 
                         Add Vehicle
@@ -235,13 +261,15 @@ Profile
                 </tr>
             </thead>
             <tbody>
-                {% for reservation in user.reservations|selectattr('parking_timestamp')|sort(attribute='parking_timestamp', reverse=True) %}
+                {% for reservation in
+                user.reservations|selectattr('parking_timestamp')|sort(attribute='parking_timestamp', reverse=True) %}
                 <tr>
                     <td>
                         <small>
-                            <a href="{{url_for('user.booking_details', booking_id=reservation.booking_id)}}" class="bid-link">
+                            <a href="{{url_for('user.booking_details', booking_id=reservation.booking_id)}}"
+                                class="bid-link">
 
-                            {{ reservation.booking_id }}
+                                {{ reservation.booking_id }}
                         </small>
                     </td>
                     <td>{{ reservation.spot.lot.prime_location_name }}</td>
@@ -319,7 +347,8 @@ Profile
                 </tr>
                 <td>
                     <small>
-                        <a href="{{url_for('user.booking_details', booking_id=review.reservation.booking_id)}}" class="bid-link">
+                        <a href="{{url_for('user.booking_details', booking_id=review.reservation.booking_id)}}"
+                            class="bid-link">
 
                             {{ review.reservation.booking_id }}
                         </a>
@@ -333,9 +362,9 @@ Profile
                     {% endif %}
                 </td>
                 <td>{{ review.comment }}</td>
-                <td>{{ review.rating}}
-                    <span><i class="fas fa-star"></i></span>
-                </td>
+                <td>
+                    {% for i in range(1,6) %}
+                    {% if i <= review.rating %} ★ {% else %} ☆ {% endif %} {% endfor %} </td>
                 <td>{{ review.created_at.strftime('%b %d, %Y') }}</td>
 
                 </tr>
@@ -356,14 +385,37 @@ Profile
             <i class="fas fa-exclamation-triangle"></i> Danger Zone
         </h4>
         <div class="danger-zone-content">
-            <p class="danger-zone-warning">
-                <strong>Warning:</strong> Deleting your account is permanent and cannot be undone.
-                All your data, vehicles, and history will be permanently removed.
-            </p>
+            <!-- Deactivate Account Section -->
+            <div class="account-action">
+                <h5>Deactivate Account</h5>
+                <p class="action-warning">
+                    Temporarily disable your account. You can reactivate later by logging in.
+                </p>
+                {% if current_user.is_active %}
+                <form action="{{ url_for('user.deactivate_account') }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn-deactivate" id="deactivateAccountBtn">
+                        <i class="fas fa-user-slash"></i> Deactivate My Account
+                    </button>
+                </form>
+                {% else %}
+                <form action="{{ url_for('user.reactivate_account') }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn-reactivate" id="reactivateAccountBtn">
+                        <i class="fas fa-user-check"></i> Reactivate My Account
+                    </button>
+                </form>
+                {% endif %}
+            </div>
 
-            <button class="btn-delete-account" id="deleteAccountBtn">
-                <i class="fas fa-trash-alt"></i> Delete My Account
-            </button>
+            <!-- Delete Account Section -->
+            <div class="account-action">
+                <h5>Delete Account</h5>
+                <p class="action-warning">
+                    <strong>Warning:</strong> This is permanent and cannot be undone. All data will be lost.
+                </p>
+                <button class="btn-delete-account" id="deleteAccountBtn">
+                    <i class="fas fa-trash-alt"></i> Delete My Account
+                </button>
+            </div>
 
             <!-- Confirmation Modal (hidden by default) -->
             <div class="delete-confirm-modal" id="deleteConfirmModal">
@@ -382,26 +434,23 @@ Profile
             </div>
         </div>
     </div>
-
 </div>
 
 <script>
-    // Placeholder functions for the interactive elements
+    // ====== Existing Functions (Keep these unchanged) ======
     function showAddVehicleForm() {
         alert("Show form to add new vehicle");
-        // In a real implementation, this would show a modal or redirect
     }
 
     function editVehicle(vehicleId) {
         alert("Edit vehicle with ID: " + vehicleId);
     }
 
-    function confirmDeleteVehicle(vehicleId) {
-        if (confirm("Are you sure you want to remove this vehicle?")) {
-            alert("Delete vehicle with ID: " + vehicleId);
-            // In a real implementation, this would make an API call
-        }
-    }
+    // function confirmDeleteVehicle(vehicleId) {
+    //     if (confirm("Are you sure you want to remove this vehicle?")) {
+    //         alert("Delete vehicle with ID: " + vehicleId);
+    //     }
+    // }
 
     function showReviewForm(reservationId) {
         alert("Show review form for reservation: " + reservationId);
@@ -411,32 +460,82 @@ Profile
         alert("Edit review with ID: " + reviewId);
     }
 
-    function removeFavorite(lotId) {
-        if (confirm("Remove this parking lot from your favorites?")) {
-            alert("Remove favorite lot ID: " + lotId);
-            // In a real implementation, this would make an API call
+
+    // Delete Account Modal
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+
+    if (deleteAccountBtn && deleteConfirmModal && cancelDeleteBtn) {
+        deleteAccountBtn.addEventListener('click', function () {
+            deleteConfirmModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+        });
+
+        cancelDeleteBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            deleteConfirmModal.style.display = 'none';
+            document.body.style.overflow = ''; // Restore scrolling
+        });
+    }
+
+    // Deactivate Account Confirmation
+    const deactivateAccountBtn = document.getElementById('deactivateAccountBtn');
+    if (deactivateAccountBtn) {
+        deactivateAccountBtn.addEventListener('click', function (e) {
+            if (!confirm("Are you sure you want to temporarily deactivate your account?\n\nYou can reactivate it later by logging
+                in.")) {
+e.preventDefault();
         }
+});
+}
+
+    // Reactivate Account Confirmation (if needed)
+    const reactivateAccountBtn = document.getElementById('reactivateAccountBtn');
+    if (reactivateAccountBtn) {
+        reactivateAccountBtn.addEventListener('click', function (e) {
+            if (!confirm("Welcome back! Ready to reactivate your account?")) {
+                e.preventDefault();
+            }
+        });
     }
 
 
-    document.getElementById('deleteAccountBtn').addEventListener('click', function () {
-        document.getElementById('deleteConfirmModal').style.display = 'flex';
-    });
-
-    document.getElementById('cancelDeleteBtn').addEventListener('click', function (e) {
-        e.preventDefault();
-        document.getElementById('deleteConfirmModal').style.display = 'none';
-    });
-
-    // Close modal when clicking outside
     window.addEventListener('click', function (event) {
-        const modal = document.getElementById('deleteConfirmModal');
-        if (event.target === modal) {
-            modal.style.display = 'none';
+        // Delete Account Modal
+        if (event.target === deleteConfirmModal) {
+            deleteConfirmModal.style.display = 'none';
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+
+    });
+
+    // ====== Escape Key to Close Modal ======
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && deleteConfirmModal.style.display === 'flex') {
+            deleteConfirmModal.style.display = 'none';
+            document.body.style.overflow = ''; // Restore scrolling
         }
     });
-
 </script>
+
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+        // Find all flash messages
+        const flashMessages = document.querySelectorAll('.flash');
+
+        // Set a timeout to remove them after 5 seconds (5000 ms)
+        setTimeout(() => {
+            flashMessages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+            });
+        }, 5000);
+    });
+</script>
+
 
 {% endblock %}
 {% endblock %}

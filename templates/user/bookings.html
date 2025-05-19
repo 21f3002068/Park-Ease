@@ -25,17 +25,28 @@
 <div class="user-greeting">
 
     {% if current_parking %}
-    Your vehicle {{ current_parking.vehicle.vehicle_name }}
-    ({{current_parking.vehicle.license_plate }}) is currently parked at {{ current_parking.spot.lot.prime_location_name
-    }}.
-    <div class="parkout-btn">
-        <div class="parking-actions">
-            <form action="{{ url_for('user.park_out', reservation_id=current_parking.id) }}" method="POST">
-                <button type="submit" class="park-out-btn">
-                    <ion-icon name="exit-outline"></ion-icon> Park Out
-                </button>
-            </form>
+    <div class="current-parking-status">
+        <div class="parking-info">
+            <div class="vehicle-info">
+                <i class="fas fa-car"></i>
+                <div>
+                    <h3>Your Vehicle <span class="vehicle-name">{{ current_parking.vehicle.vehicle_name }}</span></h3>
+                    <p class="license-plate">License Plate: <span class="license-plate-text">{{ current_parking.vehicle.license_plate }}</span></p>
+                </div>
+            </div>
+            
+            <div class="location-info">
+                <i class="fas fa-map-marker-alt"></i>
+                <p>Currently parked at <strong><span style="color: #208ffe; background-color: #208ffe4a; border-radius: 5px; padding: 5px;">{{ current_parking.spot.lot.prime_location_name }}</span></strong> in <strong><span class="spot-number" style="color: #208ffe; background-color: #208ffe4a; border-radius: 5px; padding: 5px;">Spot #{{ current_parking.spot.spot_number }}</span></strong></p>
+            </div>
         </div>
+        
+        <form action="{{ url_for('user.park_out', reservation_id=current_parking.id) }}" method="POST" class="park-out-form">
+            <button type="submit" class="park-out-btn">
+                <ion-icon name="exit-outline"></ion-icon> 
+                <span>Park Out</span>
+            </button>
+        </form>
     </div>
     {% endif %}
 
@@ -49,7 +60,7 @@
     <div class="dashboard-grid">
         <!-- Current Bookings -->
         <div class="panel current-bookings">
-            <h3 class="panel-heading">Confirmed Bookings</h3>
+            <h3 class="panel-heading">Confirmed Bookings | {{ active_bookings|length }}</h3>
             <div class="table-container">
                 <table class="parking-table">
                     <thead>
@@ -67,10 +78,11 @@
                         <tr>
                             <td>
                                 <small>
-                                    <a href="{{ url_for('user.booking_details', booking_id=booking.booking_id) }}" class="bid-link">
+                                    <a href="{{ url_for('user.booking_details', booking_id=booking.booking_id) }}"
+                                        class="bid-link">
                                         {{ booking.booking_id }}
                                     </a>
-                                    
+
                                 </small>
                             </td>
                             <td>{{ booking.spot.lot.prime_location_name }}</td>
@@ -79,7 +91,7 @@
                                 <small>
                                     {{ booking.vehicle.license_plate }}
                                 </small>
-                                
+
                             </td>
                             <td>{{ booking.expected_arrival.strftime('%I:%M %p') }}</td>
                         </tr>
@@ -95,7 +107,7 @@
 
         <!-- Pending Requests -->
         <div class="panel pending-requests">
-            <h3 class="panel-heading">Pending Requests</h3>
+            <h3 class="panel-heading">Pending Requests | {{ pending_requests|length }}</h3>
             <div class="table-container">
                 <table class="parking-table">
                     <thead>
@@ -111,9 +123,10 @@
                         <tr>
                             <td>
                                 <small>
-                                    <a href="{{url_for('user.booking_details' , booking_id=request.booking_id)}}" class="bid-link">
+                                    <a href="{{url_for('user.booking_details' , booking_id=request.booking_id)}}"
+                                        class="bid-link">
 
-                                    {{ request.booking_id }}
+                                        {{ request.booking_id }}
                                     </a>
                                 </small>
                             </td>
@@ -145,7 +158,7 @@
 
         <!-- Cancelled/Rejected Bookings -->
         <div class="panel cancelled-bookings">
-            <h3 class="panel-heading">Cancelled/Rejected Bookings</h3>
+            <h3 class="panel-heading">Cancelled/Rejected Bookings | {{ cancelled_bookings|length }}</h3>
             <div class="table-container">
                 <table class="parking-table">
                     <thead>
@@ -161,8 +174,9 @@
                         <tr>
                             <td>
                                 <small>
-                                    <a href="{{url_for('user.booking_details', booking_id=booking.booking_id)}}" class="bid-link">
-                                    {{ booking.booking_id }}
+                                    <a href="{{url_for('user.booking_details', booking_id=booking.booking_id)}}"
+                                        class="bid-link">
+                                        {{ booking.booking_id }}
                                     </a>
                                 </small>
                             </td>
@@ -170,7 +184,7 @@
                             <td>
                                 <span class="status {{ booking.status|lower }}">{{ booking.status }}</span>
                             </td>
-                                                        <td>
+                            <td>
                                 <small>
 
                                     {{ booking.cancellation_reason or "User cancelled" }}
@@ -189,7 +203,7 @@
 
         <!-- Parking History -->
         <div class="panel parking-history">
-            <h3 class="panel-heading">Parking History</h3>
+            <h3 class="panel-heading">Parking History | {{ parking_history|length }}</h3>
             <div class="table-container">
                 <table class="parking-table">
                     <thead>
@@ -198,7 +212,7 @@
                             <th>Entry Time</th>
                             <th>Exit Time</th>
                             <th>Amount</th>
-                            <th>Review</th>
+                            <th>Rating</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -206,8 +220,9 @@
                         <tr>
                             <td>
                                 <small>
-                                    <a href="{{url_for('user.booking_details', booking_id=history.booking_id)}}" class="bid-link">
-                                    {{ history.booking_id}}
+                                    <a href="{{url_for('user.booking_details', booking_id=history.booking_id)}}"
+                                        class="bid-link">
+                                        {{ history.booking_id}}
                                     </a>
                                 </small>
                             </td>
@@ -217,16 +232,15 @@
                             <td>₹{{ history.parking_cost|int }}</td>
                             <td>
                                 <small>
-
                                     {% if history.review %}
-                                    {{ history.review.rating }}★
-                                    {% else %}
-                                    <a href="{{ url_for('user.add_review', reservation_id=history.id) }}" 
-                                    class="review-btn minimalist">
-                                    <ion-icon name="create-outline"></ion-icon>
-                                    Add Review
-                                 </a>
-                                    {% endif %}
+                                    {% for i in range(1,6) %}
+                                    {% if i <= history.review.rating %} ★ {% else %} ☆ {% endif %} {% endfor %} {% else
+                                        %} <a href="{{ url_for('user.add_review', reservation_id=history.id) }}"
+                                        class="review-btn minimalist">
+                                        <ion-icon name="create-outline"></ion-icon>
+                                        Add Review
+                                        </a>
+                                        {% endif %}
                                 </small>
                             </td>
                         </tr>
@@ -243,6 +257,22 @@
 </div>
 
 
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+        // Find all flash messages
+        const flashMessages = document.querySelectorAll('.flash');
+
+        // Set a timeout to remove them after 5 seconds (5000 ms)
+        setTimeout(() => {
+            flashMessages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+            });
+        }, 5000);
+    });
+</script>
 
 
 {% endblock %}

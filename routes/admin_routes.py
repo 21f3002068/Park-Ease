@@ -1,10 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from model import *
-import logging
-from functools import wraps
+from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
-from sqlalchemy import extract, or_
-from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+from sqlalchemy import or_
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -12,6 +10,8 @@ admin_bp= Blueprint('admin', __name__)
 
 admin_username = "admin"
 admin_password = "admin"
+
+
 
 admin_password = generate_password_hash("admin")
 
@@ -522,26 +522,44 @@ def add_location():
     return render_template('partials/_add_new_location.html')
 
 
+import os
+from flask import current_app
 
-
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
 @admin_bp.route('/admin/add_parking_lot', methods=['POST'])
 def add_parking_lot():
-    if request.method == 'POST':
-        prime_location_name = request.form['prime_location_name']
-        price_per_hour = float(request.form['price_per_hour'])
-        available_spots = int(request.form['available_spots'])
-        max_parking_spots = int(request.form['max_parking_spots'])
-        is_active = request.form['is_active'] == 'true'
+    file = request.files.get('image_url')
+    if not file or file.filename == '':
+        flash('No file selected')
+        return redirect(request.url)
 
-        available_from_str = request.form.get('available_from')
-        available_to_str = request.form.get('available_to')
+    # Change parking lot upload to:
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        upload_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'parking_lots')
+        os.makedirs(upload_dir, exist_ok=True)  # Ensure directory exists
+        file.save(os.path.join(upload_dir, filename))  # Save to subfolder
+        image_url = f'uploads/parking_lots/{filename}'  
 
-        available_from = datetime.strptime(available_from_str, "%H:%M").time()
-        available_to = datetime.strptime(available_to_str, "%H:%M").time()
-        location_id = int(request.form['location_id'])
+    try:
+        prime_location_name = request.form.get('prime_location_name', '')
+        price_per_hour = float(request.form.get('price_per_hour', 0))
+        available_spots = int(request.form.get('available_spots', 0))
+        max_parking_spots = int(request.form.get('max_parking_spots', 0))
+        is_active = request.form.get('is_active') == 'true'
 
-        # Create new ParkingLot object
+        if available_spots > max_parking_spots:
+            flash('Available spots cannot exceed maximum spots.')
+            return redirect(request.url)
+
+        available_from = datetime.strptime(request.form.get('available_from', '00:00'), "%H:%M").time()
+        available_to = datetime.strptime(request.form.get('available_to', '23:59'), "%H:%M").time()
+        location_id = int(request.form.get('location_id', 0))
+        admin_notes = request.form.get('admin_notes', '')
+
         new_parking_lot = ParkingLot(
             prime_location_name=prime_location_name,
             price_per_hour=price_per_hour,
@@ -550,20 +568,26 @@ def add_parking_lot():
             available_from=available_from,
             available_to=available_to,
             is_active=is_active,
-            location_id=location_id
+            location_id=location_id,
+            image_url=image_url,
+            admin_notes=admin_notes
         )
 
-        # Commit to get new_parking_lot.id
         db.session.add(new_parking_lot)
         db.session.commit()
 
         # Create parking spots
-        for i in range(new_parking_lot.available_spots):
-            spot = ParkingSpot(lot_id=new_parking_lot.id, spot_number=i + 1)
-            db.session.add(spot)
+        for i in range(available_spots):
+            db.session.add(ParkingSpot(lot_id=new_parking_lot.id, spot_number=i + 1))
         db.session.commit()
 
+        flash('Parking lot added successfully.')
         return redirect(url_for('admin.admin_dashboard'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error: {str(e)}")
+        return redirect(request.url)
 
 
 @admin_bp.route('/view_spot/<int:lot_id>/<int:spot_number>')
@@ -578,6 +602,15 @@ def view_spot(lot_id, spot_number):
         return render_template('partials/_parking_spot_details.html',
                                spot=spot, reservation=reservation,
                                vehicle=vehicle, user=user)
+    elif spot.status == 'B':
+        reservation = Reservation.query.filter_by(spot_id=spot.id).order_by(Reservation.parking_timestamp.desc()).first()
+        vehicle = reservation.vehicle if reservation else None
+        user = User.query.get(reservation.user_id) if reservation else None
+        
+        return render_template('partials/_parking_spot_details.html',
+                               spot=spot, reservation=reservation,
+                               vehicle=vehicle, user=user)
+    
     else:
         return render_template('partials/_parking_spot_details.html',
                                spot=spot, reservation=None,
@@ -596,17 +629,38 @@ def delete_spot(spot_id):
     # Get the corresponding parking lot
     parking_lot = ParkingLot.query.get(spot.lot_id)
 
-    # Decrement the number of spots in the parking lot
+    # Mark the spot as unavailable (soft delete)
+    spot.status = 'X'
+
+    # Decrement the number of available spots
     if parking_lot.available_spots > 0:
         parking_lot.available_spots -= 1
 
-    db.session.delete(spot)
     db.session.commit()
 
-    flash("Spot deleted successfully.", "success")
+    flash("Spot marked as unavailable (soft deleted).", "success")
+    return redirect(url_for('admin.admin_dashboard'))
+ # Reload the parking lot page
 
-    return redirect(url_for('admin.admin_dashboard'))  # Reload the parking lot page
+@admin_bp.route('/restore_spot/<int:spot_id>', methods=['POST'])
+def restore_spot(spot_id):
+    spot = ParkingSpot.query.get_or_404(spot_id)
 
+    if spot.status != 'X':
+        flash("Spot is already active or occupied.", "info")
+        return redirect(request.referrer)
+
+    # Restore the spot
+    spot.status = 'A'
+
+    # Increment available spots in the corresponding lot
+    parking_lot = ParkingLot.query.get(spot.lot_id)
+    parking_lot.available_spots += 1
+
+    db.session.commit()
+
+    flash("Spot has been restored and is now available.", "success")
+    return redirect(url_for('admin.admin_dashboard'))
 
 
 def parse_time_string(time_str):
@@ -621,11 +675,29 @@ def parse_time_string(time_str):
 @admin_bp.route('/admin/edit_parking/<int:lot_id>', methods=['GET', 'POST'])
 def edit_parking(lot_id):
     parking_lot = ParkingLot.query.get_or_404(lot_id)
+    
+    # Handle file upload only if new file was provided
+    if 'image' in request.files:
+        file = request.files['image']
+        if file.filename != '' and allowed_file(file.filename):
+            # Delete old image if exists
+            if parking_lot.image_url:
+                old_path = os.path.join(current_app.config['UPLOAD_FOLDER'], parking_lot.image_url)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            
+            # Save new image
+            filename = secure_filename(file.filename)
+            unique_name = f"lot_{lot_id}_{filename}"
+            upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'parking_lots', unique_name)
+            os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+            file.save(upload_path)
+            parking_lot.image_url = f"uploads/parking_lots/{unique_name}"
+    
+    
 
     if request.method == 'POST':
         parking_lot.prime_location_name = request.form['prime_location_name']
-        parking_lot.address = request.form['address']
-        parking_lot.pin_code = request.form['pin_code']
         parking_lot.price_per_hour = float(request.form['price_per_hour'])
         parking_lot.available_spots = int(request.form['available_spots'])
 
@@ -651,7 +723,7 @@ def delete_parking(lot_id):
     has_occupied_spots = any(spot.status != 'A' for spot in parking_lot.spots)
 
     if has_occupied_spots:
-        flash('Cannot delete parking lot. Some spots are still occupied.', 'error')
+        flash('Cannot delete parking lot. Some spots are still occupied or booked.', 'error')
         return redirect(url_for('admin.admin_dashboard'))  
 
     # If all spots are empty, proceed with deletion

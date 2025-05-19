@@ -41,7 +41,7 @@ Search Result
             </ul>
         </div>
 
-        <!-- Professionals Section -->
+        <!-- Locations Section -->
         <div class="results-category">
             <h3>Locations ({{ results|selectattr('entity', 'equalto', 'location')|list|length }})</h3>
             <ul>
@@ -61,21 +61,30 @@ Search Result
             </ul>
         </div>
 
-        <!-- Services Section -->
+        <!-- Parking Lots Section -->
         <div class="results-category">
             <h3>Parking Lots ({{ results|selectattr('entity', 'equalto', 'parkinglot')|list|length }})</h3>
             <ul>
                 {% for item in results %}
                     {% if item.entity == 'parkinglot' %}
                         <li>
-                            {{ item.result.prime_location_name }} - ${{ item.result.price_per_hour }}
+                            {{ item.result.prime_location_name }} | 
+                            <span style="color: #007bff;">Price: Rs. {{ item.result.price_per_hour }}</span> | 
+                            <span style="color: #007bff;">Spots: {{ item.result.available_spots }} / {{ item.result.max_parking_spots }}</span>
+                            <!-- Add a button to delete the parking lot -->
+                            <a href="{{url_for('admin.delete_parking', lot_id=item.result.id)}}" style="text-decoration: none; padding-left: 10px;  color: antiquewhite; float: right;">
+                                Delete
+                            </a>
+                            <a href="{{url_for('admin.edit_parking', lot_id=item.result.id)}}" style="text-decoration: none;  color: antiquewhite; float: right;">
+                                Edit
+                            </a>
                         </li>
                     {% endif %}
                 {% endfor %}
             </ul>
         </div>
 
-        <!-- Bookings Section -->
+        <!-- Reservations Section -->
         <div class="results-category">
             <h3>Reservations ({{ results|selectattr('entity', 'equalto', 'reservations')|list|length }})</h3>
             <ul>
@@ -94,5 +103,23 @@ Search Result
     {% endif %}
 </div>
 
+
+<script>
+    // Wait for the page to load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Find all flash messages
+      const flashMessages = document.querySelectorAll('.flash');
+  
+      // Set a timeout to remove them after 5 seconds (5000 ms)
+      setTimeout(() => {
+        flashMessages.forEach(msg => {
+          msg.style.transition = 'opacity 0.5s ease';
+          msg.style.opacity = '0';
+          setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+        });
+      }, 5000);
+    });
+  </script>
+  
 {% endblock %}
 {% endblock %}

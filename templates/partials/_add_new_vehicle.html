@@ -13,49 +13,73 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 <ul class="flash-messages">
-    {% for category, message in messages %}
-    <li class="flash {{ category }}">{{ message }}</li>
-    {% endfor %}
+  {% for category, message in messages %}
+  <li class="flash {{ category }}">{{ message }}</li>
+  {% endfor %}
 </ul>
 {% endif %}
 {% endwith %}
 {% block content %}
 <div class="vehicle-form-container">
-    <h2>Add Your Vehicle</h2>
-    
+  <h2>Add Your Vehicle</h2>
+
+  {% if return_to %}
+  <p class="info-message">You need to add a vehicle before booking parking</p>
+  {% endif %}
+
+  <form method="POST" class="vehicle-form" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="vehicle_name">Vehicle Name:*</label>
+      <input type="text" id="vehicle_name" name="vehicle_name" placeholder="e.g. SUV, Kwid, Swift, Brezza, etc.">
+    </div>
+
+    <div class="form-group">
+      <label for="vehicle_nickname">Vehicle Nickname:</label>
+      <input type="text" id="vehicle_nickname" name="vehicle_nickname" placeholder="e.g. My Work Car">
+    </div>
+
+    <div class="form-group">
+      <label for="license_plate">License Plate:*</label>
+      <input type="text" id="license_plate" name="license_plate" required placeholder="e.g. ABC1234">
+    </div>
+
+    <!-- Vehicle Image -->
+    <div class="form-group">
+      <label for="vehicle_image">Vehicle Image:</label>
+      <input type="file" id="vehicle_image" name="vehicle_image" accept=".jpg,.jpeg,.png" style="color: grey;  background-color: inherit;">
+    </div>
+
+    <div class="form-group">
+      <label for="color">Color:*</label>
+      <input type="text" id="color" name="color" required placeholder="e.g. Red, Blue, Black">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="submit-btn">Add Vehicle</button>
+      <a href="{{ url_for('user.profile') }}" class="cancel-btn">Cancel</a>
+    </div>
+
     {% if return_to %}
-    <p class="info-message">You need to add a vehicle before booking parking</p>
+    <input type="hidden" name="return_to" value="{{ return_to }}">
     {% endif %}
-    
-    <form method="POST" class="vehicle-form">
-        <div class="form-group">
-            <label for="vehicle_name">Vehicle Nickname (Optional):</label>
-            <input type="text" id="vehicle_name" name="vehicle_name" 
-                   placeholder="e.g. My Work Car">
-        </div>
-        
-        <div class="form-group">
-            <label for="license_plate">License Plate:*</label>
-            <input type="text" id="license_plate" name="license_plate" 
-                   required placeholder="e.g. ABC1234">
-        </div>
-        
-        
-        <div class="form-group">
-            <label for="color">Color:*</label>
-            <input type="text" id="color" name="color" required 
-                   placeholder="e.g. Red, Blue, Black">
-        </div>
-        
-        <div class="form-actions">
-            <button type="submit" class="submit-btn">Add Vehicle</button>
-            <a href="{{ url_for('user.profile') }}" class="cancel-btn">Cancel</a>
-        </div>
-        
-        {% if return_to %}
-        <input type="hidden" name="return_to" value="{{ return_to }}">
-        {% endif %}
-    </form>
+  </form>
 </div>
+<script>
+  // Wait for the page to load
+  window.addEventListener('DOMContentLoaded', () => {
+    // Find all flash messages
+    const flashMessages = document.querySelectorAll('.flash');
+
+    // Set a timeout to remove them after 5 seconds (5000 ms)
+    setTimeout(() => {
+      flashMessages.forEach(msg => {
+        msg.style.transition = 'opacity 0.5s ease';
+        msg.style.opacity = '0';
+        setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+      });
+    }, 5000);
+  });
+</script>
+
 {% endblock %}
 {% endblock %}

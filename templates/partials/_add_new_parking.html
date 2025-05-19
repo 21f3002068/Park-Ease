@@ -54,7 +54,8 @@
         <div class="form-container">
             <div class="form-content">
                 <h2>Add New Parking Lot</h2>
-                <form action="{{ url_for('admin.add_parking_lot') }}" method="POST" onsubmit="return validateSpots()">
+                <form action="{{ url_for('admin.add_parking_lot') }}" method="POST" enctype="multipart/form-data"
+                    onsubmit="return validateSpots()">
                     <!-- Prime Location Name -->
                     <div class="form-group">
                         <label for="prime_location_name">Parking Name</label>
@@ -85,7 +86,7 @@
                     <div class="form-group">
                         <label for="available_spots">Available Spots</label>
                         <input type="number" id="available_spots" name="available_spots" min="0" placeholder="e.g., 50"
-                            required> 
+                            required>
                     </div>
 
                     <!-- Price per Hour -->
@@ -106,6 +107,12 @@
                         <input type="time" id="available_to" name="available_to" required>
                     </div>
 
+                    <!-- Attach Image (jpg, png, jpeg) only-->
+                    <div class="form-group">
+                        <label for="image_url">Attach Image</label>
+                        <input type="file" id="image_url" name="image_url" accept=".jpg,.jpeg,.png" required style="color: grey; width: 80%; background-color: inherit;">
+                    </div>
+
                     <!-- Active Status -->
                     <div class="form-group">
                         <label for="is_active">Is Active?</label>
@@ -114,6 +121,14 @@
                             <option value="false">No</option>
                         </select>
                     </div>
+
+                    <!-- Admin Notes -->
+                    <div class="form-group">
+                        <label for="admin_notes">Admin Notes</label>
+                        <textarea id="admin_notes" name="admin_notes"
+                            style="width: 62%; height: 40px; border-radius: 5px; border: 1px solid #a3a3a3; padding: 5px; resize: none; color: white; background-color: inherit;"></textarea>
+                    </div>
+
 
                     <div class="button-group">
                         <a href="{{ url_for('admin.admin_dashboard') }}" class="cancel-btn">Cancel</a>
@@ -198,6 +213,23 @@
         // Update your form onsubmit:
         onsubmit = "return validateSpots() && validateTimes() && validatePrice()"
     </script>
+    <script>
+        // Wait for the page to load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Find all flash messages
+            const flashMessages = document.querySelectorAll('.flash');
+
+            // Set a timeout to remove them after 5 seconds (5000 ms)
+            setTimeout(() => {
+                flashMessages.forEach(msg => {
+                    msg.style.transition = 'opacity 0.5s ease';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+                });
+            }, 5000);
+        });
+    </script>
+
 </body>
 
 </html>
