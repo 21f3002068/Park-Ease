@@ -28,8 +28,9 @@ ParkEase is a comprehensive parking management solution designed to streamline p
 ### Backend
 - Python 3
 - Flask web framework
+- Flask-Login
 - SQLAlchemy ORM
-- PostgreSQL (or SQLite for development)
+- SQLite for development
 
 ### Additional Tools
 - ChartJs for statistical summaries for User/Admin Dashboards
