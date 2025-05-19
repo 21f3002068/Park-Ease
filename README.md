@@ -91,11 +91,20 @@ ParkEase is a comprehensive parking management solution designed to streamline p
 ## Screenshots
 ### Admin Dashboard
 ![image](https://github.com/user-attachments/assets/d2df24e1-5d4a-483e-b8b9-f366148e3230)
+![image](https://github.com/user-attachments/assets/03a74c75-f008-4d1a-a8ef-f965aa169cda)
+![image](https://github.com/user-attachments/assets/33fb7a92-c51e-4c94-83e4-6c67bfa6d1e0)
+![image](https://github.com/user-attachments/assets/54561816-74c5-4779-96b4-df70ace21678)
 ![image](https://github.com/user-attachments/assets/e14b3341-6fda-4587-b98a-87ed5f7b78f7)
 
 
 ### User Dashboard
 ![image](https://github.com/user-attachments/assets/4e661102-28ff-4666-85e9-852a22d67c73)
+![image](https://github.com/user-attachments/assets/e646f5f0-b561-447a-a1e7-f9e717f5b0ca)
+![image](https://github.com/user-attachments/assets/8f786e54-514b-4635-ab50-ee0129bdae68)
+![image](https://github.com/user-attachments/assets/971284a1-3777-4ed2-8410-451f67618b3e)
+![image](https://github.com/user-attachments/assets/dbe790cd-ebc1-467f-8f49-61e9be44c220)
+
+
 
 ## Contact
 For questions and support, please contact:
