@@ -61,7 +61,7 @@ ChartJs for statistical summaries for User/Admin Dashboards
 
 - Project Structure
    ```bash
-   .
+   park_ease_21f3002068
    ├── app.py
    ├── config.py
    ├── dummy_data.py
@@ -95,7 +95,7 @@ ChartJs for statistical summaries for User/Admin Dashboards
 
 ## Contact
 For questions and support, please contact:
-- Project Maintainer: Vaibhav Satish
+- Project Maintainer: **Vaibhav Satish**
 - Email: 21f3002068@ds.study.iitm.ac.in
 
 
