@@ -31,7 +31,7 @@ ParkEase is a comprehensive parking management solution designed to streamline p
 - SQLAlchemy ORM
 - PostgreSQL (or SQLite for development)
 
-## Additional Tools
+### Additional Tools
 - ChartJs for statistical summaries for User/Admin Dashboards
 
 ## Setup
