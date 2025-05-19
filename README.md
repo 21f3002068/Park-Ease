@@ -34,4 +34,57 @@ PostgreSQL (or SQLite for development)
 ## Additional Tools
 ChartJs for statistical summaries for User/Admin Dashboards
 
+## Setup
+1. **Clone the repository**:  
+   ```bash
+    git clone https://github.com/yourusername/parkease.git
+    cd parkease
+
+2. **Set up a virtual environment**:
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+3. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+
+4. **Configure the application**
+   - Create a `.env` file based on `.env.example` and fill in your values:
+   - ```bash
+     cp .env.example .env
+   - Set your database connection and secret key
+
+5. **Run the development Server**
+   ```bash
+   python3 app.py
+
+## Project Structure
+  ```bash
+    .
+    ├── app.py
+    ├── config.py
+    ├── dummy_data.py
+    ├── instance
+    │   └── parkease.db
+    ├── model.py
+    ├── Project Report.pdf
+    ├── README.md
+    ├── requirements.txt
+    ├── routes
+    │   ├── admin_routes.py
+    │   ├── __init__.py
+    │   └── user_routes.py
+    ├── static
+    │   ├── icon
+    │   ├── image
+    │   ├── scripts
+    │   ├── style
+    │   └── uploads
+    └── templates
+        ├── admin
+        ├── index.html
+        ├── partials
+        └── user
+
 
