@@ -4,19 +4,18 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from sqlalchemy import or_
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from collections import Counter
+from datetime import datetime
+import os
+from flask import current_app
 
 admin_bp= Blueprint('admin', __name__)
 
-admin_username = "admin"
-admin_password = "admin"
-
-
-
-admin_password = generate_password_hash("admin")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD_HASH = generate_password_hash(os.getenv("ADMIN_PASSWORD", "admin"))
 
 def check_admin_credentials(username, password):
-    return username == admin_username and check_password_hash(admin_password, password)
+    return username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password)
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def admin_login():
@@ -233,8 +232,7 @@ def locations():
 
 
 
-from collections import Counter
-from datetime import datetime
+
 
 @admin_bp.route('/users', methods=['GET', 'POST'])
 def admin_users():
@@ -522,8 +520,6 @@ def add_location():
     return render_template('partials/_add_new_location.html')
 
 
-import os
-from flask import current_app
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -603,7 +599,7 @@ def view_spot(lot_id, spot_number):
                                spot=spot, reservation=reservation,
                                vehicle=vehicle, user=user)
     elif spot.status == 'B':
-        reservation = Reservation.query.filter_by(spot_id=spot.id).order_by(Reservation.parking_timestamp.desc()).first()
+        reservation = Reservation.query.filter_by(spot_id=spot.id).order_by(Reservation.expected_arrival.desc()).first()
         vehicle = reservation.vehicle if reservation else None
         user = User.query.get(reservation.user_id) if reservation else None
         
@@ -640,7 +636,6 @@ def delete_spot(spot_id):
 
     flash("Spot marked as unavailable (soft deleted).", "success")
     return redirect(url_for('admin.admin_dashboard'))
- # Reload the parking lot page
 
 @admin_bp.route('/restore_spot/<int:spot_id>', methods=['POST'])
 def restore_spot(spot_id):

@@ -1,7 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+from flask import Flask, render_template, redirect, url_for
+from flask_login import LoginManager, logout_user, login_required
 import config
 from model import *  
 from routes import *  

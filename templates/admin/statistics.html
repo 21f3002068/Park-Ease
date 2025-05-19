@@ -133,7 +133,7 @@
 
 
 <script>
-    const lotLabels = {{ parking_lots | map(attribute = 'prime_location_name') | list | tojson }};
+    const lotLabels = {{ parking_lots | map(attribute = 'id') | list | tojson }};
     const utilizationRates = {{ parking_lots | map(attribute = 'utilization_rate') | list | tojson }};
 
     new Chart(document.getElementById('lotUtilizationChart'), {
@@ -366,16 +366,18 @@
 
 <script>
     const statusData = {
-        labels: ['Pending', 'Confirmed', 'Parked Out', 'Cancelled/Rejected'],
+        labels: ['Pending', 'Confirmed', 'Parked', 'Parked Out', 'Cancelled/Rejected'],
         datasets: [{
             data: [
                 {{ status_data.pending }},
                 {{ status_data.confirmed }},
+                {{ status_data.parked }},
                 {{ status_data.parked_out }},
                 {{ status_data.cancelled_rejected }}
             ],
             backgroundColor: [
             'rgba(245, 158, 11, 0.4)',
+            'rgba(16, 185, 129, 0.4)',
             'rgba(16, 185, 129, 0.4)',
             'rgba(59, 130, 246, 0.4)',
             'rgba(239, 68, 68, 0.4)'

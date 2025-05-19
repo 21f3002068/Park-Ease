@@ -11,6 +11,7 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from sqlalchemy import or_, and_
+from pytz import utc
 
 
 user_bp = Blueprint('user', __name__)
@@ -116,15 +117,18 @@ def dashboard():
         user_id=current_user.id,
         leaving_timestamp=None,
         status="Parked"
-    ).first()
-    
+    ).first()   
+
+
+    now_utc = datetime.now(utc)
+
     scheduled_upnext = Reservation.query.filter(
         Reservation.user_id == current_user.id,
-        Reservation.parking_timestamp == None, 
+        Reservation.status == "Confirmed",
+        Reservation.parking_timestamp == None,
         Reservation.leaving_timestamp == None,
-        Reservation.status == "Confirmed" 
-    ).first()
-    
+        Reservation.expected_arrival > now_utc
+    ).order_by(Reservation.expected_arrival.asc()).first()
     
     parking_history = Reservation.query.filter_by(
         user_id=current_user.id
@@ -173,9 +177,10 @@ def park(booking_id):
 
     time_diff = (current_time - arrival_time).total_seconds()
 
-    if time_diff > 600:  # More than 10 minutes **late**
+    if time_diff > 1800:  # More than 30 minutes **late**
         # No Show
         booking.status = 'Rejected'
+        booking.spot.status = 'A'
         booking.cancellation_reason = 'Showed up too late.'
         db.session.commit()
         flash('You have missed your parking time. Booking rejected.', 'warning')
@@ -185,7 +190,7 @@ def park(booking_id):
         flash('Your vehicle is not expected for parking yet. Please come closer to your expected arrival time.', 'warning')
         return redirect(url_for('user.dashboard'))
 
-    # Within ±10 mins => Allow Parking
+    # Within -10, +30 mins => Allow Parking
     booking.parking_timestamp = current_time
     booking.status = 'Parked'
     booking.spot.status = 'O'
@@ -493,7 +498,13 @@ def book_parking(lot_id):
         flash('This parking lot is currently unavailable', 'error')
         return redirect(url_for('user.locations'))
     
-    vehicles = current_user.vehicles
+    user = current_user
+    
+    if not user.firstname or not user.email or not user.phone:
+        flash('Please complete your profile information before booking a parking.', 'error')
+        return redirect(url_for('user.edit_profile'))
+    
+    vehicles = user.vehicles
     if not vehicles:
         flash('You need to add a vehicle before booking', 'error')
         return redirect(url_for('user.add_vehicle'))
@@ -527,6 +538,18 @@ def book_parking(lot_id):
             expected_departure_time > parking_lot.available_to):
             flash(f'Booking must be between {parking_lot.available_from.strftime("%I:%M %p")} and {parking_lot.available_to.strftime("%I:%M %p")}.', 'error')
             return redirect(url_for('user.book_parking', lot_id=lot_id))
+
+        # check if user already has a reservation with expected timings clashing with this one
+        existing_reservations = Reservation.query.filter(
+            Reservation.user_id == user.id,
+            Reservation.status.notin_(['Cancelled', 'Parked Out', 'Rejected'])
+        ).all()
+
+        for reservation in existing_reservations:
+            if not (expected_departure_time <= reservation.expected_arrival.time() or 
+                   expected_arrival_time >= reservation.expected_departure.time()):
+                flash('You already have a reservation during this time period.', 'error')
+                return redirect(url_for('user.book_parking', lot_id=lot_id))
 
         today = datetime.today().date()
         expected_arrival_dt = datetime.combine(today, expected_arrival_time)

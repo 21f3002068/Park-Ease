@@ -208,25 +208,26 @@
     <div class="content">
         <div class="spot-card">
             {% if reservation %}
-            {% if spot.status == 'B' %}
+            {% set status = spot.status %}
+            {% if status == 'B' %}
             <h2><i class="fas fa-car"></i> Spot Booked</h2>
-            {% elif spot.status == 'O' %}
+            {% elif status == 'O' %}
             <h2><i class="fas fa-car"></i> Spot Occupied</h2>
-            {% elif spot.status == 'X' %}
+            {% elif status == 'X' %}
             <h2><i class="fas fa-car"></i> Spot Unavailable</h2>
             {% endif %}
+
             <div class="spot-details">
                 <p><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
                 <p><strong>Color:</strong> {{ vehicle.color }}</p>
                 <p><strong>Owner:</strong> {{ user.firstname }} {{ user.lastname }}</p>
 
-                {% if spot.status == 'B' %}
+                {% if status == 'B' %}
                 <p><strong>Booking ID:</strong> {{ reservation.booking_id }}</p>
                 <p><strong>Booking Time:</strong> {{ reservation.booking_timestamp.strftime('%I:%M %p') }}</p>
                 <p><strong>Expected Arrival:</strong> {{ reservation.expected_arrival.strftime('%I:%M %p') }}</p>
                 <p><strong>Expected Departure:</strong> {{ reservation.expected_departure.strftime('%I:%M %p') }}</p>
-
-                {% elif spot.status == 'O' %}
+                {% elif status == 'O' %}
                 <p><strong>Parking Time:</strong> {{ reservation.parking_timestamp.strftime('%I:%M %p') }}</p>
                 <p><strong>Leaving At:</strong>
                     <span style="color: var(--success);">
@@ -234,7 +235,14 @@
                     </span>
                 </p>
                 {% endif %}
+                <!-- Actions disabled if there's a reservation -->
+                <form method="POST" action="{{ url_for('admin.delete_spot', spot_id=spot.id) }}">
+                    <button type="submit" class="delete-btn" disabled>
+                        <i class="fas fa-trash-alt"></i> Delete Spot
+                    </button>
+                </form>
             </div>
+
             {% elif spot.status == 'A' %}
             <h2><i class="fas fa-check-circle"></i> Spot Available</h2>
             <div class="spot-details">
@@ -242,10 +250,11 @@
                 <p><strong>Status:</strong> <span style="color: var(--success);">Available</span></p>
             </div>
             <form method="POST" action="{{ url_for('admin.delete_spot', spot_id=spot.id) }}">
-                <button type="submit" class="delete-btn" {% if reservation %}disabled{% endif %}>
+                <button type="submit" class="delete-btn">
                     <i class="fas fa-trash-alt"></i> Delete Spot
                 </button>
             </form>
+
             {% elif spot.status == 'X' %}
             <h2><i class="fas fa-times-circle"></i> Spot Unavailable</h2>
             <div class="spot-details">
@@ -253,12 +262,11 @@
                 <p><strong>Status:</strong> <span style="color: var(--danger);">Unavailable</span></p>
             </div>
             <form method="POST" action="{{ url_for('admin.restore_spot', spot_id=spot.id) }}">
-                <button type="submit" class="restore-btn" {% if reservation %}disabled{% endif %}>
+                <button type="submit" class="restore-btn">
                     <i class="fas fa-check-circle"></i> Mark Available
                 </button>
             </form>
             {% endif %}
-
         </div>
     </div>
 

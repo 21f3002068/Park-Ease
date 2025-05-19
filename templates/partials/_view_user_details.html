@@ -124,18 +124,13 @@
                         <tr>
                             <td>{{ reservation.booking_timestamp.strftime('%d-%m-%Y') }}</td>
                             <td>
-                                {% if reservation.vehicle and reservation.vehicle.spot and reservation.vehicle.spot.lot%}
-                                
-                                {{ reservation.vehicle.spot.lot.prime_location_name }}
-                                
-                                {% elif reservation.vehicle and reservation.vehicle.spot%}
-
-                                {{ reservation.lot.prime_location_name }}
-                                
+                                {% if reservation.lot and reservation.lot.location_ref %}
+                                {{ reservation.lot.location_ref.name }}
                                 {% else %}
                                 N/A
                                 {% endif %}
                             </td>
+
                             <td>
                                 {% if reservation.vehicle %}
                                 {{ reservation.vehicle.license_plate }}
@@ -151,15 +146,22 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if reservation.leaving_timestamp %}
+                                {% if reservation.status == 'confirmed' %}
+                                {{ (reservation.expected_departure - reservation.expected_arrival).seconds // 3600 }}h
+                                {% elif reservation.status in ['cancelled', 'rejected'] %}
+                                NA
+                                {% elif reservation.status == 'parked' %}
+                                Currently Parked
+                                {% elif reservation.status == 'parked_out' %}
                                 {{ (reservation.leaving_timestamp - reservation.parking_timestamp).seconds // 3600 }}h
                                 {% else %}
-                                Ongoing
+                                NA
                                 {% endif %}
                             </td>
+
                             <td>
                                 {% if reservation.parking_cost %}
-                                ${{ "%.2f"|format(reservation.parking_cost) }}
+                                ₹{{ "%.2f"|format(reservation.parking_cost) }}
                                 {% else %}
                                 Pending
                                 {% endif %}
@@ -167,7 +169,8 @@
                             <td>
                                 <span
                                     class="status-badge {% if reservation.leaving_timestamp %}completed{% else %}active{% endif %}">
-                                    {% if reservation.leaving_timestamp %}Parked Out{% else %}Parked{% endif %}
+                                    <!-- {% if reservation.leaving_timestamp %}Parked Out{% else %}Parked{% endif %} -->
+                                    {{reservation.status}}
                                 </span>
                             </td>
                         </tr>
@@ -205,20 +208,20 @@
 <script>
     // Wait for the page to load
     window.addEventListener('DOMContentLoaded', () => {
-      // Find all flash messages
-      const flashMessages = document.querySelectorAll('.flash');
-  
-      // Set a timeout to remove them after 5 seconds (5000 ms)
-      setTimeout(() => {
-        flashMessages.forEach(msg => {
-          msg.style.transition = 'opacity 0.5s ease';
-          msg.style.opacity = '0';
-          setTimeout(() => msg.remove(), 500); // Fully remove after fade out
-        });
-      }, 5000);
+        // Find all flash messages
+        const flashMessages = document.querySelectorAll('.flash');
+
+        // Set a timeout to remove them after 5 seconds (5000 ms)
+        setTimeout(() => {
+            flashMessages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+            });
+        }, 5000);
     });
-  </script>
-  
+</script>
+
 
 {% endblock %}
 {% endblock %}
