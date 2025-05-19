@@ -1,31 +1,31 @@
 # ParkEase - Smart Parking Management System
 This is a Vehicle Parking web application specialized in four-wheelers. It is an academic project of Modern Application Development-1 under IITM BS Data Science and Applications offered by IIT Madras. 
 
-# Overview
+## Overview
 ParkEase is a comprehensive parking management solution designed to streamline parking operations for both administrators and users. The system provides real-time parking spot monitoring, reservation capabilities, and administrative controls for efficient parking lot management.
 
-# Features
-## Admin Features
+## Features
+### Admin Features
 Dashboard Overview: Visual representation of parking lot status
 Spot Management: Add, edit, or disable parking spots
 Real-time Monitoring: View current spot occupancy status
 User Management: Administer user accounts and permissions
 Summaries: View utilization reports and analytics
 
-## User Features
+### User Features
 Spot Reservation: Book available parking spots in advance
 Real-time Availability: Check current parking availability
 Bookmark Parking Lot: Save/Favorite frequently visited parking lot.
 Vehicle Management: Store multiple vehicle profiles
 History Tracking: View past parking sessions
 
-# Technologies Used
-## Frontend
+## Technologies Used
+### Frontend
 HTML5, CSS3, JavaScript
 Jinja2 templating
 Werkzeug (security and password hashing)
 
-## Backend
+### Backend
 Python 3
 Flask web framework
 SQLAlchemy ORM
