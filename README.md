@@ -6,18 +6,18 @@ ParkEase is a comprehensive parking management solution designed to streamline p
 
 ## Features
 ### Admin Features
-- Dashboard Overview: Visual representation of parking lot status
-- Spot Management: Add, edit, or disable parking spots
-- Real-time Monitoring: View current spot occupancy status
-- User Management: Administer user accounts and permissions
-- Summaries: View utilization reports and analytics
+- **Dashboard Overview:** Visual representation of parking lot status
+- **Spot Management:** Add, edit, or disable parking spots
+- **Real-time Monitoring:** View current spot occupancy status
+- **User Management:** Administer user accounts and permissions
+- **Summaries:** View utilization reports and analytics
 
 ### User Features
-- Spot Reservation: Book available parking spots in advance
-- Real-time Availability: Check current parking availability
-- Bookmark Parking Lot: Save/Favorite frequently visited parking lot.
-- Vehicle Management: Store multiple vehicle profiles
-- History Tracking: View past parking sessions
+- **Spot Reservation:** Book available parking spots in advance
+- **Real-time Availability:** Check current parking availability
+- **Bookmark Parking Lot:** Save/Favorite frequently visited parking lot.
+- **Vehicle Management:** Store multiple vehicle profiles
+- **History Tracking:** View past parking sessions
 
 ## Technologies Used
 ### Frontend
