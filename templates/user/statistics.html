@@ -159,13 +159,6 @@
             'rgba(239, 68, 68, 0.4)'
 
             ],
-            // borderColor: [
-            // 'rgba(245, 158, 11)',
-            // 'rgba(16, 185, 129)',
-            // 'rgba(59, 130, 246)',
-            // 'rgba(239, 68, 68)'
-
-            // ],
             borderWidth: 1
         }]
     };
@@ -209,6 +202,7 @@
     var locations = spendingInfo.locations;
     var totalSpending = spendingInfo.total_spending;
 
+    
     // Create the bar chart using Chart.js
     var ctx = document.getElementById('totalSpendingChart').getContext('2d');
     var totalSpendingChart = new Chart(ctx, {
@@ -216,7 +210,7 @@
         data: {
             labels: locations,
             datasets: [{
-                label: 'Total Spending ($)',
+                label: 'Total Spending (₹)',
                 data: totalSpending,
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 borderColor: 'rgba(54, 162, 235, 1)',
@@ -237,7 +231,7 @@
                 tooltip: {
                     callbacks: {
                         label: function (tooltipItem) {
-                            return '$' + tooltipItem.raw.toFixed(2);
+                            return '₹' + tooltipItem.raw.toFixed(2);
                         }
                     }
                 }
@@ -358,49 +352,6 @@
 
 
 
-    // Common chart configuration
-    const chartConfig = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: {
-                    font: {
-                        family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                        size: 12
-                    },
-                    padding: 20
-                }
-            },
-            tooltip: {
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                titleFont: {
-                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                    size: 14
-                },
-                bodyFont: {
-                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                    size: 12
-                },
-                padding: 12,
-                cornerRadius: 6
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                grid: {
-                    color: 'rgba(0,0,0,0.05)'
-                }
-            },
-            x: {
-                grid: {
-                    color: 'rgba(0,0,0,0.05)'
-                }
-            }
-        }
-    };
 
 </script>
 

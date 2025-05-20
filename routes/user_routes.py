@@ -847,7 +847,7 @@ def add_review(reservation_id):
 @user_bp.route('/stats', methods=['GET'])
 @login_required
 def statistics():
-        
+    # Status counts (unchanged)
     pending_count = Reservation.query.filter_by(user_id=current_user.id, status='Pending').count()
     confirmed_count = Reservation.query.filter_by(user_id=current_user.id, status='Confirmed').count()
     parked_out_count = Reservation.query.filter_by(user_id=current_user.id, status='Parked Out').count()
@@ -866,65 +866,66 @@ def statistics():
         'cancelled_rejected': combined_count
     }
 
-    # Spending data - now filtered by user
+    # Fixed Spending data query
     spending_data = db.session.query(
         ParkingLot.prime_location_name,
         func.sum(Reservation.parking_cost).label('total_spending')
-    ).join(Reservation, ParkingLot.id == Reservation.spot_id).filter(Reservation.user_id == current_user.id).group_by(ParkingLot.id).all()
+    ).join(ParkingSpot, ParkingSpot.id == Reservation.spot_id)\
+     .join(ParkingLot, ParkingLot.id == ParkingSpot.lot_id)\
+     .filter(Reservation.user_id == current_user.id,
+             Reservation.status.in_(['Parked Out']))\
+     .group_by(ParkingLot.id)\
+     .all()
 
-    # Prepare data to send to the frontend
-    locations = [item[0] for item in spending_data]  # List of parking lot names
-    total_spending = [item[1] for item in spending_data]  # Corresponding total spending per location
+    # Debug prints
+    print(f"Spending data for user {current_user.id}: {spending_data}")
+    
+    # Prepare spending info
+    locations = [item[0] for item in spending_data] if spending_data else ["No data"]
+    total_spending = [float(item[1]) if spending_data else 0 for item in spending_data]  # Convert to float for Chart.js
 
     spending_info = {
         'locations': locations,
         'total_spending': total_spending
     }
 
-    # Frequent locations - now filtered by user
+    # Frequent locations 
     frequent_locations = db.session.query(
         ParkingLot.prime_location_name,
         func.count(Reservation.id).label('reservation_count')
-    ).join(ParkingSpot, Reservation.spot_id == ParkingSpot.id) \
-    .join(ParkingLot, ParkingSpot.lot_id == ParkingLot.id) \
-    .filter(Reservation.user_id == current_user.id).group_by(ParkingLot.id) \
-    .order_by(func.count(Reservation.id).desc()) \
-    .all()
+    ).join(ParkingSpot, ParkingSpot.id == Reservation.spot_id)\
+     .join(ParkingLot, ParkingLot.id == ParkingSpot.lot_id)\
+     .filter(Reservation.user_id == current_user.id)\
+     .group_by(ParkingLot.id)\
+     .order_by(func.count(Reservation.id).desc())\
+     .all()
     
-    locations = [item[0] for item in frequent_locations]
-    reservation_counts = [item[1] for item in frequent_locations]
-
-    frequent_info = {
-        'locations': locations,
-        'reservation_counts': reservation_counts
-    }
-
-    user_vehicles = Vehicle.query.filter_by(user_id=current_user.id).all()
-
-    # Vehicle usage - already has user filter
+    # Vehicle usage 
     vehicle_usage = db.session.query(
         Vehicle.vehicle_name,
         func.count(Reservation.id).label('reservation_count')
-    ).join(Reservation, Reservation.vehicle_id == Vehicle.id) \
-    .filter(Reservation.user_id == current_user.id) \
-    .group_by(Vehicle.id) \
-    .order_by(func.count(Reservation.id).desc()) \
-    .all()
+    ).join(Reservation, Reservation.vehicle_id == Vehicle.id)\
+     .filter(Reservation.user_id == current_user.id)\
+     .group_by(Vehicle.id)\
+     .order_by(func.count(Reservation.id).desc())\
+     .all()
 
-    # Prepare data for the frontend
-    vehicle_names = [item[0] for item in vehicle_usage]
-    reservation_counts = [item[1] for item in vehicle_usage]
+    # Prepare all data for template
+    frequent_info = {
+        'locations': [item[0] for item in frequent_locations] if frequent_locations else ["No data"],
+        'reservation_counts': [item[1] for item in frequent_locations] if frequent_locations else [0]
+    }
 
     vehicle_info = {
-        'vehicle_names': vehicle_names,
-        'reservation_counts': reservation_counts
+        'vehicle_names': [item[0] for item in vehicle_usage] if vehicle_usage else ["No vehicles"],
+        'reservation_counts': [item[1] for item in vehicle_usage] if vehicle_usage else [0]
     }
-    return render_template('user/statistics.html',
-                           status_data=status_data, 
-                           spending_info=spending_info, 
-                           frequent_info=frequent_info,
-                           vehicle_info=vehicle_info)
 
+    return render_template('user/statistics.html',
+                         status_data=status_data,
+                         spending_info=spending_info,
+                         frequent_info=frequent_info,
+                         vehicle_info=vehicle_info)
 
 
 
