@@ -65,7 +65,7 @@ ParkEase is a comprehensive parking management solution designed to streamline p
    park_ease_21f3002068
    ├── app.py
    ├── config.py
-   ├── dummy_data.py
+   ├── utils.py
    ├── instance
    │   └── parkease.db
    ├── model.py
