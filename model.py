@@ -123,7 +123,7 @@ class Reservation(db.Model):
 
     lot = db.relationship('ParkingLot')
     spot = db.relationship('ParkingSpot', backref=db.backref('reservations', lazy='dynamic'))
-    user = db.relationship('User')
+    user = db.relationship('User', overlaps="reservations,user_ref")
     vehicle = db.relationship('Vehicle')
 
 

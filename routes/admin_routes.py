@@ -17,6 +17,11 @@ ADMIN_PASSWORD_HASH = generate_password_hash(os.getenv("ADMIN_PASSWORD", "admin"
 def check_admin_credentials(username, password):
     return username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password)
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+
+
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def admin_login():
 
@@ -33,8 +38,6 @@ def admin_login():
             return redirect(url_for('admin.admin_login'))
 
     return render_template('admin/admin_login.html')
-
-
 
 
 
@@ -119,7 +122,7 @@ def admin_dashboard():
     vehicles_parked_today = Reservation.query.filter(Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())).count()
 
     # Get all parking lots and other info as before
-    lots = ParkingLot.query.all()
+    lots = ParkingLot.query.order_by(ParkingLot.is_active.desc()).all()
 
     parking_lots = []
 
@@ -305,8 +308,7 @@ def activity_log():
     users = User.query.all()
     today = datetime.today().date()
     lots = ParkingLot.query.all()
-    reservations=Reservation.query.all()
-
+    reservations = Reservation.query.order_by(Reservation.booking_timestamp.desc()).all()
     vehicles_parked_today = Reservation.query.filter(Reservation.parking_timestamp >= datetime.combine(today, datetime.min.time())).count()
     parking_lots = []
     
@@ -389,12 +391,17 @@ def statistics():
             'utilization_rate': round(utilization, 1)
         })
 
-    hourly_occupancy = [0] * 24  # Initialize for 24 hours
+    hourly_occupancy = [0] * 24
+    all_reservations = Reservation.query.all()  # Get ALL reservations, not just today's
 
-    reservations_today = Reservation.query.filter(
-        Reservation.expected_arrival >= datetime.combine(today, datetime.min.time())
-    ).all()
+    for res in all_reservations:
+        if res.expected_arrival:  # Ensure the field exists
+            hour = res.expected_arrival.hour
+            hourly_occupancy[hour] += 1
 
+    total_reservations = max(1, sum(hourly_occupancy))  # Avoid division by zero
+    hourly_occupancy = [round((count / total_reservations * 100),2) for count in hourly_occupancy]
+    
     usage_trend = []
     date_labels = []
 
@@ -408,9 +415,6 @@ def statistics():
         usage_trend.append(count)
         date_labels.append(day.strftime('%b %d'))
         
-    for res in reservations_today:
-        hour = res.expected_arrival.hour
-        hourly_occupancy[hour] += 1
 
     overall_utilization = round((total_occupied_spots / total_spots) * 100, 1) if total_spots else 0
 
@@ -418,18 +422,16 @@ def statistics():
     total_parking_lots = ParkingLot.query.count()
     active_parkings = ParkingLot.query.filter_by(is_active=True).count()
     available_spots = total_spots - total_occupied_spots
-    print("Occupied:", total_occupied_spots, "Available:", available_spots)
-
 
     duration_brackets = [0] * 5  # [<1h, 1-2h, 2-4h, 4-8h, 8+h]
-    
     completed_reservations = Reservation.query.filter(
         Reservation.expected_arrival >= datetime.combine(today - timedelta(days=7), datetime.min.time()),
         Reservation.leaving_timestamp.isnot(None)
     ).all()
-    
+
+    # Count raw values first
     for res in completed_reservations:
-        duration_hours = (res.leaving_timestamp - res.expected_arrival).total_seconds() / 3600
+        duration_hours = round(((res.leaving_timestamp - res.parking_timestamp).total_seconds() / 3600), 2)
         
         if duration_hours < 1:
             duration_brackets[0] += 1
@@ -442,7 +444,12 @@ def statistics():
         else:
             duration_brackets[4] += 1
 
+    # Convert to percentages
+    total_reservations = max(1, sum(duration_brackets))  # Avoid division by zero
+    duration_percentages = [round((count / total_reservations * 100), 1) for count in duration_brackets]
+
     pending_count = Reservation.query.filter_by(status='Pending').count()
+    parked_count = Reservation.query.filter_by(status='Parked').count()
     confirmed_count = Reservation.query.filter_by(status='Confirmed').count()
     parked_out_count = Reservation.query.filter_by(status='Parked Out').count()
     combined_count = Reservation.query.filter(
@@ -454,6 +461,7 @@ def statistics():
 
     status_data = {
         'pending': pending_count,
+        'parked': parked_count,
         'confirmed': confirmed_count,
         'parked_out': parked_out_count,
         'cancelled_rejected': combined_count
@@ -470,7 +478,7 @@ def statistics():
                            utilization_rate=overall_utilization,
                            vehicles_parked_today=vehicles_parked_today,
                            status_data=status_data,
-                           parking_durations=duration_brackets,
+                           parking_durations=duration_percentages,
                            
 
                            occupied_spots=total_occupied_spots,
@@ -521,9 +529,7 @@ def add_location():
 
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+from utils import *
 
 @admin_bp.route('/admin/add_parking_lot', methods=['POST'])
 def add_parking_lot():
@@ -658,13 +664,7 @@ def restore_spot(spot_id):
     return redirect(url_for('admin.admin_dashboard'))
 
 
-def parse_time_string(time_str):
-    for fmt in ("%H:%M:%S", "%H:%M"):
-        try:
-            return datetime.strptime(time_str, fmt).time()
-        except ValueError:
-            continue
-    raise ValueError(f"Time data '{time_str}' is not in a recognized format")
+
 
 
 @admin_bp.route('/admin/edit_parking/<int:lot_id>', methods=['GET', 'POST'])
@@ -692,19 +692,74 @@ def edit_parking(lot_id):
     
 
     if request.method == 'POST':
+        # Check if admin is trying to mark the lot inactive
+        new_active_state = request.form['is_active'] == 'true'
+        
+        if not new_active_state and parking_lot.is_active:
+            # Count active bookings or parked vehicles
+            active_reservations = Reservation.query.join(ParkingSpot).filter(
+                ParkingSpot.lot_id == lot_id,
+                Reservation.status.in_(['Confirmed', 'Pending', 'Parked'])
+            ).count()
+
+            if active_reservations > 0:
+                flash(f"Cannot deactivate this lot. There are {active_reservations} active or upcoming bookings exist.", "danger")
+                return redirect(url_for('admin.edit_parking', lot_id=lot_id))
+
+
+        new_from = parse_time_string(request.form['available_from'])
+        new_to = parse_time_string(request.form['available_to'])
+
+        # Find future bookings outside new time range
+
+
+        relevant_bookings = Reservation.query.join(ParkingSpot).filter(
+            ParkingSpot.lot_id == lot_id,
+            or_(
+                Reservation.status.in_(['Confirmed', 'Pending']) & (Reservation.expected_arrival > datetime.now()),
+                Reservation.status == 'Parked'
+            )
+        ).all()
+
+        # Identify those that would be affected by new time range
+        affected_bookings = [
+            b for b in relevant_bookings
+            if b.expected_arrival.time() < new_from or b.expected_arrival.time() > new_to or b.expected_departure.time() > new_to
+        ]
+
+        if affected_bookings:
+            # Calculate dynamic suggestion from full relevant set
+            min_time = min(b.expected_arrival.time() for b in relevant_bookings)
+            max_time = max(b.expected_departure.time() for b in relevant_bookings)
+
+            suggested_from = min_time.strftime('%H:%M')
+            suggested_to = max_time.strftime('%H:%M')
+
+
+        
+        if affected_bookings:
+            flash('⚠️ Some future bookings fall outside the new available time range.', 'warning')
+            return render_template(
+                'partials/_edit_parking.html',
+                lot=parking_lot,
+                affected_bookings=affected_bookings,
+                suggested_from=suggested_from,
+                suggested_to=suggested_to
+            )
+
+
+        # Proceed with update
         parking_lot.prime_location_name = request.form['prime_location_name']
         parking_lot.price_per_hour = float(request.form['price_per_hour'])
         parking_lot.available_spots = int(request.form['available_spots'])
-
-        # Convert to datetime.time
-        parking_lot.available_from = parse_time_string(request.form['available_from'])
-        parking_lot.available_to = parse_time_string(request.form['available_to'])
-
-
-        parking_lot.is_active = request.form['is_active'] == 'true'
+        parking_lot.available_from = new_from
+        parking_lot.available_to = new_to
+        parking_lot.is_active = new_active_state
 
         db.session.commit()
+        flash("Parking lot updated successfully.", "success")
         return redirect(url_for('admin.admin_dashboard'))
+
 
     return render_template('partials/_edit_parking.html', lot=parking_lot)
 

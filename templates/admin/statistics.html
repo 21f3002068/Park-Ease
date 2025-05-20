@@ -200,7 +200,7 @@
         data: {
             labels: hourLabels,
             datasets: [{
-                label: 'Vehicles Parked',
+                label: '% Vehicles Parked',
                 data: hourlyData,
                 borderColor: '#3B82F6',
                 backgroundColor: 'rgba(59, 130, 246, 0.2)',
@@ -217,11 +217,11 @@
             plugins: {
                 title: {
                     display: true,
-                    text: 'Peak Usage Hours (Today)'
+                    text: 'Peak Usage Hours (All Time)'
                 },
                 tooltip: {
                     callbacks: {
-                        label: context => `Parked Vehicles: ${context.raw}`
+                        label: context => `Parked Vehicles: ${context.raw}%`
                     }
                 }
             },
@@ -230,7 +230,7 @@
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: '# of Vehicles'
+                        text: 'Vehicles (%)'
                     }
                 },
                 x: {
@@ -308,7 +308,7 @@
         data: {
             labels: durationLabels,
             datasets: [{
-                label: 'Number of Vehicles',
+                label: '% of Vehicles',
                 data: durationData,
                 fill: false,
                 borderColor: '#10B981',
@@ -331,7 +331,7 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: ctx => `${ctx.label}: ${ctx.raw} vehicles`
+                        label: ctx => `${ctx.label}: ${ctx.raw}% vehicles`
                     }
                 }
             },
@@ -340,7 +340,7 @@
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Number of Vehicles'
+                        text: 'Vehicles (%)'
                     },
                     ticks: {
                         callback: function (value) {
@@ -378,7 +378,7 @@
             backgroundColor: [
             'rgba(245, 158, 11, 0.4)',
             'rgba(16, 185, 129, 0.4)',
-            'rgba(16, 185, 129, 0.4)',
+            'rgba(300, 10, 129, 0.4)',
             'rgba(59, 130, 246, 0.4)',
             'rgba(239, 68, 68, 0.4)'
 

@@ -164,7 +164,7 @@
         {% if reservation.leaving_timestamp %}
         <p><strong>Actual Check-out:</strong> {{ reservation.leaving_timestamp.strftime('%b %d, %Y %I:%M %p') }}</p>
         {% endif %}
-        <p><strong>Total Cost:</strong> ${{ "%.2f"|format(reservation.parking_cost) if reservation.parking_cost else
+        <p><strong>Total Cost:</strong> ₹{{ "%.2f"|format(reservation.parking_cost) if reservation.parking_cost else
             'Not calculated' }}</p>
         {% if reservation.cancellation_reason %}
         <p><strong>Cancellation Reason:</strong> {{ reservation.cancellation_reason }}</p>
@@ -192,7 +192,7 @@
         <p><strong>Spot Number:</strong> #{{ reservation.spot.spot_number }}</p>
         <p><strong>Status:</strong> {{ 'Occupied' if reservation.spot.status == 'O' else 'Available' }}</p>
         <p><strong>Parking Lot:</strong> {{ reservation.spot.lot.prime_location_name }}</p>
-        <p><strong>Price/Hour:</strong> ${{ "%.2f"|format(reservation.spot.lot.price_per_hour) }}</p>
+        <p><strong>Price/Hour:</strong> ₹{{ "%.2f"|format(reservation.spot.lot.price_per_hour) }}</p>
         <p><strong>Location:</strong> {{ reservation.spot.lot.location_ref.name }}</p>
         <p><strong>Address:</strong> {{ reservation.spot.lot.location_ref.address }}</p>
         <p><strong>Capacity:</strong> {{ reservation.spot.lot.max_parking_spots }} spots</p>

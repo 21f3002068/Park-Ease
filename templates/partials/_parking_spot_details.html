@@ -229,11 +229,12 @@
                 <p><strong>Expected Departure:</strong> {{ reservation.expected_departure.strftime('%I:%M %p') }}</p>
                 {% elif status == 'O' %}
                 <p><strong>Parking Time:</strong> {{ reservation.parking_timestamp.strftime('%I:%M %p') }}</p>
-                <p><strong>Leaving At:</strong>
+                <p><strong>Status:</strong>
                     <span style="color: var(--success);">
                         {{ reservation.leaving_timestamp or "Currently parked" }}
                     </span>
                 </p>
+                <p><strong>Expected Departure:</strong> {{ reservation.expected_departure.strftime('%I:%M %p') }}</p>
                 {% endif %}
                 <!-- Actions disabled if there's a reservation -->
                 <form method="POST" action="{{ url_for('admin.delete_spot', spot_id=spot.id) }}">

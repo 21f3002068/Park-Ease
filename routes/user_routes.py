@@ -12,6 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from sqlalchemy import or_, and_
 from pytz import utc
+from utils import *
 
 
 user_bp = Blueprint('user', __name__)
@@ -75,10 +76,6 @@ def user_login():
                 user.is_active = True 
                 db.session.commit()
                 
-            # Check if the user is active
-            if user.is_flagged:
-                flash('Your account has been flagged and is currently inactive. Please contact the admin.', 'error')
-                return render_template('user/user_login.html')
 
             # Check password
             if check_password_hash(user.password, password):
@@ -94,19 +91,6 @@ def user_login():
             return render_template('user/user_login.html')
 
     return render_template('user/user_login.html')
-
-
-
-
-def calculate_duration(start_time):
-    now = datetime.now()  
-    delta = now - start_time
-    total_minutes = delta.total_seconds() // 60
-    hours = int(total_minutes // 60)
-    minutes = int(total_minutes % 60)
-    return f"{hours}h {minutes}m"
-
-
 
 
 @user_bp.route('/dashboard')
@@ -174,30 +158,49 @@ def park(booking_id):
     booking = Reservation.query.get_or_404(booking_id)
     current_time = datetime.now()
     arrival_time = booking.expected_arrival
-
     time_diff = (current_time - arrival_time).total_seconds()
 
-    if time_diff > 1800:  # More than 30 minutes **late**
-        # No Show
+    if time_diff > 1800:
+        # More than 30 mins late — mark as No Show
         booking.status = 'Rejected'
-        booking.spot.status = 'A'
+        if booking.spot:
+            booking.spot.status = 'A'
+            assign_pending_reservation(booking.spot)
         booking.cancellation_reason = 'Showed up too late.'
         db.session.commit()
         flash('You have missed your parking time. Booking rejected.', 'warning')
         return redirect(url_for('user.bookings'))
-    
-    elif time_diff < -600:  # More than 10 minutes **early**
+
+    elif time_diff < -600:
+        # More than 10 mins early
         flash('Your vehicle is not expected for parking yet. Please come closer to your expected arrival time.', 'warning')
         return redirect(url_for('user.dashboard'))
 
-    # Within -10, +30 mins => Allow Parking
+    # Check if assigned spot is still free
+    if booking.spot.status == 'O':
+        # Spot occupied — find next available in same lot
+        available_spot = ParkingSpot.query.filter_by(
+            lot_id=booking.spot.lot_id,
+            status='A'
+        ).first()
+
+        if not available_spot:
+            flash('No spot currently available in your lot. Please wait or contact support.', 'danger')
+            return redirect(url_for('user.bookings'))
+
+        # Reassign to new spot
+        booking.spot = available_spot
+
+    # Proceed to park
+    booking.spot.status = 'O'
     booking.parking_timestamp = current_time
     booking.status = 'Parked'
-    booking.spot.status = 'O'
     db.session.commit()
 
     flash('You have successfully parked your vehicle.', 'success')
     return redirect(url_for('user.dashboard'))
+
+
 
 
 @user_bp.route('/park_out/<int:reservation_id>', methods=['POST'])
@@ -222,6 +225,7 @@ def park_out(reservation_id):
         reservation.status = 'Parked Out'
 
         reservation.spot.status = 'A'
+        assign_pending_reservation(reservation.spot)
 
         db.session.commit()
 
@@ -500,6 +504,12 @@ def book_parking(lot_id):
     
     user = current_user
     
+    # Check if the user is active
+    if user.is_flagged:
+        flash('Booking failed!', 'warning')
+        flash('Your profile is flagged by admin and the account is currently inactive. Please contact the admin.', 'error')
+        return render_template('user/user_login.html')
+    
     if not user.firstname or not user.email or not user.phone:
         flash('Please complete your profile information before booking a parking.', 'error')
         return redirect(url_for('user.edit_profile'))
@@ -559,7 +569,8 @@ def book_parking(lot_id):
         status = "Pending"  
         
         # Find first available spot without time conflicts
-        for spot in available_spots:
+        # for spot in available_spots:
+        for spot in all_spots:
             conflict = False
             for reservation in spot.reservations:
                 if reservation.status not in ['Cancelled', 'Parked Out']:
@@ -620,7 +631,7 @@ def book_parking(lot_id):
                 available_spot.status = 'B'
                 db.session.add(reservation)
                 db.session.commit()
-                flash(f'Booking confirmed! Expected cost: ₹{cost:.2f}', 'success')
+                # flash(f'Booking confirmed! Expected cost: ₹{cost:.2f}', 'success')
                 
             else:
 
@@ -765,6 +776,7 @@ def cancel_booking(booking_id):
             reservation.status = 'Cancelled'
             if reservation.spot:
                 reservation.spot.status = 'A'
+                assign_pending_reservation(reservation.spot)
             reservation.cancellation_reason = "Cancelled by user."
             db.session.commit()
             flash('Your booking has been cancelled.', 'success')
@@ -1039,6 +1051,7 @@ def reactivate_account():
         return redirect(url_for('user.login'))
     flash('Account not found', 'error')
     return redirect(url_for('main.index'))
+
 
 @user_bp.route('/delete-account', methods=['POST'])
 @login_required

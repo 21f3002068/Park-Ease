@@ -30,7 +30,13 @@
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Spot Number:</span>
-                    <span class="detail-value">{{ reservation.spot.spot_number }}</span>
+                    <span class="detail-value">
+                        {% if reservation.spot.spot_number %}
+                        {{ reservation.spot.spot_number }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Status:</span>
@@ -94,7 +100,7 @@
                 {% if reservation.status == 'Parked Out' %}
                 <div class="detail-item">
                     <span class="detail-label">User Review:</span>
-                    <span class="detail-value"> {{ reservation.review.rating}} 
+                    <span class="detail-value"> {{ reservation.review.rating}}
                         <i class="fas fa-star"></i>
                         | {{ reservation.review.comment }}</span>
                 </div>
@@ -105,10 +111,17 @@
 
     <div class="action-buttons">
         {% if reservation.status == "Cancelled" or reservation.status == "Rejected" %}
+        {% if reservation.spot %}
         <a href="{{ url_for('user.book_parking', lot_id=reservation.spot.lot.id) }}" class="btn btn-secondary">
             <ion-icon name="book-outline"></ion-icon>
             Rebook
         </a>
+        {% elif reservation.lot_id %}
+        <a href="{{ url_for('user.book_parking', lot_id=reservation.lot_id) }}" class="btn btn-secondary">
+            <ion-icon name="book-outline"></ion-icon>
+            Rebook
+        </a>
+        {% endif %}
         <button class="btn btn-secondary" onclick="window.print()">Print Booking Record</button>
         {% elif reservation.status == "Confirmed" or reservation.status == "Pending" %}
         <a href="{{ url_for('user.cancel_booking', booking_id=reservation.booking_id) }}" class="btn btn-danger">
@@ -135,18 +148,18 @@
 <script>
     // Wait for the page to load
     window.addEventListener('DOMContentLoaded', () => {
-      // Find all flash messages
-      const flashMessages = document.querySelectorAll('.flash');
-  
-      // Set a timeout to remove them after 5 seconds (5000 ms)
-      setTimeout(() => {
-        flashMessages.forEach(msg => {
-          msg.style.transition = 'opacity 0.5s ease';
-          msg.style.opacity = '0';
-          setTimeout(() => msg.remove(), 500); // Fully remove after fade out
-        });
-      }, 5000);
+        // Find all flash messages
+        const flashMessages = document.querySelectorAll('.flash');
+
+        // Set a timeout to remove them after 5 seconds (5000 ms)
+        setTimeout(() => {
+            flashMessages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500); // Fully remove after fade out
+            });
+        }, 5000);
     });
-  </script>
-  
+</script>
+
 {% endblock %}

@@ -41,7 +41,7 @@
                 <div class="legend-box unavailable"></div>
                 <span>Unavailable</span>
             </div>
-            
+
         </div>
     </div>
 </div>
@@ -59,7 +59,8 @@
 
     <div class="parking-card">
         <div class="card-header">
-            <h3>{{ lot.prime_location_name }}</h3>
+            <h3>{{ lot.prime_location_name }}
+            </h3>
             <div class="dropdown">
                 <button class="three-dots">⋮</button>
                 <div class="dropdown-menu">
@@ -84,16 +85,19 @@
         <div class="slot-boxes">
             {% for spot in lot.spots|sort(attribute='spot_number') %}
             <a href="{{ url_for('admin.view_spot', lot_id=lot.id, spot_number=spot.spot_number) }}" class="slot-box 
-               {% if spot.status == 'O' %}
-                   occupied
-               {% elif spot.status == 'B' %}
-                   booked
-               {% elif spot.status == 'X' %}
-                   unavailable
-               {% endif %}" title="Spot {{ spot.spot_number }} | {{ spot.status }}">
+       {% if not spot.lot.is_active %}
+           inactive
+       {% elif spot.status == 'O' %}
+           occupied
+       {% elif spot.status == 'B' %}
+           booked
+       {% elif spot.status == 'X' %}
+           unavailable
+       {% endif %}" title="Spot {{ spot.spot_number }} | {{ spot.status }}">
             </a>
             {% endfor %}
         </div>
+
 
     </div>
     {% endfor %}

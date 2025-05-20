@@ -89,7 +89,7 @@ Profile
             </div>
             <div class="stat-card">
                 <div class="stat-label">Total Spent</div>
-                <div class="stat-value">${{ "%.2f"|format(user.reservations|sum(attribute='parking_cost')) }}</div>
+                <div class="stat-value">₹{{ "%.2f"|format(user.reservations|sum(attribute='parking_cost')) }}</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Avg. Rating Given</div>
@@ -239,7 +239,7 @@ Profile
             {% endif %}
         </div>
     </div>
-    
+
     <!-- Reservations Section -->
     <div class="section" id="reservation-history">
         <div class="section-header">
@@ -438,7 +438,7 @@ Profile
 </div>
 
 <script>
-    // ====== Existing Functions (Keep these unchanged) ======
+    // ====== Existing Functions ======
     function showAddVehicleForm() {
         alert("Show form to add new vehicle");
     }
@@ -446,12 +446,6 @@ Profile
     function editVehicle(vehicleId) {
         alert("Edit vehicle with ID: " + vehicleId);
     }
-
-    // function confirmDeleteVehicle(vehicleId) {
-    //     if (confirm("Are you sure you want to remove this vehicle?")) {
-    //         alert("Delete vehicle with ID: " + vehicleId);
-    //     }
-    // }
 
     function showReviewForm(reservationId) {
         alert("Show review form for reservation: " + reservationId);
@@ -461,64 +455,61 @@ Profile
         alert("Edit review with ID: " + reviewId);
     }
 
-
     // Delete Account Modal
     const deleteAccountBtn = document.getElementById('deleteAccountBtn');
     const deleteConfirmModal = document.getElementById('deleteConfirmModal');
     const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 
     if (deleteAccountBtn && deleteConfirmModal && cancelDeleteBtn) {
-        deleteAccountBtn.addEventListener('click', function () {
+        deleteAccountBtn.addEventListener('click', function() {
             deleteConfirmModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+            document.body.style.overflow = 'hidden';
         });
 
-        cancelDeleteBtn.addEventListener('click', function (e) {
+        cancelDeleteBtn.addEventListener('click', function(e) {
             e.preventDefault();
             deleteConfirmModal.style.display = 'none';
-            document.body.style.overflow = ''; // Restore scrolling
+            document.body.style.overflow = '';
         });
     }
 
     // Deactivate Account Confirmation
     const deactivateAccountBtn = document.getElementById('deactivateAccountBtn');
     if (deactivateAccountBtn) {
-        deactivateAccountBtn.addEventListener('click', function (e) {
-            if (!confirm("Are you sure you want to temporarily deactivate your account?\n\nYou can reactivate it later by logging
-                in.")) {
-e.preventDefault();
-        }
-});
-}
+        deactivateAccountBtn.addEventListener('click', function(e) {
+            if (!confirm("Are you sure you want to temporarily deactivate your account?\n\nYou can reactivate it later by logging in.")) {
+                e.preventDefault();
+            }
+        });
+    }
 
-    // Reactivate Account Confirmation (if needed)
+    // Reactivate Account Confirmation
     const reactivateAccountBtn = document.getElementById('reactivateAccountBtn');
     if (reactivateAccountBtn) {
-        reactivateAccountBtn.addEventListener('click', function (e) {
+        reactivateAccountBtn.addEventListener('click', function(e) {
             if (!confirm("Welcome back! Ready to reactivate your account?")) {
                 e.preventDefault();
             }
         });
     }
 
-
-    window.addEventListener('click', function (event) {
-        // Delete Account Modal
+    // Window Click Handler
+    window.addEventListener('click', function(event) {
         if (event.target === deleteConfirmModal) {
             deleteConfirmModal.style.display = 'none';
-            document.body.style.overflow = ''; // Restore scrolling
+            document.body.style.overflow = '';
         }
-
     });
 
-    // ====== Escape Key to Close Modal ======
-    document.addEventListener('keydown', function (event) {
+    // Escape Key Handler
+    document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape' && deleteConfirmModal.style.display === 'flex') {
             deleteConfirmModal.style.display = 'none';
-            document.body.style.overflow = ''; // Restore scrolling
+            document.body.style.overflow = '';
         }
     });
 </script>
+
 
 <script>
     // Wait for the page to load

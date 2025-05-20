@@ -52,10 +52,23 @@
     <div class="background-blur"></div>
 
     <div class="content" style="padding: 10px 10px 0px 10px;">
+        {% if affected_bookings %}
+        <div class="affected-bookings">
+            <h5>Bookings Affected by New Time Range</h5>
+            <ul>
+                {% for b in affected_bookings %}
+                <li>Booking ID: {{ b.booking_id }}</li>
+                {% endfor %}
+            </ul>
+            <p>Suggested Time Window: {{ suggested_from }} to {{ suggested_to }}</p>
+        </div>
+        {% endif %}
         <div class="form-container">
             <div class="form-content">
                 <h2>Edit Parking Lot</h2>
-                <form action="{{ url_for('admin.edit_parking', lot_id=lot.id) }}" method="POST" enctype="multipart/form-data"   >
+
+                <form action="{{ url_for('admin.edit_parking', lot_id=lot.id) }}" method="POST"
+                    enctype="multipart/form-data">
                     <!-- Prime Location Name -->
                     <div class="form-group">
                         <label for="prime_location_name">Prime Location Name</label>

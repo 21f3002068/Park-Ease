@@ -207,6 +207,23 @@
     margin-top: 10px;
 }
 
+.slot-box.inactive {
+    background-color: var(--unavailable);
+    /* border: 2px solid #000; */
+    cursor: none;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+
+/* .slot-box.inactive {
+    background-color: #000;  
+    border-color: #333;
+}
+
+.slot-box.inactive:hover {
+    background-color: #000;  
+} */
 .slot-box {
     width: 16px;
     height: 16px;
