@@ -4,6 +4,9 @@ This is a Vehicle Parking web application specialized in four-wheelers. It is an
 ## Overview
 ParkEase is a comprehensive parking management solution designed to streamline parking operations for both administrators and users. The system provides real-time parking spot monitoring, reservation capabilities, and administrative controls for efficient parking lot management.
 
+## Demo 
+[![Watch the video](https://img.youtube.com/vi/Ly-Wm7Tt9Ck/0.jpg)](https://www.youtube.com/watch?v=Ly-Wm7Tt9Ck)
+
 ## Features
 ### Admin Features
 - **Dashboard Overview:** Visual representation of parking lot status
