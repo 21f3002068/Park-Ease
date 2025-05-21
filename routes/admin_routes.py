@@ -747,11 +747,35 @@ def edit_parking(lot_id):
                 suggested_to=suggested_to
             )
 
+        existing_spots = ParkingSpot.query.filter_by(lot_id=lot_id).order_by(ParkingSpot.spot_number).all()
+        existing_count = len(existing_spots)
+        new_count = int(request.form['available_spots'])
+
+        if new_count > existing_count:
+            # Add new spots
+            for i in range(existing_count + 1, new_count + 1):
+                new_spot = ParkingSpot(
+                    lot_id=lot_id,
+                    spot_number=i,
+                    status='A'  
+                )
+                db.session.add(new_spot)
+        elif new_count < existing_count:
+            # Remove only unoccupied/unbooked/unreserved spots from the end
+            removable = [s for s in reversed(existing_spots) if s.status not in ['O', 'B', 'X']]
+            to_remove = removable[:existing_count - new_count]
+            
+            if len(to_remove) < (existing_count - new_count):
+                flash("⚠️ Cannot remove that many spots because some are in use or booked.", "warning")
+                return redirect(url_for('admin.edit_parking', lot_id=lot_id))
+
+            for spot in to_remove:
+                db.session.delete(spot)
 
         # Proceed with update
         parking_lot.prime_location_name = request.form['prime_location_name']
         parking_lot.price_per_hour = float(request.form['price_per_hour'])
-        parking_lot.available_spots = int(request.form['available_spots'])
+        parking_lot.available_spots = new_count
         parking_lot.available_from = new_from
         parking_lot.available_to = new_to
         parking_lot.is_active = new_active_state
@@ -859,6 +883,10 @@ def user_stats():
 @admin_bp.route('/admin/users/delete/<int:id>', methods=['POST'])
 def delete_user(id):
     user = User.query.get_or_404(id) 
+
+    if user.is_flagged:
+        flash("Flagged users must be reviewed before deletion.", "warning")
+        return redirect(url_for('admin.admin_users'))
 
     try:
         db.session.delete(user)  

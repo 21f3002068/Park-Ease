@@ -1,0 +1,7 @@
+__pycache__/
+ParkEase-Env/
+.env
+parkease.db
+delete_spots.py
+dummy_data.py
+dummy_users.py
